@@ -625,7 +625,7 @@ public class HexSync extends JFrame {
 		// 添加选项卡到对话框的内容区域
 		settingsDialog.add(tabbedPane, BorderLayout.CENTER);
 		// 保存按钮
-		JButton configSaveButton = new JButton("保存服务端设置");
+		JButton configSaveButton = new JButton("保存");
 		// 修改保存按钮的逻辑
 		configSaveButton.addActionListener(event -> {
 			// 定义输入框数组及其对应的提示信息
