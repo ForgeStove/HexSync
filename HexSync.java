@@ -10,17 +10,17 @@ import java.awt.event.WindowEvent;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.*;
 public class HexSync extends JFrame {
-	private static final Logger LOGGER = Logger.getLogger("SyncServer"); // 日志记录器
-	private static final String SERVER_ADDRESS = "http://localhost"; // 默认服务器地址
+	private static final Logger LOGGER = Logger.getLogger("HexSync"); // 日志记录器
+	private static final String SERVER_ADDRESS = "localhost"; // 默认服务器地址
 	private static final String CONFIG_FILE_NAME = "HexSyncConfig.properties"; // 配置文件名
 	private static final String LOG_FILE_NAME = "HexSync.log";
 	private static final String SEPARATOR = File.separator; // 文件分隔符
@@ -34,6 +34,8 @@ public class HexSync extends JFrame {
 	private static final String SERVER_SYNC_DIRECTORY_NAME = "mods"; // 默认服务端同步文件夹名称
 	private static final String SERVER_SYNC_DIRECTORY = CURRENT_DIRECTORY + SEPARATOR + SERVER_SYNC_DIRECTORY_NAME; // 默认服务端同步文件夹目录
 	private static String serverSyncDirectory = SERVER_SYNC_DIRECTORY; // 服务端同步文件夹目录
+	private static final String SERVER_AUTO_START_CONFIG = "serverAutoStart"; // 服务端自动启动配置项
+	private static final String CLIENT_AUTO_START_CONFIG = "clientAutoStart"; // 客户端自动启动配置项
 	private static final String CLIENT_PORT_CONFIG = "clientPort"; // 客户端端口配置项
 	private static final String SERVER_PORT_CONFIG = "serverPort"; // 服务端端口配置项
 	private static final String SERVER_ADDRESS_CONFIG = "serverAddress"; // 服务器地址配置项
@@ -44,14 +46,16 @@ public class HexSync extends JFrame {
 	private static final String UPLOAD_RATE_LIMIT_CONFIG = "uploadRateLimit"; // 上传速率限制配置项
 	private static final Map<String, String> SYNC_MAP = new HashMap<>(); // 存储服务端文件名和对应的MD5数据
 	private static final Map<String, String> REQUEST_MAP = new HashMap<>(); // 存储从服务端请求得到的文件名和对应的MD5数据
+	private static final Map<String, String> FILES_TO_DOWNLOAD_MAP = new HashMap<>(); // 存储客户端需要下载的文件名和对应的MD5数据
 	private static final Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize(); // 获取屏幕大小
 	private static final int PORT = 65535; // 默认端口
 	private static final String UPLOAD_RATE_LIMIT_UNIT = "MB/s"; // 默认单位
-	private static final long UPLOAD_RATE_LIMIT = 16; // 默认16MB/s
-	private static final AtomicLong bytesSentThisSecond = new AtomicLong(0); // 当前秒已发送字节数
+	private static final long UPLOAD_RATE_LIMIT = 0; // 默认无限制
+	private static boolean isError = false; // 客户端下载文件时是否发生错误
+	private static boolean serverAutoStart = false; // 服务端自动启动
+	private static boolean clientAutoStart = false; // 客户端自动启动
 	private static String uploadRateLimitUnit = UPLOAD_RATE_LIMIT_UNIT; // 上传速率限制单位
 	private static long uploadRateLimit = UPLOAD_RATE_LIMIT; // 上传速率限制值
-	private static long lastTimestamp = System.currentTimeMillis(); // 上一次更新时间
 	private static String clientSyncDirectoryName = CLIENT_SYNC_DIRECTORY_NAME; // 客户端同步文件夹名称
 	private static String serverSyncDirectoryName = SERVER_SYNC_DIRECTORY_NAME; // 服务端同步文件夹名称
 	private static int serverPort = PORT; // 端口号
@@ -70,6 +74,7 @@ public class HexSync extends JFrame {
 	public static void main(String[] args) {
 		createDirectory(HEX_SYNC_DIRECTORY); // 在当前目录下创建HexSync文件夹
 		initializeLogger();
+		loadConfig();
 		initializeUI();
 	}
 	// 初始化日志记录器
@@ -107,7 +112,7 @@ public class HexSync extends JFrame {
 		SwingUtilities.invokeLater(() -> {
 			HexSync server = new HexSync();
 			server.createUI();
-			server.setVisible(true);
+			server.setVisible(!serverAutoStart);
 		});
 	}
 	// 初始化文件
@@ -115,7 +120,7 @@ public class HexSync extends JFrame {
 		if (isServer) createDirectory(serverSyncDirectory); // 创建服务端同步文件夹
 		else createDirectory(clientSyncDirectory); // 创建客户端同步文件夹
 		createDirectory(HEX_SYNC_DIRECTORY); // 在当前目录下创建HexSync文件夹
-		loadConfig(isServer); // 加载配置文件
+		loadConfig(); // 加载配置文件
 		loadSyncFiles(); // 读取同步文件夹下的所有文件,并存储文件名和MD5值到syncFiles中
 	}
 	// 检测并创建文件夹
@@ -126,7 +131,7 @@ public class HexSync extends JFrame {
 		LOGGER.log(isCreated ? Level.INFO : Level.SEVERE, (isCreated ? "文件夹已创建: " : "创建文件夹失败: ") + directory);
 	}
 	// 加载配置文件
-	private static void loadConfig(boolean isServer) {
+	private static void loadConfig() {
 		File configFile = new File(CONFIG_FILE_PATH);
 		if (!configFile.exists()) return;
 		try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
@@ -141,25 +146,26 @@ public class HexSync extends JFrame {
 				}
 				String head = parts[0].trim(); // 临时变量,存储头部
 				String tail = parts[1].trim(); // 临时变量,存储尾部
-				if (isServer) {
-					if (head.equals(SERVER_PORT_CONFIG)) serverPort = Integer.parseInt(tail);
-					if (head.equals(UPLOAD_RATE_LIMIT_CONFIG)) {
-						String[] limitParts = tail.split(" "); // 按空格分割以获取数值和单位
-						if (limitParts.length != 2) {
-							LOGGER.log(Level.WARNING, "上传速率限制格式不正确,跳过: " + line);
-							continue; // 格式不正确则跳过
-						}
-						uploadRateLimit = Long.parseLong(limitParts[0]); // 数值部分
-						uploadRateLimitUnit = limitParts[1]; // 单位部分转换为大写
+				// 服务端配置
+				if (head.equals(SERVER_AUTO_START_CONFIG)) serverAutoStart = Boolean.parseBoolean(tail);
+				if (head.equals(SERVER_PORT_CONFIG)) serverPort = Integer.parseInt(tail);
+				if (head.equals(UPLOAD_RATE_LIMIT_CONFIG)) {
+					String[] limitParts = tail.split(" "); // 按空格分割以获取数值和单位
+					if (limitParts.length != 2) {
+						LOGGER.log(Level.WARNING, "上传速率限制格式不正确,跳过: " + line);
+						continue; // 格式不正确则跳过
 					}
-					if (head.equals(SERVER_SYNC_DIRECTORY_NAME_CONFIG)) serverSyncDirectoryName = tail;
-					if (head.equals(SERVER_SYNC_DIRECTORY_PATH_CONFIG)) serverSyncDirectory = tail;
-				} else {
-					if (head.equals(CLIENT_PORT_CONFIG)) clientPort = Integer.parseInt(tail);
-					if (head.equals(SERVER_ADDRESS_CONFIG)) serverAddress = tail;
-					if (head.equals(CLIENT_SYNC_DIRECTORY_NAME_CONFIG)) clientSyncDirectoryName = tail;
-					if (head.equals(CLIENT_SYNC_DIRECTORY_PATH_CONFIG)) clientSyncDirectory = tail;
+					uploadRateLimit = Long.parseLong(limitParts[0]); // 数值部分
+					uploadRateLimitUnit = limitParts[1]; // 单位部分转换为大写
 				}
+				if (head.equals(SERVER_SYNC_DIRECTORY_NAME_CONFIG)) serverSyncDirectoryName = tail;
+				if (head.equals(SERVER_SYNC_DIRECTORY_PATH_CONFIG)) serverSyncDirectory = tail;
+				// 客户端配置
+				if (head.equals(CLIENT_AUTO_START_CONFIG)) clientAutoStart = Boolean.parseBoolean(tail);
+				if (head.equals(CLIENT_PORT_CONFIG)) clientPort = Integer.parseInt(tail);
+				if (head.equals(SERVER_ADDRESS_CONFIG)) serverAddress = tail;
+				if (head.equals(CLIENT_SYNC_DIRECTORY_NAME_CONFIG)) clientSyncDirectoryName = tail;
+				if (head.equals(CLIENT_SYNC_DIRECTORY_PATH_CONFIG)) clientSyncDirectory = tail;
 			}
 		} catch (IOException error) {
 			LOGGER.log(Level.SEVERE, "读取配置文件时出错: " + error.getMessage());
@@ -181,11 +187,19 @@ public class HexSync extends JFrame {
 			}
 		}
 	}
+	// 地址格式化,转换为HTTP协议
+	private static String addressFormat(String address) {
+		if (address.endsWith("/")) address = address.substring(0, address.length() - 1); // 去除末尾的分隔符
+		if (address.startsWith("https://")) return address.replace("https://", "http://"); // 转换为HTTP协议
+		if (!address.startsWith("http://")) return "http://" + address; // 添加协议头
+		return address; // 原样返回
+	}
 	// 从服务器请求文件名和MD5值列表
 	private static void requestList() {
-		LOGGER.log(Level.INFO, "开始请求列表,URL: " + serverAddress + ":" + clientPort + "/list"); // 记录请求开始日志
+		String URL = addressFormat(serverAddress) + ":" + serverPort + "/list"; // 服务器地址
+		LOGGER.log(Level.INFO, "开始请求列表,URL: " + URL); // 记录请求开始日志
 		try {
-			URL requestURL = new URL(serverAddress + ":" + clientPort + "/list"); // 创建URL
+			URL requestURL = new URL(URL); // 创建URL
 			connection = (HttpURLConnection) requestURL.openConnection(); // 打开连接
 			connection.setRequestMethod("GET"); // 设置请求方式为GET
 			LOGGER.log(Level.INFO, "发送请求到服务器..."); // 记录请求发送日志
@@ -198,9 +212,11 @@ public class HexSync extends JFrame {
 			}
 		} catch (IOException error) {
 			if (clientRunning) LOGGER.log(Level.SEVERE, "连接服务器时出错: " + error.getMessage());
+			isError = true;
 			return; // 返回,不存储任何数据
 		} catch (Exception error) {
 			if (clientRunning) LOGGER.log(Level.SEVERE, "请求文件列表时出错: " + error.getMessage());
+			isError = true;
 			return; // 返回,不存储任何数据
 		}
 		REQUEST_MAP.clear(); // 清空之前的内容
@@ -225,8 +241,7 @@ public class HexSync extends JFrame {
 		File clientFile = new File(filePath); // 目标本地文件
 		try {
 			if (checkFile(clientFile, fileName)) return "SKIP"; // 文件已存在且校验通过,跳过下载
-			// 开始下载文件
-			URL requestURL = new URL(serverAddress + ":" + clientPort + "/" + REQUEST_MAP.get(fileName)); // 创建URL
+			URL requestURL = new URL(addressFormat(serverAddress) + ":" + clientPort + "/" + REQUEST_MAP.get(fileName)); // 创建URL
 			connection = (HttpURLConnection) requestURL.openConnection(); // 打开连接
 			connection.setRequestMethod("GET"); // 设置请求方式为GET
 			// 检查HTTP响应码
@@ -251,7 +266,6 @@ public class HexSync extends JFrame {
 	// 检查文件是否已存在并进行MD5校验
 	private static boolean checkFile(File localFile, String fileName) throws Exception {
 		if (!localFile.exists()) {
-			LOGGER.log(Level.INFO, "目标文件不存在,将开始下载: " + localFile);
 			return false; // 文件不存在,直接返回
 		}
 		// 获取同步文件中的MD5值
@@ -271,7 +285,7 @@ public class HexSync extends JFrame {
 	}
 	// 验证MD5校验
 	private static String validateMD5(File localFile, String fileName) {
-		String serverMD5 = REQUEST_MAP.get(fileName); // 从请求的文件列表中获取MD5值
+		String serverMD5 = FILES_TO_DOWNLOAD_MAP.get(fileName); // 从请求的文件列表中获取MD5值
 		if (serverMD5 == null) {
 			LOGGER.log(Level.SEVERE, "无法获取服务器的MD5值: " + fileName);
 			return "FAIL"; // 无法获取MD5值,返回失败
@@ -303,19 +317,20 @@ public class HexSync extends JFrame {
 	}
 	// 保存配置的方法
 	private static void saveConfig() {
-		// 保存服务端的配置
 		File configFile = new File(CONFIG_FILE_PATH);
-		String[] configContent = new String[10];
+		String[] configContent = new String[12];
 		configContent[0] = "# HexSync服务端配置";
-		configContent[1] = SERVER_PORT_CONFIG + "=" + serverPort;
-		configContent[2] = UPLOAD_RATE_LIMIT_CONFIG + "=" + uploadRateLimit + " " + uploadRateLimitUnit;
-		configContent[3] = SERVER_SYNC_DIRECTORY_NAME_CONFIG + "=" + serverSyncDirectoryName;
-		configContent[4] = SERVER_SYNC_DIRECTORY_PATH_CONFIG + "=" + serverSyncDirectory;
-		configContent[5] = "# HexSync客户端配置";
-		configContent[6] = CLIENT_PORT_CONFIG + "=" + clientPort;
-		configContent[7] = SERVER_ADDRESS_CONFIG + "=" + serverAddress;
-		configContent[8] = CLIENT_SYNC_DIRECTORY_NAME_CONFIG + "=" + clientSyncDirectoryName;
-		configContent[9] = CLIENT_SYNC_DIRECTORY_PATH_CONFIG + "=" + clientSyncDirectory;
+		configContent[1] = SERVER_AUTO_START_CONFIG + "=" + serverAutoStart;
+		configContent[2] = SERVER_PORT_CONFIG + "=" + serverPort;
+		configContent[3] = UPLOAD_RATE_LIMIT_CONFIG + "=" + uploadRateLimit + " " + uploadRateLimitUnit;
+		configContent[4] = SERVER_SYNC_DIRECTORY_NAME_CONFIG + "=" + serverSyncDirectoryName;
+		configContent[5] = SERVER_SYNC_DIRECTORY_PATH_CONFIG + "=" + serverSyncDirectory;
+		configContent[6] = "# HexSync客户端配置";
+		configContent[7] = CLIENT_AUTO_START_CONFIG + "=" + clientAutoStart;
+		configContent[8] = CLIENT_PORT_CONFIG + "=" + clientPort;
+		configContent[9] = SERVER_ADDRESS_CONFIG + "=" + serverAddress;
+		configContent[10] = CLIENT_SYNC_DIRECTORY_NAME_CONFIG + "=" + clientSyncDirectoryName;
+		configContent[11] = CLIENT_SYNC_DIRECTORY_PATH_CONFIG + "=" + clientSyncDirectory;
 		try (BufferedWriter writer = new BufferedWriter(new FileWriter(configFile))) {
 			for (String line : configContent) writer.write(line + "\n"); // 写入配置内容
 			LOGGER.log(Level.INFO, "写入配置: \n" + Arrays.toString(configContent));
@@ -328,41 +343,49 @@ public class HexSync extends JFrame {
 		exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=UTF-8"); // 设置Content-Type
 		exchange.sendResponseHeaders(HTTPCode, responseBytes.length); // 设置响应头
 		try (OutputStream outputStream = exchange.getResponseBody()) {
-			int totalBytesSent = 0;
+			long startTime = System.currentTimeMillis(); // 记录开始时间
+			long uploadRateInBytes = convertToBytes(uploadRateLimit, uploadRateLimitUnit); // 转换为字节
 			int responseLength = responseBytes.length;
+			int totalBytesSent = 0; // 记录已发送字节数
+			if (uploadRateLimit == 0) {
+				outputStream.write(responseBytes);
+				return; // 直接返回，不再执行后续代码
+			}
 			while (totalBytesSent < responseLength) {
-				int bytesToSend = Math.min(1024, responseLength - totalBytesSent); // 每次最多发送1KB
-				limit(bytesToSend); // 调用limit方法，限制发送速率
+				int bytesToSend = Math.min(10240, responseLength - totalBytesSent); // 每次最多发送10KB
 				outputStream.write(responseBytes, totalBytesSent, bytesToSend); // 写入数据
 				totalBytesSent += bytesToSend; // 更新已发送总字节数
+				// 控制上传速率
+				long elapsedTime = System.currentTimeMillis() - startTime; // 计算经过的时间
+				long expectedBytesSent = (elapsedTime * uploadRateInBytes) / 1000; // 计算期望已发送字节数
+				if (totalBytesSent > expectedBytesSent) {
+					long sleepTime = (totalBytesSent - expectedBytesSent) * 1000 / uploadRateInBytes; // 计算需要等待的时间
+					Thread.sleep(sleepTime); // 暂停
+				}
 			}
 		} catch (InterruptedException error) {
-			Thread.currentThread().interrupt(); // 恢复中断状态
-			LOGGER.log(Level.SEVERE, "发送响应时被中断: " + error.getMessage());
+			Thread.currentThread().interrupt(); // 重置中断状态
 		}
 	}
 	// 切换服务器状态
 	private void toggleServer() {
 		toggleServerButton.setEnabled(false);
-		if (serverRunning || server != null) stopServer();
+		if (serverRunning) stopServer();
 		else startServer();
-		toggleIcon(); // 图标切换
 		toggleServerButton.setEnabled(true);
 	}
 	private void stopServer() {
 		LOGGER.log(Level.INFO, "SyncServer正在关闭...");
-		if (serverThread != null) {
-			serverRunning = false;
-			try {
-				server.stop(0); // 停止服务
-				serverThread.join(); // 等待线程结束
-				toggleServerButton.setText("启动服务端"); // 更新按钮文本
-				LOGGER.log(Level.INFO, "SyncServer已关闭");
-			} catch (InterruptedException error) {
-				LOGGER.log(Level.WARNING, "等待线程结束时被中断", error);
-			} finally {
-				serverThread = null; // 清除线程引用
-			}
+		serverRunning = false;
+		try {
+			toggleServerButton.setEnabled(false);
+			server.stop(0); // 停止服务
+		} finally {
+			serverThread = null; // 清除线程引用
+			LOGGER.log(Level.INFO, "HexSyncServer已关闭");
+			toggleServerButton.setText("启动服务端");
+			toggleServerButton.setEnabled(true);
+			toggleIcon();
 		}
 	}
 	private void startServer() {
@@ -383,40 +406,38 @@ public class HexSync extends JFrame {
 		});
 		serverThread.start();
 		serverRunning = true;
-		LOGGER.log(Level.INFO, "SyncServer正在运行...端口号为: " + serverPort);
-		toggleServerButton.setText("停止服务端"); // 更新按钮文本
+		LOGGER.log(Level.INFO, "HexSyncServer正在运行...端口号为: " + serverPort);
+		toggleServerButton.setText("停止服务端");
+		toggleIcon();
 	}
 	// 切换客户端状态
 	private void toggleClient() {
 		toggleClientButton.setEnabled(false);
 		if (clientRunning) stopClient();
 		else startClient();
-		toggleClientButton.setText(clientRunning ? "停止客户端" : "启动客户端");
-		toggleIcon(); // 图标切换
 		toggleClientButton.setEnabled(true);
 	}
 	private void stopClient() {
-		if (clientThread != null) {
-			clientRunning = false;
-			toggleClientButton.setText("启动客户端"); // 更新按钮文本
-			try {
-				connection.disconnect(); // 断开连接
-				clientThread.stop();
-				clientThread.join(); // 等待线程结束
-				LOGGER.log(Level.INFO, "SyncClient已停止");
-			} catch (InterruptedException error) {
-				LOGGER.log(Level.WARNING, "等待线程结束时被中断", error);
-			} finally {
-				clientThread = null; // 清除线程引用
-			}
+		clientRunning = false;
+		try {
+			toggleClientButton.setEnabled(false);
+			connection.disconnect(); // 断开连接
+			clientThread.stop();
+		} finally {
+			clientThread = null; // 清除线程引用
+			LOGGER.log(Level.INFO, "HexSyncClient已停止");
+			toggleClientButton.setText("启动客户端");
+			toggleClientButton.setEnabled(true);
+			if (clientAutoStart && !isError) System.exit(0); // 自动退出
+			toggleIcon();
 		}
 	}
 	private void startClient() {
-		toggleClientButton.setText("停止客户端"); // 更新按钮文本
 		initializeFiles(false); // 初始化文件
-		clientRunning = true;
-		LOGGER.log(Level.INFO, "SyncClient正在运行...服务器地址为: " + serverAddress + " 端口号为: " + serverPort);
 		clientThread = new Thread(() -> {
+			clientRunning = true;
+			LOGGER.log(Level.INFO, "HexSyncClient正在运行...服务器地址为: " + serverAddress + " 端口号为: " + serverPort);
+			toggleClientButton.setText("停止客户端");
 			requestList(); // 从服务端获取文件和MD5值列表
 			if (REQUEST_MAP.isEmpty()) {
 				LOGGER.log(Level.WARNING, "未获取到任何文件");
@@ -424,26 +445,54 @@ public class HexSync extends JFrame {
 				return;
 			}
 			LOGGER.log(Level.INFO, "获取到 " + REQUEST_MAP.size() + " 个文件");
-			int downloadedCount = 0;
-			// 解析文件列表
+			// 构建需要下载的文件列表
 			for (Map.Entry<String, String> entry : REQUEST_MAP.entrySet()) {
 				String fileName = entry.getKey(); // 文件名
 				String MD5Value = entry.getValue(); // MD5值
 				if (fileName.isEmpty() || MD5Value.isEmpty()) continue; // 忽略空行
 				String clientPath = clientSyncDirectory + SEPARATOR + fileName; // 设置下载路径
+				File clientFile = new File(clientPath); // 目标本地文件
+				try {
+					boolean fileCheckResult = checkFile(clientFile, fileName);
+					if (fileCheckResult) continue; // 如果文件存在且校验通过，跳过下载
+				} catch (Exception error) {
+					LOGGER.log(Level.SEVERE, "检查文件时出错: " + error.getMessage());
+					isError = true; // 记录错误
+				}
+				FILES_TO_DOWNLOAD_MAP.put(fileName, MD5Value); // 添加到需要下载的文件列表
+			}
+			if (FILES_TO_DOWNLOAD_MAP.isEmpty()) {
+				LOGGER.log(Level.INFO, "没有需要下载的文件");
+				stopClient();
+				return;
+			}
+			LOGGER.log(Level.INFO, "需要下载文件: " + FILES_TO_DOWNLOAD_MAP);
+			int downloadedCount = 0;
+			for (Map.Entry<String, String> entry : FILES_TO_DOWNLOAD_MAP.entrySet()) {
+				String fileName = entry.getKey(); // 文件名
+				String clientPath = clientSyncDirectory + SEPARATOR + fileName; // 设置下载路径
+				// 下载文件
 				String downloadReturn = downloadFile(fileName, clientPath); // 下载文件
-				if (downloadReturn.equals("OK")) {
-					downloadedCount++; // 成功下载时增加计数
-					LOGGER.log(Level.INFO, "已下载文件: " + fileName + downloadedCount);
-				} else if (downloadReturn.equals("SKIP")) {
-					LOGGER.log(Level.INFO, "跳过文件: " + fileName);
-				} else LOGGER.log(Level.SEVERE, "下载文件失败: " + fileName);
+				switch (downloadReturn) {
+					case "OK":
+						downloadedCount++; // 成功下载时增加计数
+						LOGGER.log(Level.INFO, "已下载文件: " + fileName + "(" + downloadedCount + "/" + FILES_TO_DOWNLOAD_MAP.size() + ")");
+						break;
+					case "SKIP":
+						LOGGER.log(Level.INFO, "跳过文件: " + fileName);
+						break;
+					default:
+						LOGGER.log(Level.SEVERE, "下载文件失败: " + fileName);
+						isError = true; // 记录下载失败
+						break;
+				}
 			}
 			// 下载完成后的日志记录
 			LOGGER.log(Level.INFO, "下载完成,总共下载了 " + downloadedCount + " 个文件。");
 			stopClient();
 		});
 		clientThread.start();
+		toggleIcon();
 	}
 	// 创建用户界面
 	private void createUI() {
@@ -494,7 +543,6 @@ public class HexSync extends JFrame {
 		buttonPanel.add(shutdownButton);
 		panel.add(buttonPanel, BorderLayout.SOUTH); // 添加按钮面板到主面板
 		add(panel);  // 添加主面板到窗口
-		// 创建日志处理器并添加到 logger
 		JTextPaneLogHandler logHandler = new JTextPaneLogHandler(logTextPane); // 将 JTextAreaLogHandler 替换为 JTextPaneLogHandler
 		logHandler.setFormatter(new SingleLineFormatter()); // 使用自定义格式化器
 		LOGGER.addHandler(logHandler);
@@ -510,18 +558,20 @@ public class HexSync extends JFrame {
 		if (SystemTray.isSupported() && tray == null) {
 			tray = SystemTray.getSystemTray();
 			Image image = Toolkit.getDefaultToolkit().getImage(getClass().getResource(serverRunning ? "/IconO.png" : "/IconI.png"));
-			trayIcon = new TrayIcon(image, "SyncServer");
+			trayIcon = new TrayIcon(image, "HexSync");
 			trayIcon.setImageAutoSize(true); // 自动调整图标大小
-			trayIcon.setToolTip("SyncServer 控制面板");
+			trayIcon.setToolTip("HexSync控制面板");
 			PopupMenu popup = getPopupMenu(); // 创建右键菜单
 			trayIcon.setPopupMenu(popup);
-			trayIcon.addActionListener(event -> setVisible(true)); // 显示窗口
+			trayIcon.addActionListener(event -> setVisible(true));
 			try {
 				tray.add(trayIcon); // 添加托盘图标
 			} catch (AWTException error) {
 				LOGGER.log(Level.SEVERE, "添加托盘图标失败: " + error.getMessage());
 			}
 		}
+		if (serverAutoStart) startServer(); // 启动服务端
+		if (clientAutoStart) startClient(); // 启动客户端
 	}
 	// 切换图标
 	private void toggleIcon() {
@@ -532,9 +582,9 @@ public class HexSync extends JFrame {
 	private PopupMenu getPopupMenu() {
 		PopupMenu popup = new PopupMenu();
 		MenuItem openItem = new MenuItem("Open");
-		openItem.addActionListener(event -> setVisible(true));  // 显示窗口
+		openItem.addActionListener(event -> setVisible(true));
 		MenuItem hideItem = new MenuItem("Hide");
-		hideItem.addActionListener(event -> setVisible(false)); // 隐藏窗口
+		hideItem.addActionListener(event -> setVisible(false));
 		MenuItem openDirectoryItem = new MenuItem("Open Directory");
 		openDirectoryItem.addActionListener(event -> {
 			try {
@@ -562,8 +612,7 @@ public class HexSync extends JFrame {
 	// 打开设置对话框
 	private void openSettingsDialog() {
 		// 加载配置
-		loadConfig(true);
-		loadConfig(false);
+		loadConfig();
 		final int inputHeight = (int) (SCREEN_SIZE.height * 0.1); // 输入框高度为屏幕高度的10%
 		final int inputWidth = (int) (SCREEN_SIZE.width * 0.2); // 输入框宽度为屏幕宽度的20%
 		int borderPadding = (int) (inputHeight * 0.05); // 边距为输入框高度的5%
@@ -572,24 +621,24 @@ public class HexSync extends JFrame {
 		// 创建选项卡面板
 		JTabbedPane tabbedPane = new JTabbedPane();
 		// 服务端设置选项卡
-		JPanel serverPanel = new JPanel(new GridLayout(4, 2));
+		JPanel serverPanel = new JPanel(new GridLayout(5, 2));
 		serverPanel.setBorder(BorderFactory.createEmptyBorder(borderPadding, borderPadding, borderPadding, borderPadding));
 		JTextField serverPortField = new JTextField(String.valueOf(serverPort));
-		JTextField serverUploadRateLimitField = new JTextField(String.valueOf(uploadRateLimit));
+		JTextField uploadRateLimitField = new JTextField(String.valueOf(uploadRateLimit));
 		JTextField serverSyncDirectoryNameField = new JTextField(serverSyncDirectoryName);
 		JTextField serverSyncDirectoryPathField = new JTextField(serverSyncDirectory);
 		// 创建选择单位的下拉框
 		String[] uploadRateUnits = new String[]{"B/s", "KB/s", "MB/s", "GB/s"};
-		JComboBox<String> unitComboBox = new JComboBox<>(uploadRateUnits);
-		unitComboBox.setSelectedItem(uploadRateLimitUnit);
+		JComboBox<String> uploadRateLimitUnitBox = new JComboBox<>(uploadRateUnits);
+		uploadRateLimitUnitBox.setSelectedItem(uploadRateLimitUnit);
 		// 添加标签和文本框到设置面板
 		serverPanel.add(new JLabel("端口号: "));
 		serverPanel.add(serverPortField);
 		serverPanel.add(new JLabel("上传速率限制(0为无限制): "));
 		// 添加上传速率限制输入框与单位选择框
 		JPanel rateLimitPanel = new JPanel(new GridLayout(1, 2, 5, 0));
-		rateLimitPanel.add(serverUploadRateLimitField);
-		rateLimitPanel.add(unitComboBox); // 将单位选择框添加到输入框旁边
+		rateLimitPanel.add(uploadRateLimitField);
+		rateLimitPanel.add(uploadRateLimitUnitBox); // 将单位选择框添加到输入框旁边
 		serverPanel.add(rateLimitPanel);
 		serverPanel.add(new JLabel("服务端同步文件夹名称: "));
 		serverPanel.add(serverSyncDirectoryNameField);
@@ -600,10 +649,10 @@ public class HexSync extends JFrame {
 		serverSyncDirectoryNameField.setSize(new Dimension(inputWidth, inputHeight));
 		serverSyncDirectoryPathField.setSize(new Dimension(inputWidth, inputHeight));
 		// 设置上传速率限制输入框和单位选择框大小
-		serverUploadRateLimitField.setSize(new Dimension(inputWidth * 3 / 4, inputHeight));
-		unitComboBox.setSize(new Dimension(inputWidth / 4, inputHeight));
+		uploadRateLimitField.setSize(new Dimension(inputWidth * 3 / 4, inputHeight));
+		uploadRateLimitUnitBox.setSize(new Dimension(inputWidth / 4, inputHeight));
 		// 客户端设置选项卡
-		JPanel clientPanel = new JPanel(new GridLayout(4, 2));
+		JPanel clientPanel = new JPanel(new GridLayout(5, 2));
 		clientPanel.setBorder(BorderFactory.createEmptyBorder(borderPadding, borderPadding, borderPadding, borderPadding));
 		// 创建文本框
 		JTextField clientPortField = new JTextField(String.valueOf(clientPort));
@@ -622,25 +671,62 @@ public class HexSync extends JFrame {
 		// 添加选项卡到选项卡面板
 		tabbedPane.addTab("服务端设置", serverPanel);
 		tabbedPane.addTab("客户端设置", clientPanel);
-		// 添加选项卡到对话框的内容区域
 		settingsDialog.add(tabbedPane, BorderLayout.CENTER);
-		// 保存按钮
+		JButton aboutButton = new JButton("关于");
+		aboutButton.addActionListener(event -> {
+			try {
+				Desktop.getDesktop().browse(URI.create(("https://github.com/ForgeStove/HexSync")));
+			} catch (Exception error) {
+				LOGGER.log(Level.SEVERE, "打开关于页面时出错: " + error.getMessage());
+			}
+		});
 		JButton configSaveButton = new JButton("保存");
-		// 修改保存按钮的逻辑
+		JCheckBox serverAutoStartBox = new JCheckBox("自动启动服务端");
+		JCheckBox clientAutoStartBox = new JCheckBox("自动启动客户端");
+		serverAutoStartBox.setSelected(serverAutoStart); // 根据当前配置设置复选框状态
+		clientAutoStartBox.setSelected(clientAutoStart);
+		serverPanel.add(serverAutoStartBox); // 将复选框添加到服务端设置面板
+		clientPanel.add(clientAutoStartBox); // 将复选框添加到客户端设置面板
 		configSaveButton.addActionListener(event -> {
-			// 定义输入框数组及其对应的提示信息
-			Object[][] inputs = {{serverPortField, "服务端端口"}, {serverSyncDirectoryNameField, "服务端同步文件夹名称"}, {serverSyncDirectoryPathField, "服务端同步文件夹路径"}, {clientPortField, "客户端端口"}, {clientSyncDirectoryNameField, "客户端同步文件夹名称"}, {clientSyncDirectoryPathField, "客户端同步文件夹路径"}};
+			// 定义输入框数组及其对应的提示信息和选项卡索引
+			Object[][] inputs = {
+					{serverPortField, "服务端端口", 0}, // 服务器端设置的索引
+					{uploadRateLimitField, "上传速率限制", 0},
+					{serverSyncDirectoryNameField, "服务端同步文件夹名称", 0},
+					{serverSyncDirectoryPathField, "服务端同步文件夹路径", 0},
+					{clientPortField, "客户端端口", 1}, // 客户端设置的索引
+					{clientAddressField, "服务器地址", 1},
+					{clientSyncDirectoryNameField, "客户端同步文件夹名称", 1},
+					{clientSyncDirectoryPathField, "客户端同步文件夹路径", 1}
+			};
 			// 检查输入框是否为空
-			for (Object[] input : inputs) if (isTextFieldEmpty((JTextField) input[0], (String) input[1])) return;
+			for (Object[] input : inputs) {
+				JTextField textField = (JTextField) input[0];
+				String fieldName = (String) input[1];
+				int tabIndex = (int) input[2]; // 获取对应的索引
+				if (isEmptyTextField(textField, fieldName)) {
+					tabbedPane.setSelectedIndex(tabIndex); // 跳转到对应的选项卡
+					textField.selectAll(); // 选中输入框
+					textField.requestFocus(); // 聚焦输入框
+					return; // 输入框为空，返回
+				}
+			}
 			// 检测端口号是否是数字且在合法范围内
-			if (isPortValid(serverPortField) || isPortValid(clientPortField)) return;
+			if (isInvalidPort(serverPortField) || isInvalidPort(clientPortField)) return;
 			// 检测上传速率上限
-			String uploadRateLimitText = serverUploadRateLimitField.getText().trim();
-			if (isNotNumber(uploadRateLimitText) || Long.parseLong(uploadRateLimitText) < 0) return;
-			// 赋值配置
+			String uploadRateLimitText = uploadRateLimitField.getText().trim();
+			if (isNotNumber(uploadRateLimitText) || Long.parseLong(uploadRateLimitText) < 0) {
+				LOGGER.log(Level.WARNING, "上传速率上限不正确: " + uploadRateLimitText);
+				tabbedPane.setSelectedIndex(0);
+				uploadRateLimitField.selectAll(); // 选中输入框
+				uploadRateLimitField.requestFocus(); // 聚焦输入框
+				return; // 上传速率上限不合法
+			}
+			serverAutoStart = serverAutoStartBox.isSelected();
+			clientAutoStart = clientAutoStartBox.isSelected();
 			serverPort = Integer.parseInt(serverPortField.getText().trim());
-			uploadRateLimit = uploadRateLimitText.isEmpty() ? 0 : Integer.parseInt(uploadRateLimitText);
-			uploadRateLimitUnit = (String) unitComboBox.getSelectedItem();
+			uploadRateLimit = Integer.parseInt(uploadRateLimitText);
+			uploadRateLimitUnit = (String) uploadRateLimitUnitBox.getSelectedItem();
 			serverSyncDirectoryName = serverSyncDirectoryNameField.getText().trim();
 			serverSyncDirectory = serverSyncDirectoryPathField.getText().trim();
 			clientPort = Integer.parseInt(clientPortField.getText().trim());
@@ -657,6 +743,7 @@ public class HexSync extends JFrame {
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.add(configSaveButton);
 		buttonPanel.add(cancelButton);
+		buttonPanel.add(aboutButton);
 		// 添加按钮面板到对话框的南部
 		settingsDialog.add(buttonPanel, BorderLayout.SOUTH);
 		// 设置对话框的基本属性
@@ -665,9 +752,16 @@ public class HexSync extends JFrame {
 		settingsDialog.setVisible(true); // 显示对话框
 	}
 	// 检测端口号有效性的方法
-	private boolean isPortValid(JTextField portField) {
+	private boolean isInvalidPort(JTextField portField) {
 		String portText = portField.getText().trim();
-		return isNotNumber(portText) || Integer.parseInt(portText) <= 0 || Integer.parseInt(portText) > 65535;
+		boolean invalid = isNotNumber(portText) || Integer.parseInt(portText) < 1 || Integer.parseInt(portText) > 65535;
+		if (invalid) {
+			LOGGER.log(Level.WARNING, "端口号不在有效范围内: " + portText);
+			portField.selectAll(); // 选中输入框
+			portField.requestFocus(); // 聚焦输入框
+			return true; // 端口号不合法
+		}
+		return false; // 端口号合法
 	}
 	private boolean isNotNumber(String text) {
 		if (text == null || text.trim().isEmpty()) return true; // 空字符串返回false
@@ -675,29 +769,15 @@ public class HexSync extends JFrame {
 			Long.parseLong(text.trim()); // 尝试将文本转换为长整型
 			return false; // 转换成功，返回true
 		} catch (NumberFormatException error) {
+			LOGGER.log(Level.WARNING, "不正确的数字格式: " + text);
 			return true; // 转换失败，返回false
 		}
 	}
-	private boolean isTextFieldEmpty(JTextField textField, String fieldName) {
+	private boolean isEmptyTextField(JTextField textField, String fieldName) {
 		String text = textField.getText().trim();
-		if (text.isEmpty()) {
-			LOGGER.log(Level.WARNING, fieldName + "不能为空");
-			return true; // 返回true表示输入框为空
-		}
-		return false; // 返回false表示输入框不为空
-	}
-	// 服务端上传速率限制器
-	private synchronized void limit(long bytesToSend) throws InterruptedException {
-		if (uploadRateLimit <= 0) return; // 如果速率限制为0,则不限制
-		long currentTimestamp = System.currentTimeMillis(); // 获取当前时间戳
-		if (currentTimestamp - lastTimestamp >= 500) { // 如果距离上次上传时间超过500毫秒
-			bytesSentThisSecond.set(0); // 重置计数
-			lastTimestamp = currentTimestamp; // 更新上次上传时间
-		}
-		long byteLimit = convertToBytes(uploadRateLimit, uploadRateLimitUnit);// 根据实际单位转换uploadRateLimit为字节数
-		while (bytesSentThisSecond.get() + bytesToSend > byteLimit) wait(); // 如果当前已经达到限制，开始等待
-		bytesSentThisSecond.addAndGet(bytesToSend);// 更新已发送字节数
-		if (bytesSentThisSecond.get() < byteLimit) notifyAll(); // 唤醒在等待的线程
+		if (!text.isEmpty()) return false; // 返回false表示输入框不为空
+		LOGGER.log(Level.WARNING, fieldName + "不能为空");
+		return true; // 返回true表示输入框为空
 	}
 	// 单位转换方法
 	private long convertToBytes(long value, String unit) {
@@ -711,8 +791,8 @@ public class HexSync extends JFrame {
 			case "GB/s":
 				return value * 1024 * 1024 * 1024;
 			default:
-				LOGGER.log(Level.WARNING, "未知的单位: " + unit);
-				return 0; // 返回0，表示不允许的单位
+				LOGGER.log(Level.WARNING, "未知的上传速率单位: " + unit);
+				return 0;
 		}
 	}
 	// 日志格式化
@@ -779,7 +859,7 @@ public class HexSync extends JFrame {
 					String requestURI = exchange.getRequestURI().getPath(); // 获取请求URI
 					LOGGER.log(Level.INFO, "客户端请求: " + requestURI); // 记录客户端请求信息
 					processRequest(requestURI, exchange); // 处理请求
-				} else exchange.sendResponseHeaders(HttpURLConnection.HTTP_BAD_METHOD, -1); // 如果不是GET请求,返回405状态码
+				} else exchange.sendResponseHeaders(HttpURLConnection.HTTP_BAD_METHOD, -1);
 			} catch (IOException error) {
 				LOGGER.log(Level.SEVERE, "处理请求时出错: " + error.getMessage(), error);
 			}
@@ -832,12 +912,12 @@ public class HexSync extends JFrame {
 				String MD5Value = entry.getValue(); // 获取MD5值
 				if (MD5Value != null) {
 					responseBuilder.append(fileName).append("\n").append(MD5Value).append("\n"); // 每个文件名及对应的MD5值
-					LOGGER.log(Level.INFO, "添加文件名及MD5值到列表: " + fileName + " - " + MD5Value);
 				} else LOGGER.log(Level.WARNING, "文件: " + fileName + " 未找到对应的MD5值");
 			}
 			String response = responseBuilder.toString(); // 转换为字符串
 			byte[] responseBytes = response.getBytes(); // 转换为字节数组
 			sendResponse(exchange, responseBytes, HttpURLConnection.HTTP_OK); // 发送响应
+			LOGGER.log(Level.INFO, "已发送文件列表");
 		}
 		// 发送请求的文件
 		private void sendRequestedFile(String filePath, HttpExchange exchange) throws IOException {
