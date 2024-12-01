@@ -129,8 +129,8 @@ public class HexSync extends JFrame {
 					LOGGER.log(Level.WARNING, "配置文件中行格式不正确,跳过: " + line);
 					continue; // 跳过格式错误的行
 				}
-				String head = parts[0].trim(); // 临时变量,存储头部
-				String tail = parts[1].trim(); // 临时变量,存储尾部
+				String head = parts[0].trim();
+				String tail = parts[1].trim();
 				switch (head) {
 					case SERVER_AUTO_START_CONFIG:
 						serverAutoStart = Boolean.parseBoolean(tail);
@@ -142,8 +142,8 @@ public class HexSync extends JFrame {
 						String[] limitParts = tail.split(" "); // 按空格分割以获取数值和单位
 						if (limitParts.length != 2) LOGGER.log(Level.WARNING, "上传速率限制格式不正确,跳过: " + line);
 						else {
-							uploadRateLimit = Long.parseLong(limitParts[0]); // 数值部分
-							uploadRateLimitUnit = limitParts[1].toUpperCase(); // 单位部分转换为大写
+							uploadRateLimit = Long.parseLong(limitParts[0]);
+							uploadRateLimitUnit = limitParts[1];
 						}
 						break;
 					case SERVER_SYNC_DIRECTORY_CONFIG:
@@ -162,7 +162,7 @@ public class HexSync extends JFrame {
 						clientSyncDirectory = tail;
 						break;
 					default:
-						LOGGER.log(Level.WARNING, "未知配置项,跳过: " + head);
+						LOGGER.log(Level.WARNING, "未知的配置项,跳过: " + head);
 						break;
 				}
 			}
@@ -194,50 +194,56 @@ public class HexSync extends JFrame {
 		return address; // 原样返回
 	}
 	// 从服务器请求文件名和MD5值列表
-	private static void requestList() {
+	private static boolean requestList() {
 		String URL = addressFormat(serverAddress) + ":" + serverPort + "/list"; // 服务器地址
-		LOGGER.log(Level.INFO, "开始请求列表,URL: " + URL); // 记录请求开始日志
+		LOGGER.log(Level.INFO, "正在连接到: " + URL); // 记录请求开始日志
 		try {
 			URL requestURL = new URL(URL); // 创建URL
 			httpURLConnection = (HttpURLConnection) requestURL.openConnection(); // 打开连接
 			httpURLConnection.setRequestMethod("GET"); // 设置请求方式为GET
-			LOGGER.log(Level.INFO, "发送请求到服务器..."); // 记录请求发送日志
-			// 检查响应码
+			LOGGER.log(Level.INFO, "发送请求中..."); // 记录请求发送日志
 			int responseCode = httpURLConnection.getResponseCode(); // 获取响应码
-			LOGGER.log(Level.INFO, "收到响应,HTTP状态码: " + responseCode); // 记录响应码
+			LOGGER.log(Level.INFO, "收到响应码: " + responseCode); // 记录响应码
 			if (responseCode != HttpURLConnection.HTTP_OK) {
 				if (clientRunning) LOGGER.log(Level.SEVERE, "请求文件列表失败,HTTP错误代码: " + responseCode); // 记录错误日志
-				return; // 返回,不存储任何数据
+				isErrorDownload = true;
+				return false; // 返回,不存储任何数据
 			}
 		} catch (IOException error) {
 			if (clientRunning) LOGGER.log(Level.SEVERE, "连接服务器时出错: " + error.getMessage());
 			isErrorDownload = true;
-			return; // 返回,不存储任何数据
+			return false; // 返回,不存储任何数据
 		} catch (Exception error) {
 			if (clientRunning) LOGGER.log(Level.SEVERE, "请求文件列表时出错: " + error.getMessage());
 			isErrorDownload = true;
-			return; // 返回,不存储任何数据
+			return false; // 返回,不存储任何数据
 		}
 		REQUEST_MAP.clear(); // 清空之前的内容
 		try (BufferedReader in = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()))) {
 			String fileName; // 临时变量,用于存储文件名
 			while ((fileName = in.readLine()) != null) { // 读取文件名
-				if (!clientRunning) return; // 客户端已停止运行,退出循环
-				LOGGER.log(Level.FINE, "接收到文件名: " + fileName); // 记录接收到的文件名
+				LOGGER.log(Level.INFO, "接收到文件名: " + fileName); // 记录接收到的文件名
 				String MD5Value = in.readLine(); // 读取对应的MD5值
 				if (MD5Value != null) {
-					LOGGER.log(Level.FINE, "接收到MD5值: " + MD5Value); // 记录接收到的MD5值
+					LOGGER.log(Level.INFO, "接收到MD5值: " + MD5Value); // 记录接收到的MD5值
 					REQUEST_MAP.put(fileName.trim(), MD5Value.trim()); // 将文件名与MD5值放入Map
 				}
 			}
 		} catch (IOException error) {
 			LOGGER.log(Level.SEVERE, "读取响应时出错: " + error.getMessage());
+			isErrorDownload = true;
+		}
+		if (REQUEST_MAP.isEmpty()) {
+			LOGGER.log(Level.SEVERE, "请求文件列表为空"); // 记录请求失败日志
+			isErrorDownload = true;
+			return false;
 		}
 		// 记录整体文件列表
 		StringBuilder fileListBuilder = new StringBuilder("接收到文件列表:\n");
 		for (Map.Entry<String, String> entry : REQUEST_MAP.entrySet())
 			fileListBuilder.append("文件名: ").append(entry.getKey()).append(", MD5值: ").append(entry.getValue()).append("\n");
 		LOGGER.log(Level.INFO, fileListBuilder.toString());
+		return true;
 	}
 	// 从服务器下载文件
 	private static String downloadFile(String fileName, String filePath) {
@@ -355,7 +361,7 @@ public class HexSync extends JFrame {
 				return; // 直接返回，不再执行后续代码
 			}
 			while (totalBytesSent < responseLength) {
-				int bytesToSend = Math.min(10240, responseLength - totalBytesSent); // 每次最多发送10KB
+				int bytesToSend = Math.min(16384, responseLength - totalBytesSent); // 每次最多发送16KB
 				outputStream.write(responseBytes, totalBytesSent, bytesToSend); // 写入数据
 				totalBytesSent += bytesToSend; // 更新已发送总字节数
 				// 控制上传速率
@@ -424,9 +430,10 @@ public class HexSync extends JFrame {
 		clientRunning = false;
 		try {
 			toggleClientButton.setEnabled(false);
-			httpURLConnection.disconnect(); // 断开连接
+			httpURLConnection.disconnect();
+			clientThread.stop(); // 停止线程
 		} finally {
-			clientThread = null; // 清除线程引用
+			clientThread = null;
 			LOGGER.log(Level.INFO, "HexSyncClient已停止");
 			toggleClientButton.setText("启动客户端");
 			toggleClientButton.setEnabled(true);
@@ -440,12 +447,7 @@ public class HexSync extends JFrame {
 			clientRunning = true;
 			LOGGER.log(Level.INFO, "HexSyncClient正在运行...服务器地址为: " + serverAddress + " 端口号为: " + serverPort);
 			toggleClientButton.setText("停止客户端");
-			requestList(); // 从服务端获取文件和MD5值列表
-			if (REQUEST_MAP.isEmpty()) {
-				LOGGER.log(Level.WARNING, "未获取到任何文件");
-				stopClient();
-				return;
-			}
+			if (!requestList()) stopClient();
 			LOGGER.log(Level.INFO, "获取到 " + REQUEST_MAP.size() + " 个文件");
 			// 构建需要下载的文件列表
 			for (Map.Entry<String, String> entry : REQUEST_MAP.entrySet()) {
@@ -470,27 +472,26 @@ public class HexSync extends JFrame {
 			}
 			LOGGER.log(Level.INFO, "需要下载文件: " + FILES_TO_DOWNLOAD_MAP);
 			int downloadedCount = 0;
+			int filesToDownloadMapSize = FILES_TO_DOWNLOAD_MAP.size();
 			for (Map.Entry<String, String> entry : FILES_TO_DOWNLOAD_MAP.entrySet()) {
 				String fileName = entry.getKey(); // 文件名
-				String clientPath = clientSyncDirectory + SEPARATOR + fileName; // 设置下载路径
-				// 下载文件
-				String downloadReturn = downloadFile(fileName, clientPath); // 下载文件
-				switch (downloadReturn) {
+				String filePath = clientSyncDirectory + SEPARATOR + fileName; // 设置下载路径
+				switch (downloadFile(fileName, filePath)) {
 					case "OK":
 						downloadedCount++; // 成功下载时增加计数
-						LOGGER.log(Level.INFO, "已下载文件: " + fileName + "(" + downloadedCount + "/" + FILES_TO_DOWNLOAD_MAP.size() + ")");
+						LOGGER.log(Level.INFO, "已下载文件: [" + downloadedCount + "/" + filesToDownloadMapSize + "] " + filePath);
 						break;
 					case "SKIP":
-						LOGGER.log(Level.INFO, "跳过已有文件: " + fileName);
+						LOGGER.log(Level.INFO, "跳过已有文件: " + filePath);
 						break;
 					default:
-						LOGGER.log(Level.SEVERE, "下载文件失败: " + fileName);
+						LOGGER.log(Level.SEVERE, "下载文件失败: " + filePath);
 						isErrorDownload = true; // 记录下载失败
 						break;
 				}
 			}
 			// 下载完成后的日志记录
-			LOGGER.log(Level.INFO, "下载完成: (" + downloadedCount + "/" + FILES_TO_DOWNLOAD_MAP.size() + ")");
+			LOGGER.log(Level.INFO, "下载完成: [" + downloadedCount + "/" + filesToDownloadMapSize + "]");
 			stopClient();
 		});
 		clientThread.start();
@@ -554,7 +555,7 @@ public class HexSync extends JFrame {
 		buttonPanel.add(shutdownButton);
 		panel.add(buttonPanel, BorderLayout.SOUTH); // 添加按钮面板到主面板
 		add(panel);  // 添加主面板到窗口
-		JTextPaneLogHandler logHandler = new JTextPaneLogHandler(logTextPane); // 将 JTextAreaLogHandler 替换为 JTextPaneLogHandler
+		JTextPaneLogHandler logHandler = new JTextPaneLogHandler(logTextPane);
 		logHandler.setFormatter(new SingleLineFormatter()); // 使用自定义格式化器
 		LOGGER.addHandler(logHandler);
 		// 添加窗口监听器
@@ -621,7 +622,6 @@ public class HexSync extends JFrame {
 	}
 	// 打开设置对话框
 	private void openSettingsDialog() {
-		// 加载配置
 		loadConfig();
 		final int inputHeight = (int) (SCREEN_SIZE.height * 0.1); // 输入框高度为屏幕高度的10%
 		final int inputWidth = (int) (SCREEN_SIZE.width * 0.2); // 输入框宽度为屏幕宽度的20%
