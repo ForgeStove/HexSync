@@ -479,7 +479,7 @@ public class HexSync extends JFrame {
 						LOGGER.log(Level.INFO, "已下载文件: " + fileName + "(" + downloadedCount + "/" + FILES_TO_DOWNLOAD_MAP.size() + ")");
 						break;
 					case "SKIP":
-						LOGGER.log(Level.INFO, "跳过文件: " + fileName);
+						LOGGER.log(Level.INFO, "跳过已有文件: " + fileName);
 						break;
 					default:
 						LOGGER.log(Level.SEVERE, "下载文件失败: " + fileName);
@@ -488,7 +488,7 @@ public class HexSync extends JFrame {
 				}
 			}
 			// 下载完成后的日志记录
-			LOGGER.log(Level.INFO, "下载完成,总共下载了 " + downloadedCount + " 个文件。");
+			LOGGER.log(Level.INFO, "下载完成" + downloadedCount + FILES_TO_DOWNLOAD_MAP.size());
 			stopClient();
 		});
 		clientThread.start();
@@ -519,6 +519,7 @@ public class HexSync extends JFrame {
 		// 创建按钮面板
 		JPanel buttonPanel = new JPanel();
 		JButton openDirectoryButton = new JButton("目录");
+		JButton openLogButton = new JButton("日志");
 		JButton settingsButton = new JButton("设置");
 		toggleServerButton = new JButton("启动服务端");
 		toggleClientButton = new JButton("启动客户端");
@@ -531,12 +532,20 @@ public class HexSync extends JFrame {
 				LOGGER.log(Level.SEVERE, "打开目录时出错: " + error.getMessage());
 			}
 		});
+		openLogButton.addActionListener(event -> {
+			try {
+				Desktop.getDesktop().open(new File(LOG_FILE)); // 打开日志文件
+			} catch (IOException error) {
+				LOGGER.log(Level.SEVERE, "打开日志文件时出错: " + error.getMessage());
+			}
+		});
 		toggleServerButton.addActionListener(event -> toggleServer()); // 服务端按钮事件
 		toggleClientButton.addActionListener(event -> toggleClient()); // 客户端按钮事件
 		settingsButton.addActionListener(event -> openSettingsDialog()); // 打开设置对话框
 		shutdownButton.addActionListener(event -> System.exit(0)); // 关闭程序
 		// 添加按钮到按钮面板
 		buttonPanel.add(openDirectoryButton);
+		buttonPanel.add(openLogButton);
 		buttonPanel.add(settingsButton);
 		buttonPanel.add(toggleServerButton);
 		buttonPanel.add(toggleClientButton);
@@ -896,11 +905,7 @@ public class HexSync extends JFrame {
 				String fileName = entry.getKey();
 				String MD5Value = entry.getValue();
 				// 检查 MD5 文件内容
-				if (requestedMD5.equals(MD5Value)) {
-					String filePath = serverSyncDirectory + SEPARATOR + fileName; // 获取对应的文件路径
-					LOGGER.log(Level.INFO, "根据MD5请求找到文件: " + filePath);
-					return filePath; // 找到并返回文件路径
-				}
+				if (requestedMD5.equals(MD5Value)) return serverSyncDirectory + SEPARATOR + fileName; // 找到并返回文件路径
 			}
 			return null; // 未找到文件
 		}
@@ -910,9 +915,8 @@ public class HexSync extends JFrame {
 			for (Map.Entry<String, String> entry : SYNC_MAP.entrySet()) { // 遍历同步文件列表
 				String fileName = entry.getKey(); // 获取文件名
 				String MD5Value = entry.getValue(); // 获取MD5值
-				if (MD5Value != null) {
-					responseBuilder.append(fileName).append("\n").append(MD5Value).append("\n"); // 每个文件名及对应的MD5值
-				} else LOGGER.log(Level.WARNING, "文件: " + fileName + " 未找到对应的MD5值");
+				if (MD5Value != null) responseBuilder.append(fileName).append("\n").append(MD5Value).append("\n");
+				else LOGGER.log(Level.WARNING, "文件: " + fileName + " 未找到对应的MD5值");
 			}
 			String response = responseBuilder.toString(); // 转换为字符串
 			byte[] responseBytes = response.getBytes(); // 转换为字节数组
