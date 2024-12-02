@@ -54,7 +54,7 @@ public class HexSync extends JFrame {
 	private static Thread clientThread; // 客户端线程
 	private static JButton toggleServerButton;
 	private static JButton toggleClientButton;
-	private static SystemTray tray;
+	private static SystemTray systemTray;
 	private static TrayIcon trayIcon;
 	public static void main(String[] args) {
 		initializeLogger();
@@ -577,8 +577,8 @@ public class HexSync extends JFrame {
 			}
 		});
 		// 创建系统托盘
-		if (SystemTray.isSupported() && tray == null) {
-			tray = SystemTray.getSystemTray();
+		if (SystemTray.isSupported() && systemTray == null) {
+			systemTray = SystemTray.getSystemTray();
 			trayIcon = new TrayIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource(serverRunning || clientRunning ? "IconO.png" : "IconI.png")), "HexSync");
 			trayIcon.setImageAutoSize(true); // 自动调整图标大小
 			trayIcon.setToolTip("HexSync控制面板");
@@ -586,7 +586,7 @@ public class HexSync extends JFrame {
 			trayIcon.setPopupMenu(popup);
 			trayIcon.addActionListener(event -> setVisible(true));
 			try {
-				tray.add(trayIcon); // 添加托盘图标
+				systemTray.add(trayIcon); // 添加托盘图标
 			} catch (AWTException error) {
 				LOGGER.log(Level.SEVERE, "添加托盘图标失败: " + error.getMessage());
 			}
@@ -702,9 +702,14 @@ public class HexSync extends JFrame {
 		clientPanel.add(clientAutoStartBox); // 将复选框添加到客户端设置面板
 		configSaveButton.addActionListener(event -> {
 			// 定义输入框数组及其对应的提示信息和选项卡索引
-			Object[][] inputs = {{serverPortField, "服务端端口", 0}, // 服务器端设置的索引
-					{uploadRateLimitField, "上传速率限制", 0}, {serverSyncDirectoryPathField, "服务端同步文件夹路径", 0}, {clientPortField, "客户端端口", 1}, // 客户端设置的索引
-					{clientAddressField, "服务器地址", 1}, {clientSyncDirectoryPathField, "客户端同步文件夹路径", 1}};
+			Object[][] inputs = {
+					{serverPortField, "服务端端口", 0}, // 服务器端设置的索引
+					{uploadRateLimitField, "上传速率限制", 0},
+					{serverSyncDirectoryPathField, "服务端同步文件夹路径", 0},
+					{clientPortField, "客户端端口", 1}, // 客户端设置的索引
+					{clientAddressField, "服务器地址", 1},
+					{clientSyncDirectoryPathField, "客户端同步文件夹路径", 1}
+			};
 			// 检查输入框是否为空
 			for (Object[] input : inputs) {
 				JTextField textField = (JTextField) input[0];
