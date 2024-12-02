@@ -102,8 +102,7 @@ public class HexSync extends JFrame {
 	}
 	// 初始化文件
 	private static void initializeFiles(boolean isServer) {
-		if (isServer) createDirectory(serverSyncDirectory); // 创建服务端同步文件夹
-		else createDirectory(clientSyncDirectory); // 创建客户端同步文件夹
+		createDirectory(isServer ? serverSyncDirectory : clientSyncDirectory); // 创建同步文件夹
 		createDirectory(HEX_SYNC_DIRECTORY); // 在当前目录下创建HexSync文件夹
 		loadConfig(); // 加载配置文件
 		loadSyncFiles(); // 读取同步文件夹下的所有文件,并存储文件名和MD5值到syncFiles中
@@ -113,7 +112,7 @@ public class HexSync extends JFrame {
 		File directory = new File(directoryPath);
 		if (directory.exists()) return;
 		boolean isCreated = directory.mkdirs(); // 创建文件夹并保存结果
-		LOGGER.log(isCreated ? Level.INFO : Level.SEVERE, (isCreated ? "文件夹已创建: " : "创建文件夹失败: ") + directory);
+		LOGGER.log(isCreated ? Level.INFO : Level.SEVERE, (isCreated ? "文件夹已创建: " : "无法创建文件夹: ") + directoryPath);
 	}
 	// 加载配置文件
 	private static void loadConfig() {
@@ -193,6 +192,36 @@ public class HexSync extends JFrame {
 		if (!address.startsWith("http://")) return "http://" + address; // 添加协议头
 		return address; // 原样返回
 	}
+	// 检查文件是否已存在并进行MD5校验
+	private static boolean checkFile(File localFile, String fileName) throws Exception {
+		if (!localFile.exists()) return false; // 文件不存在,直接返回
+		String serverMD5 = REQUEST_MAP.get(fileName); // 从服务端请求的文件列表中获取MD5值
+		if (serverMD5 == null) {
+			LOGGER.log(Level.WARNING, "缺少MD5,将重新下载: " + fileName);
+			return false;
+		}
+		// 计算本地文件的MD5值
+		String clientMD5 = calculateMD5(localFile);
+		if (!serverMD5.equals(clientMD5)) {
+			LOGGER.log(Level.WARNING, "校验失败: " + fileName);
+			return false;
+		}
+		LOGGER.log(Level.INFO, "校验通过: " + localFile.getPath());
+		return true;
+	}
+	// 计算文件的MD5校验码
+	private static String calculateMD5(File file) throws Exception {
+		MessageDigest MD5 = MessageDigest.getInstance("MD5"); // 获取MD5算法
+		try (FileInputStream fileInputStream = new FileInputStream(file)) {
+			byte[] byteBuffer = new byte[8192]; // 缓冲区大小
+			int bytesRead; // 读取字节数
+			while ((bytesRead = fileInputStream.read(byteBuffer)) != -1) MD5.update(byteBuffer, 0, bytesRead);
+		}
+		byte[] digest = MD5.digest(); // 获取MD5校验码
+		StringBuilder stringBuilder = new StringBuilder();
+		for (byte singleByte : digest) stringBuilder.append(String.format("%02x", singleByte)); // 转换为十六进制字符串
+		return stringBuilder.toString(); // 返回MD5校验码
+	}
 	// 从服务器请求文件名和MD5值列表
 	private static boolean requestList() {
 		String URL = addressFormat(serverAddress) + ":" + serverPort + "/list"; // 服务器地址
@@ -222,12 +251,9 @@ public class HexSync extends JFrame {
 		try (BufferedReader in = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()))) {
 			String fileName; // 临时变量,用于存储文件名
 			while ((fileName = in.readLine()) != null) { // 读取文件名
-				LOGGER.log(Level.INFO, "接收到文件名: " + fileName); // 记录接收到的文件名
 				String MD5Value = in.readLine(); // 读取对应的MD5值
-				if (MD5Value != null) {
-					LOGGER.log(Level.INFO, "接收到MD5值: " + MD5Value); // 记录接收到的MD5值
-					REQUEST_MAP.put(fileName.trim(), MD5Value.trim()); // 将文件名与MD5值放入Map
-				}
+				if (MD5Value == null) continue;
+				REQUEST_MAP.put(fileName.trim(), MD5Value.trim()); // 将文件名与MD5值放入Map
 			}
 		} catch (IOException error) {
 			LOGGER.log(Level.SEVERE, "读取响应时出错: " + error.getMessage());
@@ -241,23 +267,23 @@ public class HexSync extends JFrame {
 		// 记录整体文件列表
 		StringBuilder fileListBuilder = new StringBuilder("接收到文件列表:\n");
 		for (Map.Entry<String, String> entry : REQUEST_MAP.entrySet())
-			fileListBuilder.append("文件名: ").append(entry.getKey()).append(", MD5值: ").append(entry.getValue()).append("\n");
+			fileListBuilder.append(entry.getKey()).append("\n");
 		LOGGER.log(Level.INFO, fileListBuilder.toString());
 		return true;
 	}
 	// 从服务器下载文件
-	private static String downloadFile(String fileName, String filePath) {
+	private static String downloadSingleFile(String fileName, String filePath) {
 		File clientFile = new File(filePath); // 目标本地文件
 		try {
 			if (checkFile(clientFile, fileName)) return "SKIP"; // 文件已存在且校验通过,跳过下载
-			URL requestURL = new URL(addressFormat(serverAddress) + ":" + clientPort + "/" + REQUEST_MAP.get(fileName)); // 创建URL
+			String serverMD5 = FILES_TO_DOWNLOAD_MAP.get(fileName);
+			URL requestURL = new URL(addressFormat(serverAddress) + ":" + clientPort + "/" + serverMD5); // 创建URL
 			httpURLConnection = (HttpURLConnection) requestURL.openConnection(); // 打开连接
 			httpURLConnection.setRequestMethod("GET"); // 设置请求方式为GET
-			// 检查HTTP响应码
 			int responseCode = httpURLConnection.getResponseCode();
 			if (responseCode != HttpURLConnection.HTTP_OK) {
 				LOGGER.log(Level.SEVERE, "下载失败,HTTP错误代码: " + responseCode);
-				return "FAIL"; // 返回失败
+				return "FAIL";
 			}
 			// 下载成功,读取输入流并写入本地文件
 			try (InputStream inputStream = httpURLConnection.getInputStream(); FileOutputStream outputStream = new FileOutputStream(filePath)) {
@@ -266,61 +292,25 @@ public class HexSync extends JFrame {
 				while ((bytesRead = inputStream.read(buffer)) != -1) outputStream.write(buffer, 0, bytesRead); // 写入文件
 			}
 			// 进行MD5校验
-			return validateMD5(clientFile, fileName);
+			if (serverMD5 == null) {
+				LOGGER.log(Level.SEVERE, "无法获取服务器的MD5值: " + fileName);
+				return "FAIL";
+			}
+			String clientMD5;
+			try {
+				clientMD5 = calculateMD5(clientFile);
+			} catch (Exception error) {
+				LOGGER.log(Level.SEVERE, "计算本地文件的MD5值时出错: " + error.getMessage());
+				return "FAIL";
+			}
+			if (serverMD5.equals(clientMD5)) return "OK"; // 下载成功且MD5校验通过
+			LOGGER.log(Level.SEVERE, "MD5校验失败,文件可能已损坏: " + fileName);
+			if (!clientFile.delete()) LOGGER.log(Level.SEVERE, "无法删除损坏的文件: " + clientFile.getPath());
+			return "FAIL";
 		} catch (Exception error) {
 			LOGGER.log(Level.SEVERE, "连接异常: " + error.getMessage());
-			return "FAIL"; // 返回失败
+			return "FAIL";
 		}
-	}
-	// 检查文件是否已存在并进行MD5校验
-	private static boolean checkFile(File localFile, String fileName) throws Exception {
-		if (!localFile.exists()) return false; // 文件不存在,直接返回
-		// 获取同步文件中的MD5值
-		String serverMD5 = REQUEST_MAP.get(fileName); // 从服务端请求的文件列表中获取MD5值
-		if (serverMD5 == null) {
-			LOGGER.log(Level.WARNING, "缺少MD5,将重新下载: " + fileName);
-			return false; // MD5值不存在,直接返回
-		}
-		// 计算本地文件的MD5值
-		String clientMD5 = calculateMD5(localFile);
-		if (!serverMD5.equals(clientMD5)) {
-			LOGGER.log(Level.WARNING, "MD5校验失败,准备重新下载: " + fileName);
-			return false; // MD5校验失败,直接返回
-		}
-		LOGGER.log(Level.INFO, "校验通过,跳过下载: " + localFile.getPath());
-		return true; // MD5校验通过,返回成功
-	}
-	// 验证MD5校验
-	private static String validateMD5(File localFile, String fileName) {
-		String serverMD5 = FILES_TO_DOWNLOAD_MAP.get(fileName); // 从请求的文件列表中获取MD5值
-		if (serverMD5 == null) {
-			LOGGER.log(Level.SEVERE, "无法获取服务器的MD5值: " + fileName);
-			return "FAIL"; // 无法获取MD5值,返回失败
-		}
-		String clientMD5;
-		try {
-			clientMD5 = calculateMD5(localFile);
-		} catch (Exception error) {
-			LOGGER.log(Level.SEVERE, "计算本地文件的MD5值时出错: " + error.getMessage());
-			return "FAIL"; // 计算MD5值失败,返回失败
-		}
-		if (serverMD5.equals(clientMD5)) return "OK"; // 下载成功且MD5校验通过
-		LOGGER.log(Level.SEVERE, "MD5校验失败,文件可能已损坏: " + fileName);
-		if (!localFile.delete()) LOGGER.log(Level.SEVERE, "无法删除损坏的文件: " + localFile.getPath());
-		return "FAIL"; // 返回失败,表明文件可能已损坏
-	}
-	// 计算文件的MD5校验码
-	private static String calculateMD5(File file) throws Exception {
-		MessageDigest MD5 = MessageDigest.getInstance("MD5"); // 获取MD5算法
-		try (FileInputStream fileInputStream = new FileInputStream(file)) {
-			byte[] byteBuffer = new byte[8192]; // 缓冲区大小
-			int bytesRead; // 读取字节数
-			while ((bytesRead = fileInputStream.read(byteBuffer)) != -1) MD5.update(byteBuffer, 0, bytesRead);
-		}
-		byte[] digest = MD5.digest(); // 获取MD5校验码
-		StringBuilder stringBuilder = new StringBuilder();
-		for (byte singleByte : digest) stringBuilder.append(String.format("%02x", singleByte)); // 转换为十六进制字符串
-		return stringBuilder.toString(); // 返回MD5校验码
 	}
 	// 保存配置的方法
 	private static void saveConfig() {
@@ -365,8 +355,7 @@ public class HexSync extends JFrame {
 				outputStream.write(responseBytes, totalBytesSent, bytesToSend); // 写入数据
 				totalBytesSent += bytesToSend; // 更新已发送总字节数
 				// 控制上传速率
-				long elapsedTime = System.currentTimeMillis() - startTime; // 计算经过的时间
-				long expectedBytesSent = (elapsedTime * uploadRateInBytes) / 1000; // 计算期望已发送字节数
+				long expectedBytesSent = (System.currentTimeMillis() - startTime * uploadRateInBytes) / 1000; // 计算期望已发送字节数
 				if (totalBytesSent > expectedBytesSent) {
 					long sleepTime = (totalBytesSent - expectedBytesSent) * 1000 / uploadRateInBytes; // 计算需要等待的时间
 					Thread.sleep(sleepTime); // 暂停
@@ -398,12 +387,12 @@ public class HexSync extends JFrame {
 		}
 	}
 	private void startServer() {
-		initializeFiles(true); // 初始化文件
-		if (SYNC_MAP.isEmpty()) {
-			LOGGER.log(Level.WARNING, "没有同步文件,无法启动服务器");
-			return;
-		}
 		serverThread = new Thread(() -> {
+			initializeFiles(true);
+			if (SYNC_MAP.isEmpty()) {
+				LOGGER.log(Level.WARNING, "没有同步文件,无法启动服务器");
+				return;
+			}
 			try {
 				httpServer = HttpServer.create(new InetSocketAddress(serverPort), 0);
 				httpServer.createContext("/", new HttpRequestHandler());
@@ -427,9 +416,9 @@ public class HexSync extends JFrame {
 		toggleClientButton.setEnabled(true);
 	}
 	private void stopClient() {
-		clientRunning = false;
 		try {
 			toggleClientButton.setEnabled(false);
+			clientRunning = false;
 			httpURLConnection.disconnect();
 			clientThread.stop(); // 停止线程
 		} finally {
@@ -442,60 +431,76 @@ public class HexSync extends JFrame {
 		}
 	}
 	private void startClient() {
-		initializeFiles(false); // 初始化文件
 		clientThread = new Thread(() -> {
+			initializeFiles(false);
 			clientRunning = true;
 			LOGGER.log(Level.INFO, "HexSyncClient正在运行...服务器地址为: " + serverAddress + " 端口号为: " + serverPort);
 			toggleClientButton.setText("停止客户端");
-			if (!requestList()) stopClient();
-			LOGGER.log(Level.INFO, "获取到 " + REQUEST_MAP.size() + " 个文件");
-			// 构建需要下载的文件列表
-			for (Map.Entry<String, String> entry : REQUEST_MAP.entrySet()) {
-				String fileName = entry.getKey(); // 文件名
-				String MD5Value = entry.getValue(); // MD5值
-				if (fileName.isEmpty() || MD5Value.isEmpty()) continue; // 忽略空行
-				String clientPath = clientSyncDirectory + SEPARATOR + fileName; // 设置下载路径
-				File clientFile = new File(clientPath); // 目标本地文件
-				try {
-					boolean fileCheckResult = checkFile(clientFile, fileName);
-					if (fileCheckResult) continue; // 如果文件存在且校验通过，跳过下载
-				} catch (Exception error) {
-					LOGGER.log(Level.SEVERE, "检查文件时出错: " + error.getMessage());
-					isErrorDownload = true; // 记录错误
-				}
-				FILES_TO_DOWNLOAD_MAP.put(fileName, MD5Value); // 添加到需要下载的文件列表
-			}
-			if (FILES_TO_DOWNLOAD_MAP.isEmpty()) {
-				LOGGER.log(Level.INFO, "没有需要下载的文件");
+			// 如果请求列表失败，停止客户端
+			if (!requestList()) {
 				stopClient();
 				return;
 			}
-			LOGGER.log(Level.INFO, "需要下载文件: " + FILES_TO_DOWNLOAD_MAP);
-			int downloadedCount = 0;
-			int filesToDownloadMapSize = FILES_TO_DOWNLOAD_MAP.size();
-			for (Map.Entry<String, String> entry : FILES_TO_DOWNLOAD_MAP.entrySet()) {
-				String fileName = entry.getKey(); // 文件名
-				String filePath = clientSyncDirectory + SEPARATOR + fileName; // 设置下载路径
-				switch (downloadFile(fileName, filePath)) {
-					case "OK":
-						downloadedCount++; // 成功下载时增加计数
-						LOGGER.log(Level.INFO, "已下载文件: [" + downloadedCount + "/" + filesToDownloadMapSize + "] " + filePath);
-						break;
-					case "SKIP":
-						LOGGER.log(Level.INFO, "跳过已有文件: " + filePath);
-						break;
-					default:
-						LOGGER.log(Level.SEVERE, "下载文件失败: " + filePath);
-						isErrorDownload = true; // 记录下载失败
-						break;
-				}
-			}
+			LOGGER.log(Level.INFO, "获取到 " + REQUEST_MAP.size() + " 个文件");
+			// 构建需要下载的文件列表
+			populateFilesToDownloadMap();
+			// 下载文件
+			downloadAllFiles();
 			// 下载完成后的日志记录
-			LOGGER.log(Level.INFO, "下载完成: [" + downloadedCount + "/" + filesToDownloadMapSize + "]");
 			stopClient();
 		});
 		clientThread.start();
 		toggleIcon();
+	}
+	// 构建需要下载的文件列表
+	private void populateFilesToDownloadMap() {
+		for (Map.Entry<String, String> entry : REQUEST_MAP.entrySet()) {
+			String fileName = entry.getKey(); // 文件名
+			String MD5Value = entry.getValue(); // MD5值
+			// 忽略空行
+			if (fileName.isEmpty() || MD5Value.isEmpty()) continue;
+			String clientPath = clientSyncDirectory + SEPARATOR + fileName; // 设置下载路径
+			File clientFile = new File(clientPath); // 目标本地文件
+			try {
+				boolean fileCheckResult = checkFile(clientFile, fileName);
+				if (fileCheckResult) continue; // 如果文件存在且校验通过，跳过下载
+			} catch (Exception error) {
+				LOGGER.log(Level.SEVERE, "检查文件时出错: " + error.getMessage());
+				isErrorDownload = true; // 记录错误
+			}
+			FILES_TO_DOWNLOAD_MAP.put(fileName, MD5Value); // 添加到需要下载的文件列表
+		}
+	}
+	// 下载所有文件
+	private void downloadAllFiles() {
+		if (FILES_TO_DOWNLOAD_MAP.isEmpty()) {
+			LOGGER.log(Level.INFO, "没有需要下载的文件");
+			return;
+		}
+		StringBuilder fileListBuilder = new StringBuilder("需要下载文件:\n");
+		for (Map.Entry<String, String> entry : FILES_TO_DOWNLOAD_MAP.entrySet())
+			fileListBuilder.append(entry.getKey()).append("\n");
+		LOGGER.log(Level.INFO, fileListBuilder.toString());
+		int downloadedCount = 0;
+		int filesToDownloadMapSize = FILES_TO_DOWNLOAD_MAP.size();
+		for (Map.Entry<String, String> entry : FILES_TO_DOWNLOAD_MAP.entrySet()) {
+			String fileName = entry.getKey(); // 文件名
+			String filePath = clientSyncDirectory + SEPARATOR + fileName; // 设置下载路径
+			switch (downloadSingleFile(fileName, filePath)) { // 这里调用下载单个文件的方法
+				case "OK":
+					downloadedCount++; // 成功下载时增加计数
+					LOGGER.log(Level.INFO, "已下载文件: [" + downloadedCount + "/" + filesToDownloadMapSize + "] " + filePath);
+					break;
+				case "SKIP":
+					LOGGER.log(Level.INFO, "跳过已有文件: " + filePath);
+					break;
+				default:
+					LOGGER.log(Level.SEVERE, "下载文件失败: " + filePath);
+					isErrorDownload = true; // 记录下载失败
+					break;
+			}
+		}
+		LOGGER.log(Level.INFO, "下载完成: [" + downloadedCount + "/" + filesToDownloadMapSize + "]");
 	}
 	// 创建用户界面
 	private void createUI() {
@@ -866,9 +871,7 @@ public class HexSync extends JFrame {
 				String requestedMD5 = requestURI.substring(1);
 				// 检查请求的 MD5 内容是否在 SYNC_MAP 中
 				if (!SYNC_MAP.containsValue(requestedMD5)) {
-					String response = "未找到对应的文件";
-					byte[] responseBytes = response.getBytes(); // 转换为字节数组
-					sendResponse(exchange, responseBytes, HttpURLConnection.HTTP_NOT_FOUND); // 发送响应
+					sendResponse(exchange, "未找到对应的文件".getBytes(), HttpURLConnection.HTTP_NOT_FOUND);
 					return;
 				}
 				// 查找对应 MD5 值的文件
@@ -882,20 +885,12 @@ public class HexSync extends JFrame {
 				}
 				if (filePath != null) {
 					File file = new File(filePath);
-					if (file.exists() && file.isFile()) {
-						byte[] responseBytes = Files.readAllBytes(file.toPath()); // 读取文件内容
-						sendResponse(exchange, responseBytes, HttpURLConnection.HTTP_OK); // 发送响应
-					} else {
-						String response = "文件不存在: " + filePath;
-						byte[] responseBytes = response.getBytes(); // 转换为字节数组
-						sendResponse(exchange, responseBytes, HttpURLConnection.HTTP_NOT_FOUND); // 发送响应
-					}
+					if (file.exists() && file.isFile())
+						sendResponse(exchange, Files.readAllBytes(file.toPath()), HttpURLConnection.HTTP_OK);
+					else
+						sendResponse(exchange, ("文件不存在: " + filePath).getBytes(), HttpURLConnection.HTTP_NOT_FOUND);
 					LOGGER.log(Level.INFO, "已发送文件: " + filePath);
-				} else {
-					String response = "未找到对应的文件";
-					byte[] responseBytes = response.getBytes(); // 转换为字节数组
-					sendResponse(exchange, responseBytes, HttpURLConnection.HTTP_NOT_FOUND); // 发送响应
-				}
+				} else sendResponse(exchange, "未找到对应的文件".getBytes(), HttpURLConnection.HTTP_NOT_FOUND);
 			}
 		}
 		// 发送文件名和MD5值列表
@@ -904,13 +899,10 @@ public class HexSync extends JFrame {
 			for (Map.Entry<String, String> entry : SYNC_MAP.entrySet()) { // 遍历同步文件列表
 				String fileName = entry.getKey(); // 获取文件名
 				String MD5Value = entry.getValue(); // 获取MD5值
-				if (MD5Value != null)
-					responseBuilder.append(fileName).append(lineSeparator).append(MD5Value).append(lineSeparator);
-				else LOGGER.log(Level.WARNING, "文件: " + fileName + " 未找到对应的MD5值");
+				if (MD5Value == null) LOGGER.log(Level.WARNING, "文件: " + fileName + " 未找到对应的MD5值");
+				else responseBuilder.append(fileName).append(lineSeparator).append(MD5Value).append(lineSeparator);
 			}
-			String response = responseBuilder.toString(); // 转换为字符串
-			byte[] responseBytes = response.getBytes(); // 转换为字节数组
-			sendResponse(exchange, responseBytes, HttpURLConnection.HTTP_OK); // 发送响应
+			sendResponse(exchange, responseBuilder.toString().getBytes(), HttpURLConnection.HTTP_OK);
 			LOGGER.log(Level.INFO, "已发送文件列表");
 		}
 	}
