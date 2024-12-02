@@ -57,31 +57,33 @@ public class HexSync extends JFrame {
 	private static SystemTray tray;
 	private static TrayIcon trayIcon;
 	public static void main(String[] args) {
-		createDirectory(HEX_SYNC_DIRECTORY);
 		initializeLogger();
 		loadConfig();
 		initializeUI();
 	}
 	// 初始化日志记录器
 	private static void initializeLogger() {
-		// 仅当日志文件不为空时才清空日志文件
-		if (new File(LOG_FILE).length() > 0) {
-			try (BufferedWriter writer = new BufferedWriter(new FileWriter(LOG_FILE))) {
-				writer.write(""); // 清空内容
-				LOGGER.log(Level.INFO, "已清空日志文件: " + LOG_FILE);
-			} catch (IOException error) {
-				LOGGER.log(Level.SEVERE, "清空日志文件时出错: " + error.getMessage());
+		new Thread(() -> {
+			createDirectory(HEX_SYNC_DIRECTORY);
+			// 仅当日志文件不为空时才清空日志文件
+			if (new File(LOG_FILE).length() > 0) {
+				try (BufferedWriter writer = new BufferedWriter(new FileWriter(LOG_FILE))) {
+					writer.write(""); // 清空内容
+					LOGGER.log(Level.INFO, "已清空日志文件: " + LOG_FILE);
+				} catch (IOException error) {
+					LOGGER.log(Level.SEVERE, "清空日志文件时出错: " + error.getMessage());
+				}
 			}
-		}
-		// 创建日志文件处理器
-		try {
-			FileHandler fileHandler = new FileHandler(LOG_FILE, true); // 创建FileHandler,将日志输出到指定文件
-			fileHandler.setFormatter(new SingleLineFormatter()); // 设置日志格式化器,使用自定义的单行格式化器
-			LOGGER.addHandler(fileHandler); // 将FileHandler添加到日志记录器,以开始记录日志信息
-			LOGGER.setLevel(Level.INFO);
-		} catch (IOException error) {
-			LOGGER.log(Level.SEVERE, "创建日志文件处理器时出错: " + error.getMessage());
-		}
+			// 创建日志文件处理器
+			try {
+				FileHandler fileHandler = new FileHandler(LOG_FILE, true); // 创建FileHandler,将日志输出到指定文件
+				fileHandler.setFormatter(new SingleLineFormatter()); // 设置日志格式化器
+				LOGGER.addHandler(fileHandler); // 将FileHandler添加到日志记录器
+				LOGGER.setLevel(Level.INFO);
+			} catch (IOException error) {
+				LOGGER.log(Level.SEVERE, "创建日志文件处理器时出错: " + error.getMessage());
+			}
+		}).start();
 	}
 	// 初始化UI
 	private static void initializeUI() {
@@ -116,58 +118,61 @@ public class HexSync extends JFrame {
 	}
 	// 加载配置文件
 	private static void loadConfig() {
-		File configFile = new File(CONFIG_FILE_PATH);
-		if (!configFile.exists()) return;
-		try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
-			String line; // 临时变量,存储一行
-			while ((line = reader.readLine()) != null) {
-				line = line.trim(); // 去除行首尾空格
-				if (line.isEmpty() || line.startsWith("#")) continue; // 忽略空行和注释
-				String[] parts = line.split("="); // 按等号分割
-				if (parts.length != 2) {
-					LOGGER.log(Level.WARNING, "配置文件中行格式不正确,跳过: " + line);
-					continue; // 跳过格式错误的行
+		new Thread(() -> {
+			File configFile = new File(CONFIG_FILE_PATH);
+			if (!configFile.exists()) return;
+			try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
+				String line; // 临时变量,存储一行
+				while ((line = reader.readLine()) != null) {
+					line = line.trim(); // 去除行首尾空格
+					if (line.isEmpty() || line.startsWith("#")) continue; // 忽略空行和注释
+					String[] parts = line.split("="); // 按等号分割
+					if (parts.length != 2) {
+						LOGGER.log(Level.WARNING, "配置文件中行格式不正确,跳过: " + line);
+						continue; // 跳过格式错误的行
+					}
+					String head = parts[0].trim();
+					String tail = parts[1].trim();
+					switch (head) {
+						case SERVER_AUTO_START_CONFIG:
+							serverAutoStart = Boolean.parseBoolean(tail);
+							break;
+						case SERVER_PORT_CONFIG:
+							serverPort = Integer.parseInt(tail);
+							break;
+						case UPLOAD_RATE_LIMIT_CONFIG:
+							String[] limitParts = tail.split(" "); // 按空格分割以获取数值和单位
+							if (limitParts.length != 2)
+								LOGGER.log(Level.WARNING, "上传速率限制格式不正确,跳过: " + line);
+							else {
+								uploadRateLimit = Long.parseLong(limitParts[0]);
+								uploadRateLimitUnit = limitParts[1];
+							}
+							break;
+						case SERVER_SYNC_DIRECTORY_CONFIG:
+							serverSyncDirectory = tail;
+							break;
+						case CLIENT_AUTO_START_CONFIG:
+							clientAutoStart = Boolean.parseBoolean(tail);
+							break;
+						case CLIENT_PORT_CONFIG:
+							clientPort = Integer.parseInt(tail);
+							break;
+						case SERVER_ADDRESS_CONFIG:
+							serverAddress = tail;
+							break;
+						case CLIENT_SYNC_DIRECTORY_CONFIG:
+							clientSyncDirectory = tail;
+							break;
+						default:
+							LOGGER.log(Level.WARNING, "未知的配置项,跳过: " + head);
+							break;
+					}
 				}
-				String head = parts[0].trim();
-				String tail = parts[1].trim();
-				switch (head) {
-					case SERVER_AUTO_START_CONFIG:
-						serverAutoStart = Boolean.parseBoolean(tail);
-						break;
-					case SERVER_PORT_CONFIG:
-						serverPort = Integer.parseInt(tail);
-						break;
-					case UPLOAD_RATE_LIMIT_CONFIG:
-						String[] limitParts = tail.split(" "); // 按空格分割以获取数值和单位
-						if (limitParts.length != 2) LOGGER.log(Level.WARNING, "上传速率限制格式不正确,跳过: " + line);
-						else {
-							uploadRateLimit = Long.parseLong(limitParts[0]);
-							uploadRateLimitUnit = limitParts[1];
-						}
-						break;
-					case SERVER_SYNC_DIRECTORY_CONFIG:
-						serverSyncDirectory = tail;
-						break;
-					case CLIENT_AUTO_START_CONFIG:
-						clientAutoStart = Boolean.parseBoolean(tail);
-						break;
-					case CLIENT_PORT_CONFIG:
-						clientPort = Integer.parseInt(tail);
-						break;
-					case SERVER_ADDRESS_CONFIG:
-						serverAddress = tail;
-						break;
-					case CLIENT_SYNC_DIRECTORY_CONFIG:
-						clientSyncDirectory = tail;
-						break;
-					default:
-						LOGGER.log(Level.WARNING, "未知的配置项,跳过: " + head);
-						break;
-				}
+			} catch (IOException error) {
+				LOGGER.log(Level.SEVERE, "读取配置文件时出错: " + error.getMessage());
 			}
-		} catch (IOException error) {
-			LOGGER.log(Level.SEVERE, "读取配置文件时出错: " + error.getMessage());
-		}
+		}).start();
 	}
 	// 读取目标目录下的所有文件,将文件名和MD5值存储到syncFiles中
 	private static void loadSyncFiles() {
