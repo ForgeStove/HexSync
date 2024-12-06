@@ -3,7 +3,6 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 import javax.swing.*;
-import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -14,18 +13,17 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.security.MessageDigest;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.*;
 public class HexSync extends JFrame {
-	private static final Logger LOGGER = Logger.getLogger("HexSync"); // 日志记录器
-	private static final Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize(); // 获取屏幕大小
+	private static final String HEX_SYNC_NAME = HexSync.class.getName(); // 程序名称
+	private static final Logger LOGGER = Logger.getLogger(HEX_SYNC_NAME); // 日志记录器
 	private static final Map<String, String> SERVER_MAP = new HashMap<>(); // 存储服务端文件名和对应的SHA512数据
 	private static final String SEPARATOR = File.separator; // 文件分隔符
 	private static final String LINE_SEPARATOR = System.lineSeparator(); // 换行符
-	private static final String HEX_SYNC_DIRECTORY = "HexSync"; // 文件夹目录
-	private static final String LOG_FILE = HEX_SYNC_DIRECTORY + SEPARATOR + "HexSync.log"; // 日志文件路径
-	private static final String CONFIG_FILE_PATH = HEX_SYNC_DIRECTORY + SEPARATOR + "HexSyncConfig.properties"; // 配置文件路径
+	private static final String HEX_SYNC_DIRECTORY = HEX_SYNC_NAME; // 文件夹目录
+	private static final String LOG_FILE = HEX_SYNC_DIRECTORY + SEPARATOR + HEX_SYNC_NAME + ".log"; // 日志文件路径
+	private static final String CONFIG_FILE_PATH = HEX_SYNC_DIRECTORY + SEPARATOR + HEX_SYNC_NAME + "Config.properties"; // 配置文件路径
 	private static final String SERVER_AUTO_START_CONFIG = "ServerAutoStart"; // 服务端自动启动配置项
 	private static final String SERVER_HTTP_PORT_CONFIG = "ServerHTTPPort"; // 服务端端口配置项
 	private static final String SERVER_SYNC_DIRECTORY_CONFIG = "ServerSyncDirectoryPath"; // 服务端同步文件夹路径配置项
@@ -34,30 +32,29 @@ public class HexSync extends JFrame {
 	private static final String SERVER_ADDRESS_CONFIG = "ServerAddress"; // 服务器地址配置项
 	private static final String CLIENT_SYNC_DIRECTORY_CONFIG = "ClientSyncDirectoryPath"; // 客户端同步文件夹路径配置项
 	private static final String CLIENT_AUTO_START_CONFIG = "clientAutoStart"; // 客户端自动启动配置项
-	private static String clientSyncDirectory = "mods"; // 客户端同步文件夹目录，默认值"mods"
 	private static String serverSyncDirectory = "mods"; // 服务端同步文件夹目录，默认值"mods"
+	private static String clientSyncDirectory = "mods"; // 客户端同步文件夹目录，默认值"mods"
 	private static String serverUploadRateLimitUnit = "MB/s"; // 上传速率限制单位，默认MB/s
-	private static String serverAddress = "localhost"; // 服务器地址
-	private static boolean isErrorDownload = false; // 客户端下载文件时是否发生错误，影响客户端是否自动关闭
-	private static boolean serverAutoStart = false; // 服务端自动启动，默认不自动启动
-	private static boolean clientAutoStart = false; // 客户端自动启动，默认不自动启动
-	private static boolean serverRunning = false; // 服务器运行状态
-	private static boolean clientRunning = false; // 客户端运行状态
+	private static String serverAddress = "localhost"; // 服务器地址闭
+	private static boolean headless; // 是否无头模式
+	private static boolean isErrorDownload; // 客户端下载文件时是否发生错误，影响客户端是否自动关闭
+	private static boolean serverAutoStart; // 服务端自动启动，默认不自动启动
+	private static boolean clientAutoStart; // 客户端自动启动，默认不自动启动
 	private static int serverHTTPPort = 65535;// HTTP 端口，默认值65535
 	private static int clientHTTPPort = 65535; // 客户端 HTTP 端口，默认值65535
-	private static long serverUploadRateLimit = 0; // 上传速率限制值，默认不限速
+	private static long serverUploadRateLimit = 1; // 上传速率限制值，默认限速1MB/s
 	private static HttpServer HTTPServer; // 用于存储服务器实例
 	private static HttpURLConnection HTTPURLConnection; // 用于存储HTTP连接实例
 	private static Thread serverHTTPThread; // 服务器线程
 	private static Thread clientHTTPThread; // 客户端线程
-	private static JButton toggleServerButton;
-	private static JButton toggleClientButton;
-	private static SystemTray systemTray;
-	private static TrayIcon trayIcon;
+	private static JButton toggleServerButton; // 服务端开关按钮
+	private static JButton toggleClientButton; // 客户端开关按钮
+	private static SystemTray systemTray; // 系统托盘
+	private static TrayIcon trayIcon; // 托盘图标
 	public static void main(String[] args) {
 		initializeLogger();
 		loadConfig();
-		initializeUI();
+		initializeUI(args);
 	}
 	// 初始化日志记录器
 	private static void initializeLogger() {
@@ -69,36 +66,39 @@ public class HexSync extends JFrame {
 				FileHandler fileHandler = new FileHandler(LOG_FILE, true);
 				fileHandler.setFormatter(new SingleLineFormatter()); // 设置日志格式化器
 				LOGGER.addHandler(fileHandler); // 将FileHandler添加到日志记录器
-				LOGGER.setLevel(Level.INFO);
 			} catch (IOException | SecurityException error) {
 				LOGGER.log(Level.SEVERE, "初始化日志时出错: " + error.getMessage(), error);
 			}
 		}).start();
 	}
 	// 初始化UI
-	private static void initializeUI() {
-		// 外观初始化
-		String lookAndFeel = UIManager.getSystemLookAndFeelClassName();
-		try {
-			UIManager.setLookAndFeel(lookAndFeel);
-		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
-				 UnsupportedLookAndFeelException error) {
-			LOGGER.log(Level.SEVERE, "设置外观失败: " + error.getMessage());
+	private static void initializeUI(String[] args) {
+		HexSync HexSync = new HexSync();
+		// 无头模式
+		headless = GraphicsEnvironment.isHeadless() || Arrays.asList(args).contains("-headless");
+		if (headless) HexSync.headlessUI();
+		else {
+			// 外观初始化
+			String lookAndFeel = UIManager.getSystemLookAndFeelClassName();
+			try {
+				UIManager.setLookAndFeel(lookAndFeel);
+			} catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
+					 UnsupportedLookAndFeelException error) {
+				LOGGER.log(Level.SEVERE, "设置外观失败: " + error.getMessage());
+			}
+			// 创建窗口
+			SwingUtilities.invokeLater(() -> {
+				HexSync.createUI();
+				HexSync.setVisible(!serverAutoStart);
+			});
 		}
-		// 创建窗口
-		SwingUtilities.invokeLater(() -> {
-			HexSync HexSync = new HexSync();
-			HexSync.createUI();
-			HexSync.setVisible(!serverAutoStart);
-		});
 	}
 	// 初始化文件
 	private static void initializeFiles(boolean isServer) {
 		createDirectory(isServer ? serverSyncDirectory : clientSyncDirectory); // 创建同步文件夹
 		createDirectory(HEX_SYNC_DIRECTORY); // 在当前目录下创建HexSync文件夹
 		loadConfig(); // 加载配置文件
-		if (!isServer) return; // 客户端不需要初始化文件
-		// 读取同步文件夹下的所有文件,并存储文件名和SHA512值到syncFiles中
+		if (!isServer) return;
 		SERVER_MAP.clear(); // 清空同步文件列表
 		File syncDirectory = new File(serverSyncDirectory); // 获取同步文件夹
 		File[] files = syncDirectory.listFiles(); // 获取同步文件夹下的所有文件
@@ -126,9 +126,8 @@ public class HexSync extends JFrame {
 				String line;
 				while ((line = reader.readLine()) != null) processConfigLine(line.trim()); // 处理每一行配置
 			} catch (IOException error) {
-				LOGGER.log(Level.SEVERE, "读取配置文件时出错: " + error.getMessage());
+				LOGGER.log(Level.SEVERE, "配置读取失败: " + error.getMessage());
 			}
-			LOGGER.log(Level.INFO, "配置已加载");
 		}).start();
 	}
 	// 处理单行配置
@@ -183,21 +182,7 @@ public class HexSync extends JFrame {
 	// 地址格式化,转换为HTTP协议
 	private static String HTTPFormat(String address) {
 		if (address.endsWith("/")) address = address.substring(0, address.length() - 1); // 去除末尾的分隔符
-		return address.startsWith("https://") ? address.replace("https://", "http://") : "http://" + address; // 转换为HTTP协议
-	}
-	// 检查文件是否已存在并进行SHA512校验
-	private static boolean checkFile(File localFile, String fileName, Map<String, String> requestMap) {
-		if (!localFile.exists()) return false; // 文件不存在,直接返回
-		String serverSHA512 = requestMap.get(fileName); // 从服务端请求的文件列表中获取SHA512值
-		if (serverSHA512 == null) {
-			LOGGER.log(Level.WARNING, "缺少校验码,将重新下载: " + fileName);
-			return false;
-		}
-		// 计算本地文件的SHA512值
-		String clientSHA512 = calculateSHA512(localFile);
-		boolean isValid = serverSHA512.equals(clientSHA512);
-		LOGGER.log(isValid ? Level.INFO : Level.WARNING, isValid ? "校验通过: " + localFile.getPath() : "校验失败: " + fileName);
-		return isValid;
+		return address.startsWith("https://") ? address.replace("https://", "http://") : "http://" + address;
 	}
 	// 计算SHA512校验码
 	private static String calculateSHA512(File file) {
@@ -224,12 +209,13 @@ public class HexSync extends JFrame {
 			URL requestURL = new URL(URL); // 创建URL
 			int responseCode = getResponseCode(requestURL);
 			if (responseCode != HttpURLConnection.HTTP_OK) {
-				if (clientRunning) LOGGER.log(Level.SEVERE, "请求文件列表失败,HTTP错误代码: " + responseCode); // 记录错误日志
+				if (clientHTTPThread != null)
+					LOGGER.log(Level.SEVERE, "请求文件列表失败,HTTP错误代码: " + responseCode); // 记录错误日志
 				isErrorDownload = true;
 				return requestMap;
 			}
 		} catch (IOException error) {
-			if (clientRunning) LOGGER.log(Level.SEVERE, "连接服务器时出错: " + error.getMessage());
+			if (clientHTTPThread != null) LOGGER.log(Level.SEVERE, "连接服务器时出错: " + error.getMessage());
 			isErrorDownload = true;
 			return requestMap;
 		}
@@ -254,16 +240,15 @@ public class HexSync extends JFrame {
 		LOGGER.log(Level.INFO, fileListBuilder.toString());
 	}
 	// 从服务器下载文件
-	private static String downloadHTTPFile(String fileName, String filePath,Map<String, String> requestMap, Map<String, String> filesToDownloadMap) {
+	private static boolean downloadHTTPFile(String fileName, String filePath, Map<String, String> filesToDownloadMap) {
 		File clientFile = new File(filePath); // 目标本地文件
-		if (checkFile(clientFile, fileName, requestMap)) return "SKIP"; // 文件已存在且校验通过,跳过下载
 		try {
 			String serverSHA512 = filesToDownloadMap.get(fileName);
 			URL requestURL = new URL(HTTPFormat(serverAddress) + ":" + clientHTTPPort + "/download=" + serverSHA512); // 创建URL
 			int responseCode = getResponseCode(requestURL);
 			if (responseCode != HttpURLConnection.HTTP_OK) {
 				LOGGER.log(Level.SEVERE, "下载失败,HTTP错误代码: " + responseCode);
-				return "FAIL";
+				return false;
 			}
 			// 下载成功,读取输入流并写入本地文件
 			try (InputStream inputStream = HTTPURLConnection.getInputStream();
@@ -275,25 +260,22 @@ public class HexSync extends JFrame {
 			// 进行SHA512校验
 			if (serverSHA512 == null) {
 				LOGGER.log(Level.SEVERE, "无法获取服务器的SHA512值: " + fileName);
-				return "FAIL";
+				return false;
 			}
 			String clientSHA512 = calculateSHA512(clientFile);
-			if (serverSHA512.equals(clientSHA512)) return "OK"; // 下载成功且SHA512校验通过
+			if (serverSHA512.equals(clientSHA512)) return true; // 下载成功且SHA512校验通过
 			LOGGER.log(Level.SEVERE, "校验失败,文件可能已损坏: " + fileName);
 			if (!clientFile.delete()) LOGGER.log(Level.SEVERE, "无法删除损坏的文件: " + clientFile.getPath());
-			return "FAIL";
+			return false;
 		} catch (Exception error) {
 			LOGGER.log(Level.SEVERE, "下载文件时出错: " + error.getMessage());
-			return "FAIL";
+			return false;
 		}
 	}
 	private static int getResponseCode(URL requestURL) throws IOException {
 		HTTPURLConnection = (HttpURLConnection) requestURL.openConnection(); // 打开连接
 		HTTPURLConnection.setRequestMethod("GET"); // 设置请求方式为GET
-		LOGGER.log(Level.INFO, "发送请求中..."); // 记录请求发送日志
-		int responseCode = HTTPURLConnection.getResponseCode(); // 获取响应码
-		LOGGER.log(Level.INFO, "收到响应码: " + responseCode); // 记录响应码
-		return responseCode;
+		return HTTPURLConnection.getResponseCode(); // 返回响应码
 	}
 	// 保存配置的方法
 	private static void saveConfig() {
@@ -321,9 +303,9 @@ public class HexSync extends JFrame {
 		// 写入配置文件
 		try (BufferedWriter writer = new BufferedWriter(new FileWriter(configFile))) {
 			writer.write(configContent.toString());
-			LOGGER.log(Level.INFO, "保存配置成功: " + LINE_SEPARATOR + configContent);
+			LOGGER.log(Level.INFO, "配置已保存: " + LINE_SEPARATOR + configContent);
 		} catch (IOException error) {
-			LOGGER.log(Level.SEVERE, "保存配置失败: " + error.getMessage(), error);
+			LOGGER.log(Level.SEVERE, "配置保存失败: " + error.getMessage(), error);
 		}
 	}
 	// 发送响应
@@ -376,46 +358,199 @@ public class HexSync extends JFrame {
 				.findFirst() // 只返回第一个匹配的文件路径
 				.orElse(null); // 如果没有匹配，返回null
 	}
-	private static void logPanel(JPanel panel) {
-		JTextPane logTextPane = new JTextPane();
-		logTextPane.setEditable(false);
-		JScrollPane scrollPane = new JScrollPane(logTextPane);
-		panel.add(scrollPane, BorderLayout.CENTER);
-		JTextPaneLogHandler logHandler = new JTextPaneLogHandler(logTextPane);
-		logHandler.setFormatter(new SingleLineFormatter()); // 使用自定义格式化器
-		LOGGER.addHandler(logHandler);
+	// 检查文件是否已存在并进行SHA512校验
+	private static boolean checkFile(File localFile, String fileName, Map<String, String> requestMap) {
+		if (!localFile.exists()) return false; // 文件不存在,直接返回
+		String serverSHA512 = requestMap.get(fileName); // 从服务端请求的文件列表中获取SHA512值
+		if (serverSHA512 == null) return false;
+		return serverSHA512.equals(calculateSHA512(localFile));
 	}
-	private void toggleService(JButton toggleButton, boolean isRunning, Runnable startService, Runnable stopService) {
-		toggleButton.setEnabled(false);
-		(isRunning ? stopService : startService).run();
-		toggleButton.setEnabled(true);
+	private static void openLog() {
+		try {
+			String os = System.getProperty("os.name").toLowerCase();// 检查操作系统类型
+			String command;
+			if (os.contains("win")) {// Windows平台
+				command = "Get-Content -Path '" + LOG_FILE + "' -Encoding utf8 -Wait";
+				Runtime.getRuntime().exec(new String[]{"cmd.exe", "/c", "start", "powershell.exe", "-Command", command});
+			} else if (os.contains("mac")) {// macOS平台
+				command = "tail -f " + LOG_FILE;
+				Runtime.getRuntime().exec(new String[]{"/bin/bash", "-c", command});
+			} else if (os.contains("nix") || os.contains("nux")) {// Linux平台
+				command = "tail -f " + LOG_FILE;
+				Runtime.getRuntime().exec(new String[]{"/bin/bash", "-c", command});
+			} else LOGGER.log(Level.SEVERE, "不支持的操作系统: " + os);
+		} catch (IOException error) {
+			LOGGER.log(Level.SEVERE, "打开命令行读取日志文件时出错: " + error.getMessage());
+		}
 	}
-	private void toggleHTTPServer() {
-		toggleService(toggleServerButton, serverRunning, this::startHTTPServer, this::stopHTTPServer);
+	private void headlessUI() {
+		System.out.println("欢迎使用" + HEX_SYNC_NAME + "!");
+		System.out.println("输入 'help'/'h' 以获取帮助.");
+		if (serverAutoStart)
+			toggleService(toggleServerButton, this::startHTTPServer, this::stopHTTPServer, "启动服务端", "停止服务端");
+		if (clientAutoStart)
+			toggleService(toggleClientButton, this::startHTTPClient, this::stopHTTPClient, "启动客户端", "停止客户端");
+		Scanner scanner = new Scanner(System.in);
+		String command;
+		while (true) {
+			System.out.print(HEX_SYNC_NAME + "> ");
+			command = scanner.nextLine();
+			switch (command) {
+				case "toggleHTTPServer":
+				case "s":
+					if (serverHTTPThread == null) startHTTPServer();
+					else stopHTTPServer();
+					break;
+				case "toggleHTTPClient":
+				case "c":
+					if (clientHTTPThread == null) startHTTPClient();
+					else stopHTTPClient();
+					break;
+				case "settings":
+				case "set":
+					headlessSettings();
+					break;
+				case "help":
+				case "h":
+					System.out.println("'toggleHTTPServer'/'s': 切换服务端.");
+					System.out.println("'toggleHTTPClient'/'c': 切换客户端.");
+					System.out.println("'settings'/'set': 设置.");
+					System.out.println("'exit'/'e': 退出.");
+					break;
+				case "exit":
+				case "e":
+					System.exit(0);
+					break;
+				default:
+					System.out.println("无效命令,输入 'help'/'h' 以获取帮助.");
+			}
+		}
 	}
-	private void toggleHTTPClient() {
-		toggleService(toggleClientButton, clientRunning, this::startHTTPClient, this::stopHTTPClient);
+	private void headlessSettings() {
+		System.out.println("输入 'help'/'h' 以获取帮助.");
+		System.out.println("输入 'exit'/'e' 以保存并退出.");
+		Scanner scanner = new Scanner(System.in);
+		while (true) {
+			System.out.print(HEX_SYNC_NAME + "Settings> ");
+			String input;
+			switch (scanner.nextLine()) {
+				case "serverHTTPPort":
+				case "sp":
+					System.out.print("请输入服务端HTTP端口: ");
+					input = scanner.nextLine();
+					if (input.matches("\\d+")) {
+						serverHTTPPort = Integer.parseInt(input);
+						LOGGER.log(Level.INFO, "服务端HTTP端口已设置为: " + serverHTTPPort);
+					} else {
+						System.out.println("无效输入,请输入数字.");
+					}
+					break;
+				case "serverUploadRateLimit":
+				case "sl":
+					System.out.print("请输入服务端上传速率('B/s'/'KB/s'/'MB/s'/GB/s): ");
+					input = scanner.nextLine();
+					if (input.matches("\\d+(\\s+B/s|\\s+KB/s|\\s+MB/s|\\s+GB/s)")) {
+						String[] parts = input.split("\\s+");
+						serverUploadRateLimit = Long.parseLong(parts[0]);
+						serverUploadRateLimitUnit = parts[1];
+						LOGGER.log(Level.INFO, "服务端上传速率已设置为: " + serverUploadRateLimit + " " + serverUploadRateLimitUnit);
+					} else {
+						System.out.println("无效输入,请输入数字及单位.");
+					}
+					break;
+				case "serverSyncDirectory":
+				case "sd":
+					System.out.print("请输入服务端同步目录: ");
+					input = scanner.nextLine();
+					serverSyncDirectory = input;
+					LOGGER.log(Level.INFO, "服务端同步目录已设置为: " + serverSyncDirectory);
+					break;
+				case "serverAutoStart":
+				case "ss":
+					System.out.print("是否自动启动服务端? (y/n): ");
+					input = scanner.nextLine();
+					if (input.matches("[yYnN]")) {
+						serverAutoStart = input.matches("[yY]");
+						LOGGER.log(Level.INFO, "服务端自动启动已设置为: " + serverAutoStart);
+					} else {
+						System.out.println("无效输入,请输入'y'/'Y'或'n'/'N'.");
+					}
+					break;
+				case "clientHTTPPort":
+				case "cp":
+					System.out.print("请输入客户端HTTP端口: ");
+					input = scanner.nextLine();
+					if (input.matches("\\d+") && Integer.parseInt(input) > 0 && Integer.parseInt(input) < 65536) {
+						clientHTTPPort = Integer.parseInt(input);
+						LOGGER.log(Level.INFO, "客户端HTTP端口已设置为: " + clientHTTPPort);
+					} else {
+						System.out.println("无效输入,请输入数字.");
+					}
+					break;
+				case "serverAddress":
+				case "sa":
+					System.out.print("请输入服务端地址: ");
+					input = scanner.nextLine();
+					if (input.matches("\\d+\\.\\d+")) {
+						serverAddress = input;
+						LOGGER.log(Level.INFO, "服务端地址已设置为: " + serverAddress);
+					} else {
+						System.out.println("无效输入,请输入IP地址.");
+					}
+					break;
+				case "clientSyncDirectory":
+				case "cd":
+					System.out.print("请输入客户端同步目录: ");
+					input = scanner.nextLine();
+					clientSyncDirectory = input;
+					LOGGER.log(Level.INFO, "客户端同步目录已设置为: " + clientSyncDirectory);
+					break;
+				case "clientAutoStart":
+				case "cs":
+					System.out.print("是否自动启动客户端? (y/n): ");
+					input = scanner.nextLine();
+					if (input.matches("[yYnN]")) {
+						clientAutoStart = input.matches("[yY]");
+						LOGGER.log(Level.INFO, "客户端自动启动已设置为: " + clientAutoStart);
+					} else {
+						System.out.println("无效输入,请输入'y'/'Y'或'n'/'N'.");
+					}
+					break;
+				case "exit":
+				case "e":
+					saveConfig();
+					return;
+				case "help":
+				case "h":
+					System.out.println("'serverHTTPPort'/'sp': 设置服务端HTTP端口.");
+					System.out.println("'serverUploadRateLimit'/'sl': 设置服务端上传速率.");
+					System.out.println("'serverSyncDirectory'/'sd': 设置服务端同步目录.");
+					System.out.println("'serverAutoStart'/'ss': 设置服务端自动启动.");
+					System.out.println("'clientHTTPPort'/'cp': 设置客户端HTTP端口.");
+					System.out.println("'serverAddress'/'sa': 设置服务端地址.");
+					System.out.println("'clientSyncDirectory'/'cd': 设置客户端同步目录.");
+					System.out.println("'clientAutoStart'/'cs': 设置客户端自动启动.");
+					System.out.println("'exit'/'e': 保存并退出.");
+					break;
+				default:
+					System.out.println("无效命令,输入 'help'/'h' 以获取帮助.");
+			}
+		}
 	}
 	private void stopHTTPServer() {
-		LOGGER.log(Level.INFO, "SyncServer正在关闭...");
-		serverRunning = false;
-		try {
-			toggleServerButton.setEnabled(false);
-			HTTPServer.stop(0); // 停止服务
-		} finally {
-			serverHTTPThread = null; // 清除线程引用
-			LOGGER.log(Level.INFO, "HexSyncServer已关闭");
-			toggleServerButton.setText("启动服务端");
-			toggleServerButton.setEnabled(true);
-			toggleIcon();
-		}
+		LOGGER.log(Level.INFO, HEX_SYNC_NAME + "Server正在关闭...");
+		HTTPServer.stop(0); // 停止服务
+		serverHTTPThread.stop(); // 停止线程
+		serverHTTPThread = null; // 清除线程引用
+		LOGGER.log(Level.INFO, HEX_SYNC_NAME + "Server已关闭");
+		toggleIcon();
 	}
 	private void startHTTPServer() {
 		serverHTTPThread = new Thread(() -> {
-			LOGGER.log(Level.INFO, "SyncServer正在启动...");
+			LOGGER.log(Level.INFO, HEX_SYNC_NAME + "Server正在启动...");
 			initializeFiles(true);
 			if (SERVER_MAP.isEmpty()) {
-				LOGGER.log(Level.WARNING, "没有同步文件,无法启动服务器");
+				LOGGER.log(Level.WARNING, serverSyncDirectory + "无文件,无法启动服务器");
 				stopHTTPServer();
 				return;
 			}
@@ -427,66 +562,50 @@ public class HexSync extends JFrame {
 			} catch (IOException error) {
 				LOGGER.log(Level.SEVERE, "服务器异常: " + error.getMessage());
 			}
-			serverRunning = true;
-			toggleServerButton.setText("停止服务端");
-			toggleIcon();
-			LOGGER.log(Level.INFO, "HexSyncServer正在运行...端口号为: " + serverHTTPPort);
+			LOGGER.log(Level.INFO, HEX_SYNC_NAME + "Server正在运行...端口号为: " + serverHTTPPort);
 		});
 		serverHTTPThread.start();
 	}
 	private void stopHTTPClient() {
-		try {
-			toggleClientButton.setEnabled(false);
-			clientRunning = false;
-			HTTPURLConnection.disconnect();
-			clientHTTPThread.stop();
-		} finally {
-			clientHTTPThread = null;
-			LOGGER.log(Level.INFO, "HexSyncClient已关闭");
-			toggleClientButton.setText("启动客户端");
-			toggleClientButton.setEnabled(true);
-			toggleIcon();
-			if (clientAutoStart && !isErrorDownload) System.exit(0); // 自动退出
-		}
+		HTTPURLConnection.disconnect();
+		clientHTTPThread = null; // 清除线程引用
+		LOGGER.log(Level.INFO, HEX_SYNC_NAME + "Client已关闭");
+		if (clientAutoStart && !isErrorDownload) System.exit(0); // 自动退出
+		if (headless) return;
+		toggleClientButton.setText("启动客户端");
+		toggleIcon();
 	}
 	private void startHTTPClient() {
-		toggleClientButton.setText("停止客户端");
-		LOGGER.log(Level.INFO, "HexSyncClient正在启动...");
-		initializeFiles(false);
 		clientHTTPThread = new Thread(() -> {
-			clientRunning = true;
-			// 如果请求列表失败，停止客户端
+			LOGGER.log(Level.INFO, HEX_SYNC_NAME + "Client正在启动...");
+			initializeFiles(false);
 			Map<String, String> requestMap = requestHTTPList();
-			if (requestMap.isEmpty()) {
-				isErrorDownload = true;
-				stopHTTPClient();
-				return;
-			}
-			LOGGER.log(Level.INFO, "获取到 " + requestMap.size() + " 个文件");
-			Map<String, String> filesToDownloadMap = new HashMap<>(); // 用于存储需要下载的文件列表
-			populateFilesToDownloadMap(requestMap, filesToDownloadMap);
-			downloadHTTPFiles(requestMap,filesToDownloadMap);
+			if (!requestMap.isEmpty()) {
+				LOGGER.log(Level.INFO, "获取到 " + requestMap.size() + " 个文件");
+				Map<String, String> filesToDownloadMap = new HashMap<>(); // 用于存储需要下载的文件列表
+				populateFilesToDownloadMap(requestMap, filesToDownloadMap);
+				downloadHTTPFiles(filesToDownloadMap);
+			} else isErrorDownload = true;
 			stopHTTPClient();
 		});
 		clientHTTPThread.start();
-		toggleIcon();
 	}
 	// 构建需要下载的文件列表
 	private void populateFilesToDownloadMap(Map<String, String> requestMap, Map<String, String> filesToDownloadMap) {
-		requestMap.entrySet().stream()
-				.filter(entry -> isValidEntry(entry.getKey(), entry.getValue()))
-				.forEach(entry -> addToDownloadMap(entry.getKey(), entry.getValue(), requestMap, filesToDownloadMap));
-	}
-	private boolean isValidEntry(String fileName, String sha512Value) {
-		return !fileName.isEmpty() && !sha512Value.isEmpty();
-	}
-	private void addToDownloadMap(String fileName, String sha512Value,Map<String, String> requestMap, Map<String, String> filesToDownloadMap) {
-		File clientFile = new File(clientSyncDirectory + SEPARATOR + fileName); // 目标本地文件
-		if (checkFile(clientFile, fileName, requestMap)) return; // 如果文件存在且校验通过，跳过下载
-		filesToDownloadMap.put(fileName, sha512Value); // 添加到需要下载的文件列表
+		Map<String, Boolean> clientMap = new HashMap<>();
+		for (File file : Objects.requireNonNull(new File(clientSyncDirectory).listFiles()))
+			clientMap.put(calculateSHA512(file), true);
+		for (Map.Entry<String, String> entry : requestMap.entrySet()) {
+			String fileName = entry.getKey();
+			String SHA512Value = entry.getValue();
+			if (fileName.isEmpty() || SHA512Value.isEmpty()) return;
+			boolean contentExists = clientMap.containsKey(SHA512Value);
+			if (!contentExists && !checkFile(new File(clientSyncDirectory + SEPARATOR + fileName), fileName, requestMap))
+				filesToDownloadMap.put(fileName, SHA512Value);
+		}
 	}
 	// 下载所有文件
-	private void downloadHTTPFiles(Map<String, String> requestMap,Map<String, String> filesToDownloadMap) {
+	private void downloadHTTPFiles(Map<String, String> filesToDownloadMap) {
 		if (filesToDownloadMap.isEmpty()) {
 			LOGGER.log(Level.INFO, "没有需要下载的文件");
 			return;
@@ -498,25 +617,20 @@ public class HexSync extends JFrame {
 		for (Map.Entry<String, String> entry : filesToDownloadMap.entrySet()) {
 			String fileName = entry.getKey(); // 文件名
 			String filePath = clientSyncDirectory + SEPARATOR + fileName; // 设置下载路径
-			switch (downloadHTTPFile(fileName, filePath, requestMap, filesToDownloadMap)) { // 这里调用下载单个文件的方法
-				case "OK":
-					downloadedCount++; // 成功下载时增加计数
-					LOGGER.log(Level.INFO, "已下载文件: [" + downloadedCount + "/" + filesToDownloadMapSize + "] " + filePath);
-					break;
-				case "SKIP":
-					LOGGER.log(Level.INFO, "跳过已有文件: " + filePath);
-					break;
-				default:
-					LOGGER.log(Level.SEVERE, "下载文件失败: " + filePath);
-					isErrorDownload = true; // 记录下载失败
-					break;
+			if (downloadHTTPFile(fileName, filePath, filesToDownloadMap)) {
+				downloadedCount++; // 成功下载时增加计数
+				LOGGER.log(Level.INFO, "已下载: [" + downloadedCount + "/" + filesToDownloadMapSize + "] " + filePath);
+			} else {
+				LOGGER.log(Level.SEVERE, "下载失败: " + filePath);
+				isErrorDownload = true; // 记录下载失败
 			}
 		}
 		LOGGER.log(Level.INFO, "下载完成: [" + downloadedCount + "/" + filesToDownloadMapSize + "]");
 	}
 	// 创建用户界面
 	private void createUI() {
-		toggleIcon(); // 图标切换
+		Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
+		toggleIcon();
 		Font systemFont = UIManager.getFont("Label.font"); // 获取系统字体
 		// 设置全局字体
 		UIManager.put("Button.font", systemFont);
@@ -524,21 +638,24 @@ public class HexSync extends JFrame {
 		UIManager.put("TextArea.font", systemFont);
 		UIManager.put("TextField.font", systemFont);
 		// 设置窗口基本属性
-		setTitle("HexSync控制面板");
-		setSize(SCREEN_SIZE.width / 2, SCREEN_SIZE.height / 2);
+		setTitle(HEX_SYNC_NAME + "控制面板");
+		setSize(SCREEN_SIZE.width / 10, SCREEN_SIZE.height / 4);
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setLocationRelativeTo(null); // 居中显示
 		// 创建面板
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout());
-		logPanel(panel);// 创建日志区域
 		buttonPanel(panel);// 创建按钮面板
 		add(panel);  // 添加主面板到窗口
 		createSystemTray(); // 创建系统托盘
-		if (serverAutoStart) startHTTPServer(); // 启动服务端
-		if (clientAutoStart) startHTTPClient(); // 启动客户端
+		openLog(); // 打开日志文件
+		if (serverAutoStart)
+			toggleService(toggleServerButton, this::startHTTPServer, this::stopHTTPServer, "启动服务端", "停止服务端"); // 启动服务端
+		if (clientAutoStart)
+			toggleService(toggleClientButton, this::startHTTPClient, this::stopHTTPClient, "启动客户端", "停止客户端"); // 启动客户端
 	}
 	private void buttonPanel(JPanel panel) {
+		Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
 		JPanel buttonPanel = new JPanel();
 		JButton openDirectoryButton = new JButton("目录");
 		JButton openLogButton = new JButton("日志");
@@ -546,6 +663,14 @@ public class HexSync extends JFrame {
 		toggleServerButton = new JButton("启动服务端");
 		toggleClientButton = new JButton("启动客户端");
 		JButton shutdownButton = new JButton("退出");
+		// 设置按钮的首选大小
+		Dimension buttonSize = new Dimension(SCREEN_SIZE.width / 15, SCREEN_SIZE.height / 32);
+		openDirectoryButton.setPreferredSize(buttonSize);
+		openLogButton.setPreferredSize(buttonSize);
+		settingsButton.setPreferredSize(buttonSize);
+		toggleServerButton.setPreferredSize(buttonSize);
+		toggleClientButton.setPreferredSize(buttonSize);
+		shutdownButton.setPreferredSize(buttonSize);
 		// 添加按钮监听事件
 		actionListener(openDirectoryButton, openLogButton, settingsButton, shutdownButton);
 		// 添加按钮到按钮面板
@@ -555,7 +680,7 @@ public class HexSync extends JFrame {
 		buttonPanel.add(toggleServerButton);
 		buttonPanel.add(toggleClientButton);
 		buttonPanel.add(shutdownButton);
-		panel.add(buttonPanel, BorderLayout.SOUTH); // 添加按钮面板到主面板
+		panel.add(buttonPanel, BorderLayout.CENTER); // 添加按钮面板到主面板
 	}
 	// 按钮监听事件
 	private void actionListener(JButton openDirectoryButton, JButton openLogButton, JButton settingsButton, JButton shutdownButton) {
@@ -566,15 +691,9 @@ public class HexSync extends JFrame {
 				LOGGER.log(Level.SEVERE, "打开目录时出错: " + error.getMessage());
 			}
 		});
-		openLogButton.addActionListener(event -> {
-			try {
-				Desktop.getDesktop().open(new File(LOG_FILE)); // 打开日志文件
-			} catch (IOException error) {
-				LOGGER.log(Level.SEVERE, "打开日志文件时出错: " + error.getMessage());
-			}
-		});
-		toggleServerButton.addActionListener(event -> toggleHTTPServer()); // 服务端按钮事件
-		toggleClientButton.addActionListener(event -> toggleHTTPClient()); // 客户端按钮事件
+		openLogButton.addActionListener(event -> openLog());
+		toggleServerButton.addActionListener(event -> toggleService(toggleServerButton, this::startHTTPServer, this::stopHTTPServer, "启动服务端", "停止服务端"));
+		toggleClientButton.addActionListener(event -> toggleService(toggleClientButton, this::startHTTPClient, this::stopHTTPClient, "启动客户端", "停止客户端"));
 		settingsButton.addActionListener(event -> openSettingsDialog()); // 打开设置对话框
 		shutdownButton.addActionListener(event -> System.exit(0)); // 关闭程序
 		// 添加窗口监听器
@@ -586,12 +705,21 @@ public class HexSync extends JFrame {
 			}
 		});
 	}
+	private void toggleService(JButton button, Runnable startService, Runnable stopService, String startText, String stopText) {
+		button.setEnabled(false);
+		if (button == toggleServerButton && serverHTTPThread == null || button == toggleClientButton && clientHTTPThread == null)
+			startService.run();
+		else stopService.run();
+		button.setText(button == toggleServerButton && serverHTTPThread == null || button == toggleClientButton && clientHTTPThread == null ? startText : stopText);
+		toggleIcon();
+		button.setEnabled(true);
+	}
 	private void createSystemTray() {
 		if (SystemTray.isSupported() && systemTray == null) {
 			systemTray = SystemTray.getSystemTray();
-			trayIcon = new TrayIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource(serverRunning || clientRunning ? "IconO.png" : "IconI.png")), "HexSync");
+			trayIcon = new TrayIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource(serverHTTPThread != null || clientHTTPThread != null ? "IconO.png" : "IconI.png")), HEX_SYNC_NAME);
 			trayIcon.setImageAutoSize(true); // 自动调整图标大小
-			trayIcon.setToolTip("HexSync控制面板");
+			trayIcon.setToolTip(HEX_SYNC_NAME + "控制面板");
 			PopupMenu popup = getPopupMenu(); // 创建右键菜单
 			trayIcon.setPopupMenu(popup);
 			trayIcon.addActionListener(event -> setVisible(true));
@@ -604,7 +732,7 @@ public class HexSync extends JFrame {
 	}
 	// 切换图标
 	private void toggleIcon() {
-		Image icon = Toolkit.getDefaultToolkit().getImage(getClass().getResource(serverRunning || clientRunning ? "IconO.png" : "IconI.png"));
+		Image icon = Toolkit.getDefaultToolkit().getImage(getClass().getResource(serverHTTPThread != null || clientHTTPThread != null ? "IconO.png" : "IconI.png"));
 		setIconImage(icon);
 		if (trayIcon != null) trayIcon.setImage(icon);
 	}
@@ -641,9 +769,10 @@ public class HexSync extends JFrame {
 	// 打开设置对话框
 	private void openSettingsDialog() {
 		loadConfig();
-		final int inputHeight = (int) (SCREEN_SIZE.height * 0.1); // 输入框高度为屏幕高度的10%
-		final int inputWidth = (int) (SCREEN_SIZE.width * 0.2); // 输入框宽度为屏幕宽度的20%
-		int borderPadding = (int) (inputHeight * 0.05); // 边距为输入框高度的5%
+		Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
+		int inputHeight = (int) (SCREEN_SIZE.height * 0.1); // 输入框高度为屏幕高度的10%
+		int inputWidth = (int) (SCREEN_SIZE.width * 0.3); // 输入框宽度为屏幕宽度的20%
+		int borderPadding = (int) (inputHeight * 0.1); // 边距为输入框高度的5%
 		JDialog settingsDialog = new JDialog(this, "设置", true);
 		settingsDialog.setLayout(new BorderLayout(borderPadding, borderPadding));
 		// 创建选项卡面板
@@ -696,7 +825,7 @@ public class HexSync extends JFrame {
 			try {
 				Desktop.getDesktop().browse(URI.create(("https://github.com/ForgeStove/HexSync")));
 			} catch (Exception error) {
-				LOGGER.log(Level.SEVERE, "打开关于页面时出错: " + error.getMessage());
+				LOGGER.log(Level.SEVERE, "无法打开浏览器: " + error.getMessage());
 			}
 		});
 		JButton configSaveButton = new JButton("保存");
@@ -811,38 +940,6 @@ public class HexSync extends JFrame {
 					logLevel = "未知";
 			}
 			return String.format("[%s][%tF][%tT]%s%n", logLevel, record.getMillis(), record.getMillis(), record.getMessage());
-		}
-	}
-	// 日志颜色处理
-	private static class JTextPaneLogHandler extends StreamHandler {
-		private final StyledDocument styledDocument;
-		private final SingleLineFormatter singleLineFormatter;
-		private final JTextPane textPane;
-		JTextPaneLogHandler(JTextPane textPane) {
-			this.textPane = textPane;
-			this.styledDocument = new DefaultStyledDocument();
-			this.textPane.setStyledDocument(styledDocument);
-			this.singleLineFormatter = new SingleLineFormatter();
-		}
-		@Override
-		public void publish(LogRecord logRecord) {
-			Map<String, Color> logLevelColors = new HashMap<>();
-			logLevelColors.put("INFO", Color.BLACK);
-			logLevelColors.put("WARNING", Color.BLUE);
-			logLevelColors.put("SEVERE", Color.RED);
-			String logLevel = logRecord.getLevel().getName();
-			Color foregroundColor = logLevelColors.getOrDefault(logLevel, Color.GRAY);
-			String message = singleLineFormatter.format(logRecord);
-			SimpleAttributeSet attrs = new SimpleAttributeSet();
-			StyleConstants.setForeground(attrs, foregroundColor);
-			SwingUtilities.invokeLater(() -> {
-				try {
-					styledDocument.insertString(styledDocument.getLength(), message, attrs);
-					textPane.setCaretPosition(styledDocument.getLength()); // 滚动到最新日志
-				} catch (BadLocationException error) {
-					LOGGER.log(Level.SEVERE, "写入日志时出错: " + error.getMessage(), error);
-				}
-			});
 		}
 	}
 	// HTTP请求处理器
