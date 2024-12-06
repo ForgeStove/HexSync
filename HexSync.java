@@ -540,7 +540,6 @@ public class HexSync extends JFrame {
 	private void stopHTTPServer() {
 		LOGGER.log(Level.INFO, HEX_SYNC_NAME + "Server正在关闭...");
 		HTTPServer.stop(0); // 停止服务
-		serverHTTPThread.stop(); // 停止线程
 		serverHTTPThread = null; // 清除线程引用
 		LOGGER.log(Level.INFO, HEX_SYNC_NAME + "Server已关闭");
 		toggleIcon();
@@ -639,7 +638,7 @@ public class HexSync extends JFrame {
 		UIManager.put("TextField.font", systemFont);
 		// 设置窗口基本属性
 		setTitle(HEX_SYNC_NAME + "控制面板");
-		setSize(SCREEN_SIZE.width / 10, SCREEN_SIZE.height / 4);
+		setSize(SCREEN_SIZE.width / 5, SCREEN_SIZE.height / 10);
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setLocationRelativeTo(null); // 居中显示
 		// 创建面板
@@ -648,7 +647,6 @@ public class HexSync extends JFrame {
 		buttonPanel(panel);// 创建按钮面板
 		add(panel);  // 添加主面板到窗口
 		createSystemTray(); // 创建系统托盘
-		openLog(); // 打开日志文件
 		if (serverAutoStart)
 			toggleService(toggleServerButton, this::startHTTPServer, this::stopHTTPServer, "启动服务端", "停止服务端"); // 启动服务端
 		if (clientAutoStart)
@@ -664,7 +662,7 @@ public class HexSync extends JFrame {
 		toggleClientButton = new JButton("启动客户端");
 		JButton shutdownButton = new JButton("退出");
 		// 设置按钮的首选大小
-		Dimension buttonSize = new Dimension(SCREEN_SIZE.width / 15, SCREEN_SIZE.height / 32);
+		Dimension buttonSize = new Dimension(SCREEN_SIZE.width / 17, SCREEN_SIZE.height / 35);
 		openDirectoryButton.setPreferredSize(buttonSize);
 		openLogButton.setPreferredSize(buttonSize);
 		settingsButton.setPreferredSize(buttonSize);
@@ -770,16 +768,14 @@ public class HexSync extends JFrame {
 	private void openSettingsDialog() {
 		loadConfig();
 		Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
-		int inputHeight = (int) (SCREEN_SIZE.height * 0.1); // 输入框高度为屏幕高度的10%
-		int inputWidth = (int) (SCREEN_SIZE.width * 0.3); // 输入框宽度为屏幕宽度的20%
-		int borderPadding = (int) (inputHeight * 0.1); // 边距为输入框高度的5%
+		int inputHeight = (int) (SCREEN_SIZE.height * 0.05);
+		int inputWidth = (int) (SCREEN_SIZE.width * 0.2);
 		JDialog settingsDialog = new JDialog(this, "设置", true);
-		settingsDialog.setLayout(new BorderLayout(borderPadding, borderPadding));
 		// 创建选项卡面板
 		JTabbedPane tabbedPane = new JTabbedPane();
 		// 服务端设置选项卡
 		JPanel serverPanel = new JPanel(new GridLayout(5, 2));
-		serverPanel.setBorder(BorderFactory.createEmptyBorder(borderPadding, borderPadding, borderPadding, borderPadding));
+		serverPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		JTextField serverPortField = new JTextField(String.valueOf(serverHTTPPort));
 		JTextField serverUploadRateLimitField = new JTextField(String.valueOf(serverUploadRateLimit));
 		JTextField serverSyncDirectoryPathField = new JTextField(serverSyncDirectory);
@@ -804,7 +800,7 @@ public class HexSync extends JFrame {
 		serverUploadRateLimitUnitBox.setSize(new Dimension(inputWidth / 4, inputHeight));
 		// 客户端设置选项卡
 		JPanel clientPanel = new JPanel(new GridLayout(5, 2));
-		clientPanel.setBorder(BorderFactory.createEmptyBorder(borderPadding, borderPadding, borderPadding, borderPadding));
+		clientPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		// 创建文本框
 		JTextField clientPortField = new JTextField(String.valueOf(clientHTTPPort));
 		JTextField clientAddressField = new JTextField(serverAddress);
