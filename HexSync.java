@@ -4,8 +4,6 @@ import com.sun.net.httpserver.HttpServer;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
@@ -18,7 +16,7 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
-public class HexSync {
+public class HexSync implements HttpHandler {
 	private static final String HEX_SYNC_NAME = HexSync.class.getName(); // 程序名称
 	private static final Logger LOGGER = Logger.getLogger(HEX_SYNC_NAME); // 日志记录器
 	private static final Map<String, String> SERVER_MAP = new HashMap<>(); // 存储服务端文件名和对应的SHA512数据
@@ -94,11 +92,10 @@ public class HexSync {
 		File syncDirectory = new File(serverSyncDirectory); // 获取同步文件夹
 		File[] files = syncDirectory.listFiles(); // 获取同步文件夹下的所有文件
 		if (files == null) return; // 同步文件夹为空
-		for (File file : files) {
-			if (!file.isFile()) continue; // 跳过非文件项
+		Arrays.stream(files).filter(File::isFile).forEach(file -> {
 			String SHA512Value = calculateSHA512(file);
 			SERVER_MAP.put(file.getName(), SHA512Value);
-		}
+		});
 		LOGGER.log(Level.INFO, "初始化文件完成");
 	}
 	// 检测并创建文件夹
@@ -222,12 +219,12 @@ public class HexSync {
 			isErrorDownload = true;
 		}
 		// 记录整体文件列表
-		StringBuilder fileListBuilder = new StringBuilder("接收到文件列表:\n");
+		StringBuilder fileListBuilder = new StringBuilder("接收到文件列表:" + LINE_SEPARATOR);
 		logMap(requestMap, fileListBuilder);
 		return requestMap;
 	}
 	private static void logMap(Map<String, String> map, StringBuilder fileListBuilder) {
-		for (Map.Entry<String, String> entry : map.entrySet()) fileListBuilder.append(entry.getKey()).append("\n");
+		map.forEach((key, value) -> fileListBuilder.append(key).append(LINE_SEPARATOR));
 		LOGGER.log(Level.INFO, fileListBuilder.toString());
 	}
 	// 从服务器下载文件
@@ -274,11 +271,11 @@ public class HexSync {
 		String[][] configEntries = {{"# 服务端配置"}, {SERVER_HTTP_PORT_CONFIG, String.valueOf(serverHTTPPort)}, {SERVER_UPLOAD_RATE_LIMIT_CONFIG, serverUploadRateLimit + " " + serverUploadRateLimitUnit}, {SERVER_SYNC_DIRECTORY_CONFIG, serverSyncDirectory}, {SERVER_AUTO_START_CONFIG, String.valueOf(serverAutoStart)}, {"# 客户端配置"}, {CLIENT_HTTP_PORT_CONFIG, String.valueOf(clientHTTPPort)}, {SERVER_ADDRESS_CONFIG, serverAddress}, {CLIENT_SYNC_DIRECTORY_CONFIG, clientSyncDirectory}, {CLIENT_AUTO_START_CONFIG, String.valueOf(clientAutoStart)},};
 		// 构建配置内容
 		StringBuilder configContent = new StringBuilder();
-		for (String[] entry : configEntries) {
+		Arrays.stream(configEntries).forEach(entry -> {
 			if (entry[0].startsWith("#")) configContent.append(entry[0]).append(LINE_SEPARATOR);
 			else
 				configContent.append(entry[0]).append("=").append(entry.length > 1 ? entry[1] : "").append(LINE_SEPARATOR);
-		}
+		});
 		// 写入配置文件
 		try (BufferedWriter writer = new BufferedWriter(new FileWriter(configFile))) {
 			writer.write(configContent.toString());
@@ -360,6 +357,60 @@ public class HexSync {
 		} catch (IOException error) {
 			LOGGER.log(Level.SEVERE, "打开命令行读取日志文件时出错: " + error.getMessage());
 		}
+	}
+	private static void headlessSettingsHelp() {
+		System.out.println("'serverHTTPPort'/'sp': 设置服务端HTTP端口.");
+		System.out.println("'serverUploadRateLimit'/'sl': 设置服务端上传速率.");
+		System.out.println("'serverSyncDirectory'/'sd': 设置服务端同步目录.");
+		System.out.println("'serverAutoStart'/'ss': 设置服务端自动启动.");
+		System.out.println("'clientHTTPPort'/'cp': 设置客户端HTTP端口.");
+		System.out.println("'serverAddress'/'sa': 设置服务端地址.");
+		System.out.println("'clientSyncDirectory'/'cd': 设置客户端同步目录.");
+		System.out.println("'clientAutoStart'/'cs': 设置客户端自动启动.");
+		System.out.println("'exit'/'e': 保存并退出.");
+	}
+	private static boolean isEmptyTextField(JTextField textField, String fieldName) {
+		String text = textField.getText().trim();
+		if (!text.isEmpty()) return false; // 返回false表示输入框不为空
+		LOGGER.log(Level.WARNING, fieldName + "不能为空");
+		return true; // 返回true表示输入框为空
+	}
+	// 处理请求
+	private static void processHTTPRequest(String requestURI, HttpExchange exchange) {
+		// 解析requestURI,查看是文件请求还是文件列表请求
+		if ("/list".equals(requestURI)) sendHTTPList(exchange);
+		else if (requestURI.startsWith("/download=")) {
+			String clientSHA512 = requestURI.substring("/download=".length()); // 去掉"/download="得到SHA512值
+			String filePath = readServerFiles(clientSHA512); // 读取文件路径
+			File file = new File(filePath); // 构造文件对象
+			if (!SERVER_MAP.containsValue(clientSHA512) || !file.exists() || !file.isFile()) {
+				sendHTTPResponse(exchange, "未找到对应的文件".getBytes(), HttpURLConnection.HTTP_NOT_FOUND);
+				return;
+			}
+			try (InputStream fileInputStream = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
+				exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, file.length());  // 设置响应头
+				try (OutputStream outputStream = exchange.getResponseBody()) {
+					byte[] buffer = new byte[8192];
+					int bytesRead;
+					while ((bytesRead = fileInputStream.read(buffer)) != -1) outputStream.write(buffer, 0, bytesRead);
+				} catch (IOException error) {
+					LOGGER.log(Level.SEVERE, "写入输出流时出错: " + error.getMessage());
+				}
+			} catch (IOException error) {
+				LOGGER.log(Level.SEVERE, "发送文件时出错: " + error.getMessage());
+			}
+			LOGGER.log(Level.INFO, "已发送文件: " + filePath);
+		}
+	}
+	// 发送文件名和校验码列表
+	private static void sendHTTPList(HttpExchange exchange) {
+		StringBuilder responseBuilder = new StringBuilder(); // 用于构建响应内容
+		SERVER_MAP.forEach((fileName, SHA512Value) -> { // 遍历同步文件列表
+			if (SHA512Value == null) LOGGER.log(Level.WARNING, "未找到文件: " + fileName);
+			else responseBuilder.append(fileName).append(LINE_SEPARATOR).append(SHA512Value).append(LINE_SEPARATOR);
+		});
+		sendHTTPResponse(exchange, responseBuilder.toString().getBytes(), HttpURLConnection.HTTP_OK);
+		LOGGER.log(Level.INFO, "已发送列表");
 	}
 	private void headlessUI() {
 		System.out.println("欢迎使用" + HEX_SYNC_NAME + "!");
@@ -512,17 +563,6 @@ public class HexSync {
 			}
 		}
 	}
-	private static void headlessSettingsHelp() {
-		System.out.println("'serverHTTPPort'/'sp': 设置服务端HTTP端口.");
-		System.out.println("'serverUploadRateLimit'/'sl': 设置服务端上传速率.");
-		System.out.println("'serverSyncDirectory'/'sd': 设置服务端同步目录.");
-		System.out.println("'serverAutoStart'/'ss': 设置服务端自动启动.");
-		System.out.println("'clientHTTPPort'/'cp': 设置客户端HTTP端口.");
-		System.out.println("'serverAddress'/'sa': 设置服务端地址.");
-		System.out.println("'clientSyncDirectory'/'cd': 设置客户端同步目录.");
-		System.out.println("'clientAutoStart'/'cs': 设置客户端自动启动.");
-		System.out.println("'exit'/'e': 保存并退出.");
-	}
 	private void stopHTTPServer() {
 		LOGGER.log(Level.INFO, HEX_SYNC_NAME + "Server正在关闭...");
 		if (HTTPServer != null) {
@@ -542,7 +582,7 @@ public class HexSync {
 			}
 			try {
 				HTTPServer = HttpServer.create(new InetSocketAddress(serverHTTPPort), 0);
-				HTTPServer.createContext("/", new HTTPRequestHandler());
+				HTTPServer.createContext("/", new HexSync());
 				HTTPServer.setExecutor(null);
 				HTTPServer.start();
 			} catch (IOException error) {
@@ -593,7 +633,7 @@ public class HexSync {
 			LOGGER.log(Level.INFO, "没有需要下载的文件");
 			return;
 		}
-		StringBuilder fileListBuilder = new StringBuilder("需要下载:\n");
+		StringBuilder fileListBuilder = new StringBuilder("需要下载:" + LINE_SEPARATOR);
 		logMap(filesToDownloadMap, fileListBuilder);
 		int downloadedCount = 0;
 		int filesToDownloadMapSize = filesToDownloadMap.size();
@@ -621,7 +661,7 @@ public class HexSync {
 		UIManager.put("TextField.font", systemFont);
 		// 设置窗口基本属性
 		JFrame frame = new JFrame(HEX_SYNC_NAME + " 控制面板");
-		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		frame.setVisible(!serverAutoStart);
 		frame.setTitle(HEX_SYNC_NAME + "控制面板");
 		frame.setSize(SCREEN_SIZE.width / 5, SCREEN_SIZE.height / 10);
@@ -683,14 +723,6 @@ public class HexSync {
 		toggleButtonAction(toggleClientButton, this::startHTTPClient, this::stopHTTPClient, "启动客户端", "停止客户端", frame);
 		settingsButton.addActionListener(event -> openSettingsDialog(frame)); // 打开设置对话框
 		shutdownButton.addActionListener(event -> System.exit(0)); // 关闭程序
-		// 添加窗口监听器
-		frame.addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent windowEvent) {
-				if (SystemTray.isSupported()) frame.setVisible(false); // 隐藏窗口而不是退出程序
-				else System.exit(0);
-			}
-		});
 	}
 	// 处理按钮事件的通用方法
 	private void toggleButtonAction(JButton button, Runnable startAction, Runnable stopAction, String startText, String stopText, JFrame frame) {
@@ -827,9 +859,7 @@ public class HexSync {
 		clientPanel.add(clientAutoStartBox); // 将复选框添加到客户端设置面板
 		configSaveButton.addActionListener(event -> {
 			// 定义输入框数组及其对应的提示信息和选项卡索引
-			Object[][] inputs = {{serverPortField, "服务端端口", 0}, // 服务器端设置的索引
-					{serverUploadRateLimitField, "上传速率限制", 0}, {serverSyncDirectoryPathField, "服务端同步文件夹路径", 0}, {clientPortField, "客户端端口", 1}, // 客户端设置的索引
-					{clientAddressField, "服务器地址", 1}, {clientSyncDirectoryPathField, "客户端同步文件夹路径", 1}};
+			Object[][] inputs = {{serverPortField, "服务端端口", 0}, {serverUploadRateLimitField, "上传速率限制", 0}, {serverSyncDirectoryPathField, "服务端同步文件夹路径", 0}, {clientPortField, "客户端端口", 1}, {clientAddressField, "服务器地址", 1}, {clientSyncDirectoryPathField, "客户端同步文件夹路径", 1}};
 			// 检查输入框是否为空
 			for (Object[] input : inputs) {
 				JTextField textField = (JTextField) input[0];
@@ -883,8 +913,8 @@ public class HexSync {
 	// 检测端口号有效性的方法
 	private boolean isInvalidPort(JTextField portField) {
 		String portText = portField.getText().trim();
-		boolean invalid = isNotNumber(portText) || Integer.parseInt(portText) < 1 || Integer.parseInt(portText) > 65535;
-		if (!invalid) return false; // 端口号合法
+		if (!(isNotNumber(portText) || Integer.parseInt(portText) < 1 || Integer.parseInt(portText) > 65535))
+			return false; // 端口号合法
 		LOGGER.log(Level.WARNING, "端口号不在有效范围内: " + portText);
 		portField.selectAll(); // 选中输入框
 		portField.requestFocus(); // 聚焦输入框
@@ -900,66 +930,17 @@ public class HexSync {
 			return true; // 转换失败，返回false
 		}
 	}
-	private boolean isEmptyTextField(JTextField textField, String fieldName) {
-		String text = textField.getText().trim();
-		if (!text.isEmpty()) return false; // 返回false表示输入框不为空
-		LOGGER.log(Level.WARNING, fieldName + "不能为空");
-		return true; // 返回true表示输入框为空
-	}
-	// HTTP请求处理器
-	private static class HTTPRequestHandler implements HttpHandler {
-		// 处理请求
-		private static void processHTTPRequest(String requestURI, HttpExchange exchange) {
-			// 解析requestURI,查看是文件请求还是文件列表请求
-			if ("/list".equals(requestURI)) sendHTTPList(exchange);
-			else if (requestURI.startsWith("/download=")) {
-				String clientSHA512 = requestURI.substring("/download=".length()); // 去掉"/download="得到SHA512值
-				String filePath = readServerFiles(clientSHA512); // 读取文件路径
-				File file = new File(filePath); // 构造文件对象
-				if (!SERVER_MAP.containsValue(clientSHA512) || !file.exists() || !file.isFile()) {
-					sendHTTPResponse(exchange, "未找到对应的文件".getBytes(), HttpURLConnection.HTTP_NOT_FOUND);
-					return;
-				}
-				try (InputStream fileInputStream = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
-					exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, file.length());  // 设置响应头
-					try (OutputStream outputStream = exchange.getResponseBody()) {
-						byte[] buffer = new byte[8192];
-						int bytesRead;
-						while ((bytesRead = fileInputStream.read(buffer)) != -1)
-							outputStream.write(buffer, 0, bytesRead);
-					} catch (IOException error) {
-						LOGGER.log(Level.SEVERE, "写入输出流时出错: " + error.getMessage());
-					}
-				} catch (IOException error) {
-					LOGGER.log(Level.SEVERE, "发送文件时出错: " + error.getMessage());
-				}
-				LOGGER.log(Level.INFO, "已发送文件: " + filePath);
-			}
-		}
-		// 发送文件名和校验码列表
-		private static void sendHTTPList(HttpExchange exchange) {
-			StringBuilder responseBuilder = new StringBuilder(); // 用于构建响应内容
-			for (Map.Entry<String, String> entry : SERVER_MAP.entrySet()) { // 遍历同步文件列表
-				String fileName = entry.getKey(); // 获取文件名
-				String SHA512Value = entry.getValue(); // 获取校验码
-				if (SHA512Value == null) LOGGER.log(Level.WARNING, "未找到文件: " + fileName);
-				else responseBuilder.append(fileName).append(LINE_SEPARATOR).append(SHA512Value).append(LINE_SEPARATOR);
-			}
-			sendHTTPResponse(exchange, responseBuilder.toString().getBytes(), HttpURLConnection.HTTP_OK);
-			LOGGER.log(Level.INFO, "已发送列表");
-		}
-		@Override
-		public void handle(HttpExchange exchange) {
-			try {
-				String requestMethod = exchange.getRequestMethod(); // 获取请求方法
-				if ("GET".equalsIgnoreCase(requestMethod)) {
-					String requestURI = exchange.getRequestURI().getPath(); // 获取请求URI
-					LOGGER.log(Level.INFO, "客户端请求: " + requestURI); // 记录客户端请求信息
-					processHTTPRequest(requestURI, exchange); // 处理请求
-				} else exchange.sendResponseHeaders(HttpURLConnection.HTTP_BAD_METHOD, -1);
-			} catch (IOException error) {
-				LOGGER.log(Level.SEVERE, "处理请求时出错: " + error.getMessage(), error);
-			}
+	@Override
+	public void handle(HttpExchange exchange) {
+		try {
+			String requestMethod = exchange.getRequestMethod(); // 获取请求方法
+			if ("GET".equalsIgnoreCase(requestMethod)) {
+				String requestURI = exchange.getRequestURI().getPath(); // 获取请求URI
+				LOGGER.log(Level.INFO, "客户端请求: " + requestURI); // 记录客户端请求信息
+				processHTTPRequest(requestURI, exchange); // 处理请求
+			} else exchange.sendResponseHeaders(HttpURLConnection.HTTP_BAD_METHOD, -1);
+		} catch (IOException error) {
+			LOGGER.log(Level.SEVERE, "处理请求时出错: " + error.getMessage(), error);
 		}
 	}
 }
