@@ -229,7 +229,7 @@ public class HexSync implements HttpHandler {
 	}
 	private static void logMap(Map<String, String> map, StringBuilder fileListBuilder) {
 		map.forEach((key, value) -> fileListBuilder.append(key).append(LINE_SEPARATOR));
-		LOGGER.log(Level.INFO, fileListBuilder.toString());
+		LOGGER.log(Level.INFO, fileListBuilder.toString().trim());
 	}
 	// 从服务器下载文件
 	private static boolean downloadHTTPFile(String fileName, String filePath, Map<String, String> filesToDownloadMap) {
@@ -310,23 +310,24 @@ public class HexSync implements HttpHandler {
 	// 发送数据
 	private static void sendHTTPResponse(HttpExchange exchange, byte[] responseBytes, int HTTPCode) {
 		new Thread(() -> {
+			int responseBytesLength = responseBytes.length;
+			if (responseBytesLength == 0) return;
 			long maxUploadRateInBytes = convertToBytes(serverUploadRateLimit, serverUploadRateLimitUnit);
 			long lastFillTime = System.currentTimeMillis(); // 最近一次填充时间
 			try (OutputStream outputStream = exchange.getResponseBody()) {
 				exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=UTF-8"); // 设置Content-Type
-				exchange.sendResponseHeaders(HTTPCode, responseBytes.length); // 设置响应头
-				int responseLength = responseBytes.length;
+				exchange.sendResponseHeaders(HTTPCode, responseBytesLength); // 设置响应头
 				int totalBytesSent = 0; // 记录已发送字节数
 				if (serverUploadRateLimit == 0) {
 					outputStream.write(responseBytes);
 					return; // 直接返回，不再执行后续代码
 				}
-				while (totalBytesSent < responseLength) {
+				while (totalBytesSent < responseBytesLength) {
 					long currentTime = System.currentTimeMillis();
 					availableTokens.addAndGet((currentTime - lastFillTime) * maxUploadRateInBytes / 1000);
 					lastFillTime = currentTime; // 更新时间
 					// 尝试发送数据
-					int bytesToSend = Math.min(16384, responseLength - totalBytesSent); // 每次最多发送16KB
+					int bytesToSend = Math.min(16384, responseBytesLength - totalBytesSent); // 每次最多发送16KB
 					if (availableTokens.get() >= bytesToSend) {
 						outputStream.write(responseBytes, totalBytesSent, bytesToSend); // 写入数据
 						totalBytesSent += bytesToSend; // 更新已发送字节数
@@ -440,10 +441,9 @@ public class HexSync implements HttpHandler {
 	// 发送文件名和校验码列表
 	private static void sendHTTPList(HttpExchange exchange) {
 		StringBuilder responseBuilder = new StringBuilder(); // 用于构建响应内容
-		SERVER_MAP.forEach((fileName, SHA512Value) -> { // 遍历同步文件列表
-			if (SHA512Value == null) LOGGER.log(Level.WARNING, "未找到文件: " + fileName);
-			else responseBuilder.append(fileName).append(LINE_SEPARATOR).append(SHA512Value).append(LINE_SEPARATOR);
-		});
+		SERVER_MAP.forEach((fileName, SHA512Value) ->
+				responseBuilder.append(fileName).append(LINE_SEPARATOR).append(SHA512Value).append(LINE_SEPARATOR)
+		); // 遍历服务端文件列表,将文件名和校验码拼接成字符串
 		sendHTTPResponse(exchange, responseBuilder.toString().getBytes(), HttpURLConnection.HTTP_OK);
 		LOGGER.log(Level.INFO, "已发送列表");
 	}
