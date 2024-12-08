@@ -12,6 +12,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,25 +34,29 @@ public class HexSync implements HttpHandler {
 	private static final String SERVER_ADDRESS_CONFIG = "ServerAddress"; // 服务器地址配置项
 	private static final String CLIENT_SYNC_DIRECTORY_CONFIG = "ClientSyncDirectoryPath"; // 客户端同步文件夹路径配置项
 	private static final String CLIENT_AUTO_START_CONFIG = "clientAutoStart"; // 客户端自动启动配置项
-	private static final String GITHUB_URL = "https://github.com/ForgeStove/HexSync";
+	private static final String GITHUB_URL = "https://github.com/ForgeStove/HexSync";// 转换为字节
+	private static final AtomicLong availableTokens = new AtomicLong(0); // 当前可用令牌数量
 	private static String serverSyncDirectory = "mods"; // 服务端同步文件夹目录，默认值"mods"
 	private static String clientSyncDirectory = "mods"; // 客户端同步文件夹目录，默认值"mods"
 	private static String serverUploadRateLimitUnit = "MB/s"; // 上传速率限制单位，默认MB/s
-	private static String serverAddress = "localhost"; // 服务器地址闭
+	private static String serverAddress = "localhost"; // 服务器地址，默认值localhost
+	private static boolean headless; // 是否为无头模式
 	private static boolean isErrorDownload; // 客户端下载文件时是否发生错误，影响客户端是否自动关闭
 	private static boolean serverAutoStart; // 服务端自动启动，默认不自动启动
 	private static boolean clientAutoStart; // 客户端自动启动，默认不自动启动
 	private static int serverHTTPPort = 65535;// HTTP 端口，默认值65535
 	private static int clientHTTPPort = 65535; // 客户端 HTTP 端口，默认值65535
 	private static long serverUploadRateLimit = 1; // 上传速率限制值，默认限速1MB/s
+	private static final long MAX_UPLOAD_RATE_IN_BYTES = convertToBytes(serverUploadRateLimit, serverUploadRateLimitUnit);
 	private static HttpServer HTTPServer; // 用于存储服务器实例
 	private static HttpURLConnection HTTPURLConnection; // 用于存储HTTP连接实例
 	private static Thread serverHTTPThread; // 服务器线程
 	private static Thread clientHTTPThread; // 客户端线程
 	public static void main(String[] args) {
+		headless = GraphicsEnvironment.isHeadless() || Arrays.asList(args).contains("-headless");
 		initializeLogger();
 		loadConfig();
-		initializeUI(args);
+		initializeUI();
 	}
 	// 初始化日志记录器
 	private static void initializeLogger() {
@@ -69,13 +74,11 @@ public class HexSync implements HttpHandler {
 		}).start();
 	}
 	// 初始化UI
-	private static void initializeUI(String[] args) {
-		if (Arrays.asList(args).contains("-headless") || GraphicsEnvironment.isHeadless()) headlessUI();
-		String lookAndFeel = UIManager.getSystemLookAndFeelClassName();// 外观初始化
+	private static void initializeUI() {
+		if (headless) headlessUI(); // 无头模式
 		try {
-			UIManager.setLookAndFeel(lookAndFeel);
-		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
-				 UnsupportedLookAndFeelException error) {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception error) {
 			LOGGER.log(Level.SEVERE, "设置外观失败: " + error.getMessage());
 		}
 		SwingUtilities.invokeLater(HexSync::createUI);// 创建窗口
@@ -228,34 +231,35 @@ public class HexSync implements HttpHandler {
 	// 从服务器下载文件
 	private static boolean downloadHTTPFile(String fileName, String filePath, Map<String, String> filesToDownloadMap) {
 		File clientFile = new File(filePath); // 目标本地文件
+		String requestSHA512 = filesToDownloadMap.get(fileName);
 		try {
-			String serverSHA512 = filesToDownloadMap.get(fileName);
-			URL requestURL = new URL(HTTPFormat(serverAddress) + ":" + clientHTTPPort + "/download=" + serverSHA512); // 创建URL
-			int responseCode = getResponseCode(requestURL);
+			int responseCode = getResponseCode(new URL(HTTPFormat(serverAddress) + ":" + clientHTTPPort + "/download/" + requestSHA512));
 			if (responseCode != HttpURLConnection.HTTP_OK) {
 				LOGGER.log(Level.SEVERE, "下载失败,HTTP错误代码: " + responseCode);
 				return false;
 			}
-			// 下载成功,读取输入流并写入本地文件
-			try (InputStream inputStream = HTTPURLConnection.getInputStream(); FileOutputStream outputStream = new FileOutputStream(filePath)) {
-				byte[] buffer = new byte[8192]; // 8KB缓冲区
-				int bytesRead;
-				while ((bytesRead = inputStream.read(buffer)) != -1) outputStream.write(buffer, 0, bytesRead);
-			}
-			// 进行SHA512校验
-			if (serverSHA512 == null) {
-				LOGGER.log(Level.SEVERE, "无法获取服务器的SHA512值: " + fileName);
-				return false;
-			}
-			String clientSHA512 = calculateSHA512(clientFile);
-			if (serverSHA512.equals(clientSHA512)) return true; // 下载成功且SHA512校验通过
-			LOGGER.log(Level.SEVERE, "校验失败,文件可能已损坏: " + fileName);
-			if (!clientFile.delete()) LOGGER.log(Level.SEVERE, "无法删除损坏的文件: " + clientFile.getPath());
-			return false;
-		} catch (Exception error) {
-			LOGGER.log(Level.SEVERE, "下载文件时出错: " + error.getMessage());
+		} catch (IOException error) {
+			LOGGER.log(Level.SEVERE, "连接服务器时出错: " + error.getMessage());
 			return false;
 		}
+		// 下载成功,读取输入流并写入本地文件
+		try (InputStream inputStream = HTTPURLConnection.getInputStream(); FileOutputStream outputStream = new FileOutputStream(filePath)) {
+			byte[] buffer = new byte[8192]; // 8KB缓冲区
+			int bytesRead;
+			while ((bytesRead = inputStream.read(buffer)) != -1) outputStream.write(buffer, 0, bytesRead);
+		} catch (IOException error) {
+			LOGGER.log(Level.SEVERE, "读取响应时出错: " + error.getMessage());
+		}
+		// 进行SHA512校验
+		if (requestSHA512 == null) {
+			LOGGER.log(Level.SEVERE, "无法获取服务器的SHA512值: " + fileName);
+			return false;
+		}
+		String clientSHA512 = calculateSHA512(clientFile);
+		if (requestSHA512.equals(clientSHA512)) return true; // 下载成功且SHA512校验通过
+		LOGGER.log(Level.SEVERE, "校验失败,文件可能已损坏: " + fileName);
+		if (!clientFile.delete()) LOGGER.log(Level.SEVERE, "无法删除损坏的文件: " + clientFile.getPath());
+		return false;
 	}
 	private static int getResponseCode(URL requestURL) throws IOException {
 		HTTPURLConnection = (HttpURLConnection) requestURL.openConnection(); // 打开连接
@@ -282,32 +286,40 @@ public class HexSync implements HttpHandler {
 			LOGGER.log(Level.SEVERE, "配置保存失败: " + error.getMessage(), error);
 		}
 	}
-	// 发送响应
+	// 发送数据
 	private static void sendHTTPResponse(HttpExchange exchange, byte[] responseBytes, int HTTPCode) {
-		try (OutputStream outputStream = exchange.getResponseBody()) {
-			exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=UTF-8"); // 设置Content-Type
-			exchange.sendResponseHeaders(HTTPCode, responseBytes.length); // 设置响应头
-			long startTime = System.currentTimeMillis(); // 记录开始时间
-			long uploadRateInBytes = convertToBytes(serverUploadRateLimit, serverUploadRateLimitUnit); // 转换为字节
-			int responseLength = responseBytes.length;
-			int totalBytesSent = 0; // 记录已发送字节数
-			if (serverUploadRateLimit == 0) {
-				outputStream.write(responseBytes);
-				return; // 直接返回，不再执行后续代码
-			}
-			while (totalBytesSent < responseLength) {
-				int bytesToSend = Math.min(16384, responseLength - totalBytesSent); // 每次最多发送16KB
-				outputStream.write(responseBytes, totalBytesSent, bytesToSend); // 写入数据
-				totalBytesSent += bytesToSend; // 更新已发送总字节数
-				long expectedBytesSent = (System.currentTimeMillis() - startTime * uploadRateInBytes) / 1000; // 计算期望已发送字节数
-				if (totalBytesSent > expectedBytesSent) {
-					long sleepTime = (totalBytesSent - expectedBytesSent) * 1000 / uploadRateInBytes; // 计算需要等待的时间
-					Thread.sleep(sleepTime); // 暂停
+		new Thread(() -> {
+			long lastFillTime = System.currentTimeMillis(); // 最近一次填充时间
+			try (OutputStream outputStream = exchange.getResponseBody()) {
+				exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=UTF-8"); // 设置Content-Type
+				exchange.sendResponseHeaders(HTTPCode, responseBytes.length); // 设置响应头
+				int responseLength = responseBytes.length;
+				int totalBytesSent = 0; // 记录已发送字节数
+				if (serverUploadRateLimit == 0) {
+					outputStream.write(responseBytes);
+					return; // 直接返回，不再执行后续代码
 				}
+				while (totalBytesSent < responseLength) {
+					long currentTime = System.currentTimeMillis();
+					availableTokens.addAndGet((currentTime - lastFillTime) * MAX_UPLOAD_RATE_IN_BYTES / 1000); // 更新可用令牌
+					lastFillTime = currentTime; // 更新时间
+					// 尝试发送数据
+					int bytesToSend = Math.min(16384, responseLength - totalBytesSent); // 每次最多发送16KB
+					if (availableTokens.get() >= bytesToSend) {
+						outputStream.write(responseBytes, totalBytesSent, bytesToSend); // 写入数据
+						totalBytesSent += bytesToSend; // 更新已发送字节数
+						availableTokens.addAndGet(-bytesToSend); // 减少可用令牌
+					} else {
+						// 如果没有足够的令牌，计算需要等待的时间
+						long requiredTokens = bytesToSend - availableTokens.get();
+						long sleepTime = (requiredTokens * 1000) / MAX_UPLOAD_RATE_IN_BYTES;
+						Thread.sleep(sleepTime); // 暂停
+					}
+				}
+			} catch (Exception error) {
+				LOGGER.log(Level.SEVERE, "发送响应时出错: " + error.getMessage());
 			}
-		} catch (IOException | InterruptedException error) {
-			LOGGER.log(Level.SEVERE, "发送响应时出错: " + error.getMessage());
-		}
+		}).start(); // 启动新线程
 	}
 	// 单位转换方法
 	private static long convertToBytes(long value, String unit) {
@@ -370,31 +382,27 @@ public class HexSync implements HttpHandler {
 		System.out.println("保存并退出: 'save'");
 	}
 	// 处理请求
-	private static void processHTTPRequest(String requestURI, HttpExchange exchange) {
-		// 解析requestURI,查看是文件请求还是文件列表请求
-		if ("/list".equals(requestURI)) sendHTTPList(exchange);
-		else if (requestURI.startsWith("/download=")) {
-			String clientSHA512 = requestURI.substring("/download=".length()); // 去掉"/download="得到SHA512值
+	private static void processHTTPRequest(String requestURI, HttpExchange exchange) throws IOException {
+		LOGGER.log(Level.INFO, "收到请求: " + requestURI);
+		byte[] responseBytes = "".getBytes();
+		int HTTPCode = HttpURLConnection.HTTP_NOT_FOUND;
+		if ("/list".equals(requestURI)) {
+			sendHTTPList(exchange);
+			return;
+		} else if (requestURI.startsWith("/download/")) {
+			String clientSHA512 = requestURI.substring(requestURI.lastIndexOf("/") + 1);
 			String filePath = readServerFiles(clientSHA512); // 读取文件路径
 			File file = new File(filePath); // 构造文件对象
-			if (!SERVER_MAP.containsValue(clientSHA512) || !file.exists() || !file.isFile()) {
-				sendHTTPResponse(exchange, "未找到对应的文件".getBytes(), HttpURLConnection.HTTP_NOT_FOUND);
-				return;
+			if (SERVER_MAP.containsValue(clientSHA512) && file.exists() && file.isFile()) {
+				responseBytes = Files.readAllBytes(file.toPath()); // 读取文件内容
+				HTTPCode = HttpURLConnection.HTTP_OK; // 发送成功,返回200
+				LOGGER.log(Level.INFO, "已发送文件: " + filePath);
 			}
-			try (InputStream fileInputStream = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
-				exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, file.length());  // 设置响应头
-				try (OutputStream outputStream = exchange.getResponseBody()) {
-					byte[] buffer = new byte[8192];
-					int bytesRead;
-					while ((bytesRead = fileInputStream.read(buffer)) != -1) outputStream.write(buffer, 0, bytesRead);
-				} catch (IOException error) {
-					LOGGER.log(Level.SEVERE, "写入输出流时出错: " + error.getMessage());
-				}
-			} catch (IOException error) {
-				LOGGER.log(Level.SEVERE, "发送文件时出错: " + error.getMessage());
-			}
-			LOGGER.log(Level.INFO, "已发送文件: " + filePath);
+		} else if (requestURI.equals("/favicon.ico")) {
+			responseBytes = "IconI.png".getBytes(); // 发送图标
+			HTTPCode = HttpURLConnection.HTTP_OK;
 		}
+		sendHTTPResponse(exchange, responseBytes, HTTPCode);
 	}
 	// 发送文件名和校验码列表
 	private static void sendHTTPList(HttpExchange exchange) {
@@ -721,16 +729,13 @@ public class HexSync implements HttpHandler {
 		if (clientAutoStart) startHTTPClient(); // 启动客户端
 	}
 	private static void buttonPanel(JFrame frame) {
-		JPanel panel = new JPanel();
-		panel.setLayout(new BorderLayout());
-		Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
-		JPanel buttonPanel = new JPanel();
 		JButton openLogButton = new JButton("日志");
 		JButton settingsButton = new JButton("设置");
 		JButton shutdownButton = new JButton("退出");
 		JButton toggleServerButton = new JButton("启动服务端");
 		JButton toggleClientButton = new JButton("启动客户端");
 		// 设置按钮的首选大小
+		Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
 		Dimension buttonSize = new Dimension(SCREEN_SIZE.width / 17, SCREEN_SIZE.height / 40);
 		openLogButton.setPreferredSize(buttonSize);
 		settingsButton.setPreferredSize(buttonSize);
@@ -746,11 +751,14 @@ public class HexSync implements HttpHandler {
 		// 添加按钮监听事件
 		actionListener(frame, openLogButton, settingsButton, shutdownButton, toggleServerButton, toggleClientButton);
 		// 添加按钮到按钮面板
+		JPanel buttonPanel = new JPanel();
 		buttonPanel.add(openLogButton);
 		buttonPanel.add(settingsButton);
 		buttonPanel.add(shutdownButton);
 		buttonPanel.add(toggleServerButton);
 		buttonPanel.add(toggleClientButton);
+		JPanel panel = new JPanel();
+		panel.setLayout(new BorderLayout());
 		panel.add(buttonPanel, BorderLayout.CENTER); // 添加按钮面板到主面板
 		frame.add(panel);  // 添加主面板到窗口
 	}
@@ -773,7 +781,9 @@ public class HexSync implements HttpHandler {
 			button.setEnabled(true);
 		});
 	}
-	private static void systemTray(JFrame frame) {
+	// 切换图标
+	private static void icon(JFrame frame) {
+		frame.setIconImage(Toolkit.getDefaultToolkit().getImage(HexSync.class.getResource(serverHTTPThread != null || clientHTTPThread != null ? "IconO.png" : "IconI.png")));
 		if (!SystemTray.isSupported()) return;
 		TrayIcon trayIcon; // 托盘图标
 		boolean running = serverHTTPThread != null || clientHTTPThread != null; // 状态标记
@@ -792,11 +802,6 @@ public class HexSync implements HttpHandler {
 		} catch (AWTException error) {
 			LOGGER.log(Level.SEVERE, "添加托盘图标失败: " + error.getMessage());
 		}
-	}
-	// 切换图标
-	private static void icon(JFrame frame) {
-		frame.setIconImage(Toolkit.getDefaultToolkit().getImage(HexSync.class.getResource(serverHTTPThread != null || clientHTTPThread != null ? "IconO.png" : "IconI.png")));
-		systemTray(frame);
 	}
 	private static PopupMenu getPopupMenu(JFrame frame) {
 		PopupMenu popup = new PopupMenu();
@@ -906,11 +911,8 @@ public class HexSync implements HttpHandler {
 	public void handle(HttpExchange exchange) {
 		try {
 			String requestMethod = exchange.getRequestMethod(); // 获取请求方法
-			if ("GET".equalsIgnoreCase(requestMethod)) {
-				String requestURI = exchange.getRequestURI().getPath(); // 获取请求URI
-				LOGGER.log(Level.INFO, "客户端请求: " + requestURI); // 记录客户端请求信息
-				processHTTPRequest(requestURI, exchange); // 处理请求
-			} else exchange.sendResponseHeaders(HttpURLConnection.HTTP_BAD_METHOD, -1);
+			if (!"GET".equalsIgnoreCase(requestMethod)) return;
+			processHTTPRequest(exchange.getRequestURI().getPath(), exchange); // 处理请求
 		} catch (IOException error) {
 			LOGGER.log(Level.SEVERE, "处理请求时出错: " + error.getMessage(), error);
 		}
