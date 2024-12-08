@@ -47,7 +47,6 @@ public class HexSync implements HttpHandler {
 	private static int serverHTTPPort = 65535;// HTTP 端口，默认值65535
 	private static int clientHTTPPort = 65535; // 客户端 HTTP 端口，默认值65535
 	private static long serverUploadRateLimit = 1; // 上传速率限制值，默认限速1MB/s
-	private static final long MAX_UPLOAD_RATE_IN_BYTES = convertToBytes(serverUploadRateLimit, serverUploadRateLimitUnit);
 	private static HttpServer HTTPServer; // 用于存储服务器实例
 	private static HttpURLConnection HTTPURLConnection; // 用于存储HTTP连接实例
 	private static Thread serverHTTPThread; // 服务器线程
@@ -104,7 +103,9 @@ public class HexSync implements HttpHandler {
 		File directory = new File(directoryPath);
 		if (directory.exists()) return;
 		boolean isCreated = directory.mkdirs(); // 创建文件夹并保存结果
-		LOGGER.log(isCreated ? Level.INFO : Level.SEVERE, (isCreated ? "文件夹已创建: " : "无法创建文件夹: ") + directoryPath);
+		LOGGER.log(isCreated ? Level.INFO : Level.SEVERE, (
+				isCreated ? "文件夹已创建: " : "无法创建文件夹: "
+		) + directoryPath);
 	}
 	// 加载配置文件
 	private static void loadConfig() {
@@ -171,7 +172,9 @@ public class HexSync implements HttpHandler {
 	// 地址格式化,转换为HTTP协议
 	private static String HTTPFormat(String address) {
 		if (address.endsWith("/")) address = address.substring(0, address.length() - 1); // 去除末尾的分隔符
-		return address.startsWith("https://") ? address.replace("https://", "http://") : "http://" + address;
+		return address.startsWith("https://") ? address.replace(
+				"https://", "http://"
+		) : "http://" + address;
 	}
 	// 计算SHA512校验码
 	private static String calculateSHA512(File file) {
@@ -182,7 +185,7 @@ public class HexSync implements HttpHandler {
 			while ((bytesRead = fileInputStream.read(byteBuffer)) != -1) SHA512.update(byteBuffer, 0, bytesRead);
 			byte[] digest = SHA512.digest(); // 获取SHA-512校验码
 			StringBuilder stringBuilder = new StringBuilder();
-			for (byte singleByte : digest) stringBuilder.append(String.format("%02x", singleByte)); // 转换为十六进制字符串
+			for (byte singleByte : digest) stringBuilder.append(String.format("%02x", singleByte));
 			return stringBuilder.toString(); // 返回SHA-512校验码
 		} catch (Exception error) {
 			LOGGER.log(Level.SEVERE, "计算校验码时出错: " + error.getMessage());
@@ -233,7 +236,9 @@ public class HexSync implements HttpHandler {
 		File clientFile = new File(filePath); // 目标本地文件
 		String requestSHA512 = filesToDownloadMap.get(fileName);
 		try {
-			int responseCode = getResponseCode(new URL(HTTPFormat(serverAddress) + ":" + clientHTTPPort + "/download/" + requestSHA512));
+			int responseCode = getResponseCode(new URL(
+					HTTPFormat(serverAddress) + ":" + clientHTTPPort + "/download/" + requestSHA512
+			));
 			if (responseCode != HttpURLConnection.HTTP_OK) {
 				LOGGER.log(Level.SEVERE, "下载失败,HTTP错误代码: " + responseCode);
 				return false;
@@ -243,7 +248,10 @@ public class HexSync implements HttpHandler {
 			return false;
 		}
 		// 下载成功,读取输入流并写入本地文件
-		try (InputStream inputStream = HTTPURLConnection.getInputStream(); FileOutputStream outputStream = new FileOutputStream(filePath)) {
+		try (
+				InputStream inputStream = HTTPURLConnection.getInputStream();
+				FileOutputStream outputStream = new FileOutputStream(filePath)
+		) {
 			byte[] buffer = new byte[8192]; // 8KB缓冲区
 			int bytesRead;
 			while ((bytesRead = inputStream.read(buffer)) != -1) outputStream.write(buffer, 0, bytesRead);
@@ -270,13 +278,26 @@ public class HexSync implements HttpHandler {
 	private static void saveConfig() {
 		File configFile = new File(CONFIG_FILE_PATH);
 		// 使用常量数组保存配置参数及其值
-		String[][] configEntries = {{"# 服务端配置"}, {SERVER_HTTP_PORT_CONFIG, String.valueOf(serverHTTPPort)}, {SERVER_UPLOAD_RATE_LIMIT_CONFIG, serverUploadRateLimit + " " + serverUploadRateLimitUnit}, {SERVER_SYNC_DIRECTORY_CONFIG, serverSyncDirectory}, {SERVER_AUTO_START_CONFIG, String.valueOf(serverAutoStart)}, {"# 客户端配置"}, {CLIENT_HTTP_PORT_CONFIG, String.valueOf(clientHTTPPort)}, {SERVER_ADDRESS_CONFIG, serverAddress}, {CLIENT_SYNC_DIRECTORY_CONFIG, clientSyncDirectory}, {CLIENT_AUTO_START_CONFIG, String.valueOf(clientAutoStart)},};
+		String[][] configEntries = {
+				{"# 服务端配置"},
+				{SERVER_HTTP_PORT_CONFIG, String.valueOf(serverHTTPPort)},
+				{SERVER_UPLOAD_RATE_LIMIT_CONFIG, serverUploadRateLimit + " " + serverUploadRateLimitUnit},
+				{SERVER_SYNC_DIRECTORY_CONFIG, serverSyncDirectory},
+				{SERVER_AUTO_START_CONFIG, String.valueOf(serverAutoStart)},
+				{"# 客户端配置"},
+				{CLIENT_HTTP_PORT_CONFIG, String.valueOf(clientHTTPPort)},
+				{SERVER_ADDRESS_CONFIG, serverAddress},
+				{CLIENT_SYNC_DIRECTORY_CONFIG, clientSyncDirectory},
+				{CLIENT_AUTO_START_CONFIG, String.valueOf(clientAutoStart)},
+		};
 		// 构建配置内容
 		StringBuilder configContent = new StringBuilder();
 		Arrays.stream(configEntries).forEach(entry -> {
 			if (entry[0].startsWith("#")) configContent.append(entry[0]).append(LINE_SEPARATOR);
 			else
-				configContent.append(entry[0]).append("=").append(entry.length > 1 ? entry[1] : "").append(LINE_SEPARATOR);
+				configContent.append(entry[0]).append("=")
+						.append(entry.length > 1 ? entry[1] : "")
+						.append(LINE_SEPARATOR);
 		});
 		// 写入配置文件
 		try (BufferedWriter writer = new BufferedWriter(new FileWriter(configFile))) {
@@ -289,6 +310,7 @@ public class HexSync implements HttpHandler {
 	// 发送数据
 	private static void sendHTTPResponse(HttpExchange exchange, byte[] responseBytes, int HTTPCode) {
 		new Thread(() -> {
+			long maxUploadRateInBytes = convertToBytes(serverUploadRateLimit, serverUploadRateLimitUnit);
 			long lastFillTime = System.currentTimeMillis(); // 最近一次填充时间
 			try (OutputStream outputStream = exchange.getResponseBody()) {
 				exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=UTF-8"); // 设置Content-Type
@@ -301,7 +323,7 @@ public class HexSync implements HttpHandler {
 				}
 				while (totalBytesSent < responseLength) {
 					long currentTime = System.currentTimeMillis();
-					availableTokens.addAndGet((currentTime - lastFillTime) * MAX_UPLOAD_RATE_IN_BYTES / 1000); // 更新可用令牌
+					availableTokens.addAndGet((currentTime - lastFillTime) * maxUploadRateInBytes / 1000);
 					lastFillTime = currentTime; // 更新时间
 					// 尝试发送数据
 					int bytesToSend = Math.min(16384, responseLength - totalBytesSent); // 每次最多发送16KB
@@ -312,7 +334,7 @@ public class HexSync implements HttpHandler {
 					} else {
 						// 如果没有足够的令牌，计算需要等待的时间
 						long requiredTokens = bytesToSend - availableTokens.get();
-						long sleepTime = (requiredTokens * 1000) / MAX_UPLOAD_RATE_IN_BYTES;
+						long sleepTime = (requiredTokens * 1000) / maxUploadRateInBytes;
 						Thread.sleep(sleepTime); // 暂停
 					}
 				}
@@ -338,9 +360,11 @@ public class HexSync implements HttpHandler {
 		}
 	}
 	private static String readServerFiles(String SHA512) {
-		return SERVER_MAP.entrySet().stream().filter(entry -> SHA512.equals(entry.getValue())) // 过滤出SHA512值匹配的条目
-				.map(entry -> serverSyncDirectory + FILE_SEPARATOR + entry.getKey()) // 提取文件路径
-				.findFirst() // 只返回第一个匹配的文件路径
+		return SERVER_MAP.entrySet().stream().filter(
+						entry -> SHA512.equals(entry.getValue()
+						))
+				.map(entry -> serverSyncDirectory + FILE_SEPARATOR + entry.getKey())
+				.findFirst()
 				.orElse(null); // 如果没有匹配，返回null
 	}
 	// 检查文件是否已存在并进行SHA512校验
@@ -356,7 +380,9 @@ public class HexSync implements HttpHandler {
 			String command;
 			if (os.contains("win")) {// Windows平台
 				command = "Get-Content -Path '" + LOG_FILE + "' -Encoding utf8 -Wait";
-				Runtime.getRuntime().exec(new String[]{"cmd.exe", "/c", "start", "powershell.exe", "-Command", command});
+				Runtime.getRuntime().exec(new String[]{
+						"cmd.exe", "/c", "start", "powershell.exe", "-Command", command
+				});
 			} else if (os.contains("mac")) {// macOS平台
 				command = "tail -f " + LOG_FILE;
 				Runtime.getRuntime().exec(new String[]{"/bin/bash", "-c", command});
@@ -386,21 +412,28 @@ public class HexSync implements HttpHandler {
 		LOGGER.log(Level.INFO, "收到请求: " + requestURI);
 		byte[] responseBytes = "".getBytes();
 		int HTTPCode = HttpURLConnection.HTTP_NOT_FOUND;
-		if ("/list".equals(requestURI)) {
-			sendHTTPList(exchange);
-			return;
-		} else if (requestURI.startsWith("/download/")) {
-			String clientSHA512 = requestURI.substring(requestURI.lastIndexOf("/") + 1);
-			String filePath = readServerFiles(clientSHA512); // 读取文件路径
-			File file = new File(filePath); // 构造文件对象
-			if (SERVER_MAP.containsValue(clientSHA512) && file.exists() && file.isFile()) {
-				responseBytes = Files.readAllBytes(file.toPath()); // 读取文件内容
-				HTTPCode = HttpURLConnection.HTTP_OK; // 发送成功,返回200
-				LOGGER.log(Level.INFO, "已发送文件: " + filePath);
-			}
-		} else if (requestURI.equals("/favicon.ico")) {
-			responseBytes = "IconI.png".getBytes(); // 发送图标
-			HTTPCode = HttpURLConnection.HTTP_OK;
+		switch (requestURI) {
+			case "/list":
+				sendHTTPList(exchange);
+				break;
+			case "/favicon.ico":
+				responseBytes = "IconI.png".getBytes(); // 发送图标
+				HTTPCode = HttpURLConnection.HTTP_OK;
+				break;
+			default:
+				if (requestURI.startsWith("/download/")) {
+					String requestSHA512 = requestURI.substring(requestURI.lastIndexOf("/") + 1);
+					String filePath = readServerFiles(requestSHA512); // 读取文件路径
+					if (filePath != null) {
+						File file = new File(filePath); // 构造文件对象
+						if (SERVER_MAP.containsValue(requestSHA512) && file.exists() && file.isFile()) {
+							responseBytes = Files.readAllBytes(file.toPath()); // 读取文件内容
+							HTTPCode = HttpURLConnection.HTTP_OK; // 发送成功,返回200
+							LOGGER.log(Level.INFO, "已发送文件: " + filePath);
+						}
+					}
+				} else LOGGER.log(Level.WARNING, "未知的请求: " + requestURI);
+				break;
 		}
 		sendHTTPResponse(exchange, responseBytes, HTTPCode);
 	}
@@ -430,9 +463,28 @@ public class HexSync implements HttpHandler {
 			return false; // 转换失败，返回false
 		}
 	}
-	private static void configSaveButtonAction(JTextField serverPortField, JTextField serverUploadRateLimitField, JTextField serverSyncDirectoryPathField, JTextField clientPortField, JTextField clientAddressField, JTextField clientSyncDirectoryPathField, JTabbedPane tabbedPane, JCheckBox serverAutoStartBox, JCheckBox clientAutoStartBox, JComboBox<String> serverUploadRateLimitUnitBox, JDialog settingsDialog) {
+	private static void configSaveButtonAction(
+			JTextField serverPortField,
+			JTextField serverUploadRateLimitField,
+			JTextField serverSyncDirectoryPathField,
+			JTextField clientPortField,
+			JTextField clientAddressField,
+			JTextField clientSyncDirectoryPathField,
+			JTabbedPane tabbedPane,
+			JCheckBox serverAutoStartBox,
+			JCheckBox clientAutoStartBox,
+			JComboBox<String> serverUploadRateLimitUnitBox,
+			JDialog settingsDialog
+	) {
 		// 定义输入框数组及其对应的提示信息和选项卡索引
-		Object[][] inputs = {{serverPortField, "服务端端口", 0}, {serverUploadRateLimitField, "上传速率限制", 0}, {serverSyncDirectoryPathField, "服务端同步文件夹路径", 0}, {clientPortField, "客户端端口", 1}, {clientAddressField, "服务器地址", 1}, {clientSyncDirectoryPathField, "客户端同步文件夹路径", 1}};
+		Object[][] inputs = {
+				{serverPortField, "服务端端口", 0},
+				{serverUploadRateLimitField, "上传速率限制", 0},
+				{serverSyncDirectoryPathField, "服务端同步文件夹路径", 0},
+				{clientPortField, "客户端端口", 1},
+				{clientAddressField, "服务器地址", 1},
+				{clientSyncDirectoryPathField, "客户端同步文件夹路径", 1}
+		};
 		// 检查输入框是否为空
 		for (Object[] input : inputs) {
 			JTextField textField = (JTextField) input[0];
@@ -479,7 +531,12 @@ public class HexSync implements HttpHandler {
 		settingsDialog.dispose(); // 关闭对话框
 	}
 	private static void aboutButtonAction(JFrame frame, Dimension SCREEN_SIZE) {
-		JScrollPane scrollPane = getJScrollPane("<html><body style=\"font-family: sans-serif;\">" + HEX_SYNC_NAME + "<br>By: ForgeStove<br>GitHub: <a href=\"" + GITHUB_URL + "\">" + GITHUB_URL + "</a>" + "</body></html>");
+		JScrollPane scrollPane = getJScrollPane(
+				"<html><body style=\"font-family: sans-serif;\">"
+						+ HEX_SYNC_NAME + "<br>By: ForgeStove<br>GitHub: <a href=\""
+						+ GITHUB_URL + "\">"
+						+ GITHUB_URL + "</a>" + "</body></html>"
+		);
 		scrollPane.setPreferredSize(new Dimension(SCREEN_SIZE.width / 5, SCREEN_SIZE.height / 15));
 		JOptionPane.showMessageDialog(frame, scrollPane, "关于", JOptionPane.PLAIN_MESSAGE);
 	}
@@ -567,7 +624,9 @@ public class HexSync implements HttpHandler {
 						String[] rateParts = rateInput.split("\\s+");
 						serverUploadRateLimit = Long.parseLong(rateParts[0]);
 						serverUploadRateLimitUnit = rateParts[1];
-						LOGGER.log(Level.INFO, "服务端上传速率已设置为: " + serverUploadRateLimit + " " + serverUploadRateLimitUnit);
+						LOGGER.log(Level.INFO,
+								"服务端上传速率已设置为: " + serverUploadRateLimit + " " + serverUploadRateLimitUnit
+						);
 					} else System.out.println("无效输入,请输入数字及单位.");
 					continue;
 				case "sd":
@@ -677,7 +736,9 @@ public class HexSync implements HttpHandler {
 		clientHTTPThread.start();
 	}
 	// 构建需要下载的文件列表
-	private static void populateFilesToDownloadMap(Map<String, String> requestMap, Map<String, String> filesToDownloadMap) {
+	private static void populateFilesToDownloadMap(
+			Map<String, String> requestMap, Map<String, String> filesToDownloadMap
+	) {
 		Map<String, Boolean> clientMap = new HashMap<>();
 		for (File file : Objects.requireNonNull(new File(clientSyncDirectory).listFiles()))
 			clientMap.put(calculateSHA512(file), true);
@@ -686,8 +747,9 @@ public class HexSync implements HttpHandler {
 			String SHA512Value = entry.getValue();
 			if (fileName.isEmpty() || SHA512Value.isEmpty()) return;
 			boolean contentExists = clientMap.containsKey(SHA512Value);
-			if (!contentExists && !checkFile(new File(clientSyncDirectory + FILE_SEPARATOR + fileName), fileName, requestMap))
-				filesToDownloadMap.put(fileName, SHA512Value);
+			if (!contentExists && !checkFile(new File(
+					clientSyncDirectory + FILE_SEPARATOR + fileName), fileName, requestMap)
+			) filesToDownloadMap.put(fileName, SHA512Value);
 		}
 	}
 	// 下载所有文件
@@ -705,7 +767,8 @@ public class HexSync implements HttpHandler {
 			String filePath = clientSyncDirectory + FILE_SEPARATOR + fileName; // 设置下载路径
 			if (downloadHTTPFile(fileName, filePath, filesToDownloadMap)) {
 				downloadedCount++; // 成功下载时增加计数
-				LOGGER.log(Level.INFO, "已下载: [" + downloadedCount + "/" + filesToDownloadMapSize + "] " + filePath);
+				LOGGER.log(Level.INFO,
+						"已下载: [" + downloadedCount + "/" + filesToDownloadMapSize + "] " + filePath);
 			} else {
 				LOGGER.log(Level.SEVERE, "下载失败: " + filePath);
 				isErrorDownload = true; // 记录下载失败
@@ -763,15 +826,27 @@ public class HexSync implements HttpHandler {
 		frame.add(panel);  // 添加主面板到窗口
 	}
 	// 按钮监听事件
-	private static void actionListener(JFrame frame, JButton openLogButton, JButton settingsButton, JButton shutdownButton, JButton toggleServerButton, JButton toggleClientButton) {
+	private static void actionListener(
+			JFrame frame, JButton openLogButton, JButton settingsButton,
+			JButton shutdownButton, JButton toggleServerButton, JButton toggleClientButton
+	) {
 		openLogButton.addActionListener(event -> openLog());
-		toggleButtonAction(toggleServerButton, HexSync::startHTTPServer, HexSync::stopHTTPServer, "启动服务端", "停止服务端", frame);
-		toggleButtonAction(toggleClientButton, HexSync::startHTTPClient, HexSync::stopHTTPClient, "启动客户端", "停止客户端", frame);
+		toggleButtonAction(
+				toggleServerButton, HexSync::startHTTPServer, HexSync::stopHTTPServer,
+				"启动服务端", "停止服务端", frame
+		);
+		toggleButtonAction(
+				toggleClientButton, HexSync::startHTTPClient, HexSync::stopHTTPClient,
+				"启动客户端", "停止客户端", frame
+		);
 		settingsButton.addActionListener(event -> openSettingsDialog(frame)); // 打开设置对话框
 		shutdownButton.addActionListener(event -> System.exit(0)); // 关闭程序
 	}
 	// 处理按钮事件的通用方法
-	private static void toggleButtonAction(JButton button, Runnable startAction, Runnable stopAction, String startText, String stopText, JFrame frame) {
+	private static void toggleButtonAction(
+			JButton button, Runnable startAction, Runnable stopAction,
+			String startText, String stopText, JFrame frame
+	) {
 		button.addActionListener(event -> {
 			button.setEnabled(false);
 			if (button.getText().equals(startText)) startAction.run();
@@ -783,11 +858,15 @@ public class HexSync implements HttpHandler {
 	}
 	// 切换图标
 	private static void icon(JFrame frame) {
-		frame.setIconImage(Toolkit.getDefaultToolkit().getImage(HexSync.class.getResource(serverHTTPThread != null || clientHTTPThread != null ? "IconO.png" : "IconI.png")));
+		frame.setIconImage(Toolkit.getDefaultToolkit().getImage(HexSync.class.getResource(
+				serverHTTPThread != null || clientHTTPThread != null ? "IconO.png" : "IconI.png"
+		)));
 		if (!SystemTray.isSupported()) return;
 		TrayIcon trayIcon; // 托盘图标
 		boolean running = serverHTTPThread != null || clientHTTPThread != null; // 状态标记
-		trayIcon = new TrayIcon(Toolkit.getDefaultToolkit().getImage(HexSync.class.getResource(running ? "IconO.png" : "IconI.png")), HEX_SYNC_NAME);
+		trayIcon = new TrayIcon(Toolkit.getDefaultToolkit().getImage(HexSync.class.getResource(
+				running ? "IconO.png" : "IconI.png")), HEX_SYNC_NAME
+		);
 		trayIcon.setImageAutoSize(true); // 自动调整图标大小
 		trayIcon.setToolTip(HEX_SYNC_NAME + "控制面板");
 		trayIcon.setPopupMenu(getPopupMenu(frame));
@@ -797,7 +876,9 @@ public class HexSync implements HttpHandler {
 			if (systemTray.getTrayIcons().length == 0) systemTray.add(trayIcon);
 			else {
 				TrayIcon existingIcon = systemTray.getTrayIcons()[0];
-				existingIcon.setImage(Toolkit.getDefaultToolkit().getImage(HexSync.class.getResource(running ? "IconO.png" : "IconI.png")));
+				existingIcon.setImage(Toolkit.getDefaultToolkit().getImage(HexSync.class.getResource(
+						running ? "IconO.png" : "IconI.png"
+				)));
 			}
 		} catch (AWTException error) {
 			LOGGER.log(Level.SEVERE, "添加托盘图标失败: " + error.getMessage());
@@ -892,7 +973,19 @@ public class HexSync implements HttpHandler {
 		cancelButton.setFocusPainted(false);
 		aboutButton.setFocusPainted(false);
 		// 按钮监听事件
-		configSaveButton.addActionListener(event -> configSaveButtonAction(serverPortField, serverUploadRateLimitField, serverSyncDirectoryPathField, clientPortField, clientAddressField, clientSyncDirectoryPathField, tabbedPane, serverAutoStartBox, clientAutoStartBox, serverUploadRateLimitUnitBox, settingsDialog));
+		configSaveButton.addActionListener(event -> configSaveButtonAction(
+				serverPortField,
+				serverUploadRateLimitField,
+				serverSyncDirectoryPathField,
+				clientPortField,
+				clientAddressField,
+				clientSyncDirectoryPathField,
+				tabbedPane,
+				serverAutoStartBox,
+				clientAutoStartBox,
+				serverUploadRateLimitUnitBox,
+				settingsDialog
+		));
 		cancelButton.addActionListener(event -> settingsDialog.dispose()); // 关闭对话框而不保存
 		aboutButton.addActionListener(event -> aboutButtonAction(frame, SCREEN_SIZE));
 		// 按钮面板
