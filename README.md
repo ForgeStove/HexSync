@@ -46,3 +46,10 @@ HexSync
       本项目采用 GNU 通用公共许可证 V3（GPLv3）,具体信息请参阅 LICENSE 文件。
 
 ---
+## 贡献者
+<a href="https://github.com/ForgeStove/HexSync/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=ForgeStove/HexSync" />
+</a>
+<a href="https://github.com/donywang922/HexSyncReborn/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=donywang922/HexSyncReborn" />
+</a>
