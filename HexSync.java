@@ -10,6 +10,7 @@ import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -429,7 +430,7 @@ public class HexSync implements HttpHandler {
 				HTTPCode = HttpURLConnection.HTTP_OK; // 设置响应码为200
 				break;
 			case "/favicon.ico":
-				responseBytes = "IconI.png".getBytes(); // 发送图标
+				responseBytes = Files.readAllBytes(Paths.get("IconI.png")); // 读取为字节数组
 				HTTPCode = HttpURLConnection.HTTP_OK;
 				break;
 			default:
