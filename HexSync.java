@@ -11,7 +11,10 @@ import java.net.InetSocketAddress;
 import java.net.URL;
 import java.nio.file.Files;
 import java.security.MessageDigest;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
@@ -21,42 +24,44 @@ public class HexSync implements HttpHandler {
 	private static final String HEX_SYNC_NAME = HexSync.class.getName(); // 程序名称
 	private static final Logger LOGGER = Logger.getLogger(HEX_SYNC_NAME); // 日志记录器
 	private static final AtomicLong availableTokens = new AtomicLong(0); // 当前可用令牌数量
-	private static final Map<String, String> SERVER_MAP = new HashMap<>(); // 存储服务端文件名和对应的SHA数据
 	private static final String FILE_SEPARATOR = File.separator; // 文件分隔符
 	private static final String LINE_SEPARATOR = System.lineSeparator(); // 换行符
 	private static final String HEX_SYNC_DIRECTORY = HEX_SYNC_NAME; // 文件夹目录
 	private static final String HEX_SYNC_NAME_PATH = HEX_SYNC_DIRECTORY + FILE_SEPARATOR + HEX_SYNC_NAME; // 程序名称路径
 	private static final String LOG_FILE = HEX_SYNC_NAME_PATH + ".log"; // 日志文件路径
 	private static final String CONFIG_FILE_PATH = HEX_SYNC_NAME_PATH + "Config.properties"; // 配置文件路径
-	private static final String SERVER_AUTO_START_CONFIG = "ServerAutoStart"; // 服务端自动启动配置项
-	private static final String SERVER_HTTP_PORT_CONFIG = "ServerHTTPPort"; // 服务端端口配置项
-	private static final String SERVER_SYNC_DIRECTORY_CONFIG = "ServerSyncDirectoryPath"; // 服务端同步文件夹路径配置项
-	private static final String SERVER_UPLOAD_RATE_LIMIT_CONFIG = "ServerUploadRateLimit"; // 上传速率限制配置项
-	private static final String CLIENT_HTTP_PORT_CONFIG = "ClientHTTPPort"; // 客户端端口配置项
-	private static final String SERVER_ADDRESS_CONFIG = "ServerAddress"; // 服务器地址配置项
-	private static final String CLIENT_SYNC_DIRECTORY_CONFIG = "ClientSyncDirectoryPath"; // 客户端同步文件夹路径配置项
+	private static final String SERVER_HTTP_PORT_CONFIG = "serverHTTPPort"; // 服务端端口配置项
+	private static final String SERVER_SYNC_DIRECTORY_CONFIG = "serverSyncDirectoryPath"; // 服务端同步文件夹路径配置项
+	private static final String SERVER_UPLOAD_RATE_LIMIT_CONFIG = "serverUploadRateLimit"; // 上传速率限制配置项
+	private static final String SERVER_AUTO_START_CONFIG = "serverAutoStart"; // 服务端自动启动配置项
+	private static final String CLIENT_HTTP_PORT_CONFIG = "clientHTTPPort"; // 客户端端口配置项
+	private static final String SERVER_ADDRESS_CONFIG = "serverAddress"; // 服务器地址配置项
+	private static final String CLIENT_SYNC_DIRECTORY_CONFIG = "clientSyncDirectoryPath"; // 客户端同步文件夹路径配置项
+	private static final String CLIENT_ONLY_DIRECTORY_CONFIG = "clientOnlyDirectoryPath"; // 仅客户端文件夹路径配置项
 	private static final String CLIENT_AUTO_START_CONFIG = "clientAutoStart"; // 客户端自动启动配置项
+	private static final String MINE_CRAFT_UPDATE_MODE_CONFIG = "MineCraftUpdateMode"; // MC更新模式配置项
 	private static final String GITHUB_URL = "https://github.com/ForgeStove/HexSync"; // 项目GitHub地址
+	private static Map<String, String> serverMap = new HashMap<>(); // 存储服务端文件名和对应的SHA数据
 	private static String serverSyncDirectory = "mods"; // 服务端同步文件夹目录，默认值"mods"
 	private static String clientSyncDirectory = "mods"; // 客户端同步文件夹目录，默认值"mods"
+	private static String clientOnlyDirectory = "clientOnlyMods"; // 仅客户端文件夹目录，默认值"clientOnlyMods"
 	private static String serverUploadRateLimitUnit = "MB/s"; // 上传速率限制单位，默认MB/s
 	private static String serverAddress = "localhost"; // 服务器地址，默认值localhost
-	private static boolean headless; // 是否为无头模式
-	private static boolean isErrorDownload; // 客户端下载文件时是否发生错误，影响客户端是否自动关闭
-	private static boolean serverAutoStart; // 服务端自动启动，默认不自动启动
-	private static boolean clientAutoStart; // 客户端自动启动，默认不自动启动
-	private static int serverHTTPPort = 65535;// HTTP 端口，默认值65535
-	private static int clientHTTPPort = 65535; // 客户端 HTTP 端口，默认值65535
-	private static long serverUploadRateLimit = 1; // 上传速率限制值，默认限速1MB/s
 	private static HttpServer HTTPServer; // 用于存储服务器实例
 	private static HttpURLConnection HTTPURLConnection; // 用于存储HTTP连接实例
 	private static Thread serverHTTPThread; // 服务器线程
 	private static Thread clientHTTPThread; // 客户端线程
+	private static boolean isErrorDownload; // 客户端下载文件时是否发生错误，影响客户端是否自动关闭
+	private static boolean serverAutoStart; // 服务端自动启动，默认不自动启动
+	private static boolean clientAutoStart; // 客户端自动启动，默认不自动启动
+	private static boolean updateMineCraftMode; // 客户端是否为MC更新模式，默认不启用
+	private static int serverHTTPPort = 65535;// HTTP 端口，默认值65535
+	private static int clientHTTPPort = 65535; // 客户端 HTTP 端口，默认值65535
+	private static long serverUploadRateLimit = 1; // 上传速率限制值，默认限速1MB/s
 	public static void main(String[] args) {
-		headless = GraphicsEnvironment.isHeadless() || Arrays.asList(args).contains("-headless");
 		initializeLogger();
 		loadConfig();
-		initializeUI();
+		initializeUI(args);
 	}
 	// 初始化日志记录器
 	private static void initializeLogger() {
@@ -72,8 +77,8 @@ public class HexSync implements HttpHandler {
 		}).start();
 	}
 	// 初始化UI
-	private static void initializeUI() {
-		if (headless) headlessUI(); // 无头模式
+	private static void initializeUI(String[] args) {
+		if (GraphicsEnvironment.isHeadless() || Arrays.asList(args).contains("-headless")) headlessUI(); // 无头模式
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception error) {
@@ -86,25 +91,27 @@ public class HexSync implements HttpHandler {
 		createDirectory(isServer ? serverSyncDirectory : clientSyncDirectory); // 创建同步文件夹
 		createDirectory(HEX_SYNC_DIRECTORY); // 在当前目录下创建HexSync文件夹
 		loadConfig(); // 加载配置文件
-		if (!isServer) return;
-		SERVER_MAP.clear(); // 清空同步文件列表
-		File syncDirectory = new File(serverSyncDirectory); // 获取同步文件夹
-		File[] files = syncDirectory.listFiles(); // 获取同步文件夹下的所有文件
-		if (files == null) return; // 同步文件夹为空
-		Arrays.stream(files).filter(File::isFile).forEach(file -> {
-			String SHAValue = calculateSHA(file);
-			SERVER_MAP.put(file.getName(), SHAValue);
-		});
-		LOGGER.log(Level.INFO, "初始化文件完成");
+		if (isServer) serverMap = initializeMap(serverSyncDirectory, serverMap); // 初始化服务端文件列表
+		else createDirectory(clientOnlyDirectory); // 创建仅客户端文件夹
+		LOGGER.log(Level.INFO, isServer ? "服务端初始化完成" : "客户端初始化完成");
+	}
+	private static Map<String, String> initializeMap(String directory, Map<String, String> map) {
+		map.clear(); // 清空同步文件列表
+		File[] files = new File(directory).listFiles(); // 获取同步文件夹下的所有文件
+		if (files == null) return null;
+		for (File file : files)
+			if (file.isFile()) {
+				String SHAValue = calculateSHA(file);
+				map.put(file.getName(), SHAValue);
+			}
+		return map;
 	}
 	// 检测并创建文件夹
 	private static void createDirectory(String directoryPath) {
 		File directory = new File(directoryPath);
-		if (directory.exists()) return;
-		boolean isCreated = directory.mkdirs(); // 创建文件夹并保存结果
-		LOGGER.log(isCreated ? Level.INFO : Level.SEVERE, (
-				isCreated ? "文件夹已创建: " : "无法创建文件夹: "
-		) + directoryPath);
+		if (!directory.exists())
+			if (directory.mkdirs()) LOGGER.log(Level.INFO, "文件夹已创建: " + directoryPath);
+			else LOGGER.log(Level.SEVERE, "无法创建文件夹: " + directoryPath);
 	}
 	// 加载配置文件
 	private static void loadConfig() {
@@ -124,7 +131,7 @@ public class HexSync implements HttpHandler {
 		if (line.isEmpty() || line.startsWith("#")) return;
 		String[] parts = line.split("=");
 		if (parts.length != 2) {
-			LOGGER.log(Level.WARNING, "配置文件中行格式不正确,跳过: " + line);
+			LOGGER.log(Level.WARNING, "配置格式不正确: " + line);
 			return;
 		}
 		String head = parts[0].trim();
@@ -151,11 +158,17 @@ public class HexSync implements HttpHandler {
 			case CLIENT_SYNC_DIRECTORY_CONFIG:
 				clientSyncDirectory = tail;
 				break;
+			case CLIENT_ONLY_DIRECTORY_CONFIG:
+				clientOnlyDirectory = tail;
+				break;
 			case CLIENT_AUTO_START_CONFIG:
 				clientAutoStart = Boolean.parseBoolean(tail);
 				break;
+			case MINE_CRAFT_UPDATE_MODE_CONFIG:
+				updateMineCraftMode = Boolean.parseBoolean(tail);
+				break;
 			default:
-				LOGGER.log(Level.WARNING, "未知的配置项,跳过: " + head);
+				LOGGER.log(Level.WARNING, "不正确的配置项: " + head);
 				break;
 		}
 	}
@@ -225,11 +238,11 @@ public class HexSync implements HttpHandler {
 		return requestMap;
 	}
 	// 从服务器下载文件
-	private static boolean downloadHTTPFile(String filePath, Map<String, String> filesToDownloadMap) {
+	private static boolean downloadFile(String filePath, Map<String, String> toDownloadMap) {
 		if (clientHTTPThread == null) return false; // 客户端线程已关闭
 		File clientFile = new File(filePath); // 目标本地文件
 		String fileName = filePath.substring(clientSyncDirectory.length() + 1); // 去除同步文件夹路径
-		String requestSHA = filesToDownloadMap.get(fileName);
+		String requestSHA = toDownloadMap.get(fileName);
 		try {
 			int responseCode = getResponseCode(new URL(
 					HTTPFormat(serverAddress) + ":" + clientHTTPPort + "/download/" + requestSHA
@@ -281,17 +294,19 @@ public class HexSync implements HttpHandler {
 				{CLIENT_HTTP_PORT_CONFIG, String.valueOf(clientHTTPPort)},
 				{SERVER_ADDRESS_CONFIG, serverAddress},
 				{CLIENT_SYNC_DIRECTORY_CONFIG, clientSyncDirectory},
+				{CLIENT_ONLY_DIRECTORY_CONFIG, clientOnlyDirectory},
 				{CLIENT_AUTO_START_CONFIG, String.valueOf(clientAutoStart)},
+				{MINE_CRAFT_UPDATE_MODE_CONFIG, String.valueOf(updateMineCraftMode)},
 		};
 		StringBuilder configContent = new StringBuilder();
-		Arrays.stream(configEntries).forEach(entry -> {
+		for (String[] entry : configEntries) {
 			if (entry[0].startsWith("#")) configContent.append(entry[0]).append(LINE_SEPARATOR);
 			else configContent
 					.append(entry[0])
 					.append("=")
 					.append(entry.length > 1 ? entry[1] : "")
 					.append(LINE_SEPARATOR);
-		});
+		}
 		File configFile = new File(CONFIG_FILE_PATH);
 		try (BufferedWriter writer = new BufferedWriter(new FileWriter(configFile))) {
 			writer.write(configContent.toString());// 写入配置文件
@@ -358,11 +373,11 @@ public class HexSync implements HttpHandler {
 		}
 	}
 	// 检查文件是否已存在并进行SHA校验
-	private static boolean checkFile(File localFile, String fileName, Map<String, String> requestMap) {
-		if (!localFile.exists()) return false; // 文件不存在,直接返回
+	private static boolean checkNoFile(File localFile, String fileName, Map<String, String> requestMap) {
+		if (!localFile.exists()) return true; // 文件不存在,直接返回
 		String serverSHA = requestMap.get(fileName); // 从服务端请求的文件列表中获取SHA值
-		if (serverSHA == null) return false;
-		return serverSHA.equals(calculateSHA(localFile));
+		if (serverSHA == null) return true;
+		return !serverSHA.equals(calculateSHA(localFile));
 	}
 	private static void openLog() {
 		try {
@@ -405,7 +420,7 @@ public class HexSync implements HttpHandler {
 		switch (requestURI) {
 			case "/list":
 				StringBuilder responseBuilder = new StringBuilder(); // 用于构建响应内容
-				for (Map.Entry<String, String> entry : SERVER_MAP.entrySet()) {
+				for (Map.Entry<String, String> entry : serverMap.entrySet()) {
 					String fileName = entry.getKey();
 					String SHAValue = entry.getValue();
 					responseBuilder.append(fileName).append(LINE_SEPARATOR).append(SHAValue).append(LINE_SEPARATOR);
@@ -421,7 +436,7 @@ public class HexSync implements HttpHandler {
 				if (requestURI.startsWith("/download/")) {
 					String requestSHA = requestURI.substring(requestURI.lastIndexOf("/") + 1);
 					String filePath = null;
-					for (Map.Entry<String, String> entry : SERVER_MAP.entrySet()) {
+					for (Map.Entry<String, String> entry : serverMap.entrySet()) {
 						if (!requestSHA.equals(entry.getValue())) continue;
 						filePath = serverSyncDirectory + FILE_SEPARATOR + entry.getKey();
 						break;
@@ -429,7 +444,7 @@ public class HexSync implements HttpHandler {
 					// 读取文件路径
 					if (filePath == null) break;
 					File file = new File(filePath); // 构造文件对象
-					if (SERVER_MAP.containsValue(requestSHA) && file.exists() && file.isFile()) {
+					if (serverMap.containsValue(requestSHA) && file.exists() && file.isFile()) {
 						try (InputStream inputStream = Files.newInputStream(file.toPath())) {
 							ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 							byte[] buffer = new byte[4096]; // 设定每次读取的字节数
@@ -476,9 +491,11 @@ public class HexSync implements HttpHandler {
 			JTextField clientPortField,
 			JTextField clientAddressField,
 			JTextField clientSyncDirectoryPathField,
+			JTextField clientOnlyDirectoryField,
 			JTabbedPane tabbedPane,
 			JCheckBox serverAutoStartBox,
 			JCheckBox clientAutoStartBox,
+			JCheckBox updateMineCraftModeBox,
 			JComboBox<String> serverUploadRateLimitUnitBox,
 			JDialog settingsDialog
 	) {
@@ -489,7 +506,8 @@ public class HexSync implements HttpHandler {
 				{serverSyncDirectoryPathField, "服务端同步文件夹路径", 0},
 				{clientPortField, "客户端端口", 1},
 				{clientAddressField, "服务器地址", 1},
-				{clientSyncDirectoryPathField, "客户端同步文件夹路径", 1}
+				{clientSyncDirectoryPathField, "客户端同步文件夹路径", 1},
+				{clientOnlyDirectoryField, "客户端仅同步文件夹路径", 1},
 		};
 		// 检查输入框是否为空
 		for (Object[] input : inputs) {
@@ -533,6 +551,8 @@ public class HexSync implements HttpHandler {
 		clientHTTPPort = Integer.parseInt(clientPortField.getText().trim());
 		serverAddress = clientAddressField.getText().trim();
 		clientSyncDirectory = clientSyncDirectoryPathField.getText().trim();
+		clientOnlyDirectory = clientOnlyDirectoryField.getText().trim();
+		updateMineCraftMode = updateMineCraftModeBox.isSelected();
 		saveConfig(); // 保存配置
 		settingsDialog.dispose(); // 关闭对话框
 	}
@@ -713,7 +733,7 @@ public class HexSync implements HttpHandler {
 		serverHTTPThread = new Thread(() -> {
 			LOGGER.log(Level.INFO, HEX_SYNC_NAME + "Server正在启动...");
 			initializeFiles(true);
-			if (SERVER_MAP.isEmpty()) {
+			if (serverMap.isEmpty()) {
 				LOGGER.log(Level.WARNING, serverSyncDirectory + "无文件,无法启动服务器");
 				stopHTTPServer();
 				return;
@@ -743,55 +763,97 @@ public class HexSync implements HttpHandler {
 			LOGGER.log(Level.INFO, HEX_SYNC_NAME + "Client正在启动...");
 			initializeFiles(false);
 			Map<String, String> requestMap = requestHTTPList();
-			if (!requestMap.isEmpty()) {
+			if (requestMap.isEmpty()) isErrorDownload = true;
+			else {
 				LOGGER.log(Level.INFO, "获取到 " + requestMap.size() + " 个文件");
-				Map<String, String> filesToDownloadMap = new HashMap<>(); // 用于存储需要下载的文件列表
-				populateFilesToDownloadMap(requestMap, filesToDownloadMap);
-				downloadHTTPFiles(filesToDownloadMap);
-			} else isErrorDownload = true;
+				Map<String, String> toDownloadMap = new HashMap<>(); // 用于存储需要下载的文件列表
+				Map<String, String> clientOnlyMap = new HashMap<>(); // 用于存储客户端仅同步的文件列表
+				clientOnlyMap = initializeMap(clientOnlyDirectory, clientOnlyMap); // 初始化客户端仅同步的文件列表
+				if (updateMineCraftMode) deleteFilesNotInMap(requestMap, clientOnlyMap);
+				Map<String, String> clientMap = new HashMap<>(); // 用于存储客户端文件列表
+				clientMap = initializeMap(clientSyncDirectory, clientMap); // 初始化客户端文件列表
+				createToDownloadMap(requestMap, toDownloadMap, clientMap); // 构建需要下载的文件列表
+				downloadFilesInMap(toDownloadMap); // 下载文件
+				if (updateMineCraftMode) copyAllFiles(clientOnlyDirectory, clientSyncDirectory);
+			}
 			stopHTTPClient();
 		});
 		clientHTTPThread.start();
 	}
+	private static void deleteFilesNotInMap(Map<String, String> requestMap, Map<String, String> clientOnlyMap) {
+		File[] files = new File(clientSyncDirectory).listFiles();
+		if (files != null) for (File file : files) {
+			String fileName = file.getName();
+			if (file.isFile()
+					&& !requestMap.containsKey(fileName)
+					&& !clientOnlyMap.containsKey(fileName)
+					&& checkNoFile(file, fileName, requestMap)
+					&& checkNoFile(file, fileName, clientOnlyMap)
+			) if (file.delete()) LOGGER.log(Level.INFO, "已删除不存在于服务端的文件: " + fileName);
+			else LOGGER.log(Level.SEVERE, "删除文件失败: " + fileName);
+		}
+	}
+	private static void copyAllFiles(String source, String target) {
+		File targetDirectory = new File(target);
+		createDirectory(String.valueOf(targetDirectory));
+		// 获取源目录下的所有文件和目录
+		File[] files = new File(source).listFiles();
+		if (files != null) for (File file : files) {
+			File targetFile = new File(targetDirectory, file.getName());
+			// 递归复制子目录
+			if (file.isDirectory()) copyAllFiles(file.getAbsolutePath(), targetFile.getAbsolutePath());
+			else {
+				if (targetFile.exists()) continue;// 检查目标文件是否存在
+				// 复制文件
+				try (InputStream in = Files.newInputStream(file.toPath());
+					 OutputStream out = Files.newOutputStream(targetFile.toPath())) {
+					byte[] buffer = new byte[8192];
+					int length;
+					while ((length = in.read(buffer)) > 0) {
+						out.write(buffer, 0, length);
+					}
+					LOGGER.log(Level.INFO, "已复制文件: " + file.getName() + " 到 " + targetFile.getAbsolutePath());
+				} catch (IOException error) {
+					LOGGER.log(Level.SEVERE, "复制文件失败: " + file.getName(), error);
+				}
+			}
+		}
+	}
 	// 构建需要下载的文件列表
-	private static void populateFilesToDownloadMap(
-			Map<String, String> requestMap, Map<String, String> filesToDownloadMap
+	private static void createToDownloadMap(
+			Map<String, String> requestMap, Map<String, String> toDownloadMap, Map<String, String> clientMap
 	) {
-		Map<String, Boolean> clientMap = new HashMap<>();
-		for (File file : Objects.requireNonNull(new File(clientSyncDirectory).listFiles()))
-			clientMap.put(calculateSHA(file), null);
 		for (Map.Entry<String, String> entry : requestMap.entrySet()) {
 			String fileName = entry.getKey();
 			String SHAValue = entry.getValue();
 			if (fileName.isEmpty() || SHAValue.isEmpty()) return;
-			boolean contentExists = clientMap.containsKey(SHAValue);
-			if (!contentExists && !checkFile(new File(
-					clientSyncDirectory + FILE_SEPARATOR + fileName), fileName, requestMap)
-			) filesToDownloadMap.put(fileName, SHAValue);
+			if (!clientMap.containsKey(fileName) && !clientMap.containsValue(SHAValue) && checkNoFile(
+					new File(clientSyncDirectory + FILE_SEPARATOR + fileName), fileName, requestMap
+			)) toDownloadMap.put(fileName, SHAValue);
 		}
 	}
-	// 下载所有文件
-	private static void downloadHTTPFiles(Map<String, String> filesToDownloadMap) {
-		if (filesToDownloadMap.isEmpty()) {
+	// 下载需要的文件
+	private static void downloadFilesInMap(Map<String, String> toDownloadMap) {
+		if (toDownloadMap.isEmpty()) {
 			LOGGER.log(Level.INFO, "同步目录已是最新,无需下载.");
 			return;
 		}
-		LOGGER.log(Level.INFO, "开始下载 " + filesToDownloadMap.size() + " 个文件");
+		LOGGER.log(Level.INFO, "开始下载 " + toDownloadMap.size() + " 个文件");
 		int downloadedCount = 0;
-		int filesToDownloadMapSize = filesToDownloadMap.size();
-		for (Map.Entry<String, String> entry : filesToDownloadMap.entrySet()) {
+		int toDownloadMapSize = toDownloadMap.size();
+		for (Map.Entry<String, String> entry : toDownloadMap.entrySet()) {
 			String filePath = clientSyncDirectory + FILE_SEPARATOR + entry.getKey(); // 设置下载路径
-			if (downloadHTTPFile(filePath, filesToDownloadMap)) {
+			if (downloadFile(filePath, toDownloadMap)) {
 				downloadedCount++; // 成功下载时增加计数
 				LOGGER.log(
-						Level.INFO, "已下载: [" + downloadedCount + "/" + filesToDownloadMapSize + "] " + filePath
+						Level.INFO, "已下载: [" + downloadedCount + "/" + toDownloadMapSize + "] " + filePath
 				);
 			} else {
 				LOGGER.log(Level.SEVERE, "下载失败: " + filePath);
 				isErrorDownload = true; // 记录下载失败
 			}
 		}
-		LOGGER.log(Level.INFO, "下载完成: [" + downloadedCount + "/" + filesToDownloadMapSize + "]");
+		LOGGER.log(Level.INFO, "下载完成: [" + downloadedCount + "/" + toDownloadMapSize + "]");
 	}
 	private static void createUI() {
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -952,6 +1014,7 @@ public class HexSync implements HttpHandler {
 		JTextField clientPortField = new JTextField(String.valueOf(clientHTTPPort));
 		JTextField clientAddressField = new JTextField(serverAddress);
 		JTextField clientSyncDirectoryPathField = new JTextField(clientSyncDirectory);
+		JTextField clientOnlyDirectoryPathField = new JTextField(clientOnlyDirectory);
 		// 添加标签和文本框
 		clientPanel.add(new JLabel("端口号: "));
 		clientPanel.add(clientPortField);
@@ -959,17 +1022,23 @@ public class HexSync implements HttpHandler {
 		clientPanel.add(clientAddressField);
 		clientPanel.add(new JLabel("客户端同步文件夹路径: "));
 		clientPanel.add(clientSyncDirectoryPathField);
+		clientPanel.add(new JLabel("仅客户端模组文件夹路径: "));
+		clientPanel.add(clientOnlyDirectoryPathField);
 		// 添加选项卡到选项卡面板
 		JCheckBox serverAutoStartBox = new JCheckBox("自动启动服务端");
 		JCheckBox clientAutoStartBox = new JCheckBox("自动启动客户端");
+		JCheckBox updateMineCraftModeBox = new JCheckBox("MineCraft更新模式");
 		serverAutoStartBox.setFocusPainted(false);
 		clientAutoStartBox.setFocusPainted(false);
+		updateMineCraftModeBox.setFocusPainted(false);
 		// 设置复选框初始状态
 		serverAutoStartBox.setSelected(serverAutoStart);
 		clientAutoStartBox.setSelected(clientAutoStart);
+		updateMineCraftModeBox.setSelected(updateMineCraftMode);
 		// 添加复选框到设置面板
 		serverPanel.add(serverAutoStartBox);
 		clientPanel.add(clientAutoStartBox);
+		clientPanel.add(updateMineCraftModeBox);
 		// 添加选项卡面板到设置对话框
 		JTabbedPane tabbedPane = new JTabbedPane();
 		tabbedPane.addTab("服务端设置", serverPanel);
@@ -990,9 +1059,11 @@ public class HexSync implements HttpHandler {
 				clientPortField,
 				clientAddressField,
 				clientSyncDirectoryPathField,
+				clientOnlyDirectoryPathField,
 				tabbedPane,
 				serverAutoStartBox,
 				clientAutoStartBox,
+				updateMineCraftModeBox,
 				serverUploadRateLimitUnitBox,
 				settingsDialog
 		));
