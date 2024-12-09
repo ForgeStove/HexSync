@@ -61,14 +61,12 @@ public class HexSync implements HttpHandler {
 	// 初始化日志记录器
 	private static void initializeLogger() {
 		new Thread(() -> {
-			createDirectory(HEX_SYNC_DIRECTORY);
-			File logFile = new File(LOG_FILE);
-			try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFile, false))) {
-				if (logFile.length() > 0) writer.write(""); // 清空内容
-				FileHandler fileHandler = new FileHandler(LOG_FILE, true);
+			try {
+				createDirectory(HEX_SYNC_DIRECTORY);
+				FileHandler fileHandler = new FileHandler(LOG_FILE, false);
 				fileHandler.setFormatter(new SimpleFormatter()); // 设置日志格式化器
 				LOGGER.addHandler(fileHandler); // 将FileHandler添加到日志记录器
-			} catch (IOException | SecurityException error) {
+			} catch (Exception error) {
 				LOGGER.log(Level.SEVERE, "初始化日志时出错: " + error.getMessage(), error);
 			}
 		}).start();
@@ -223,18 +221,14 @@ public class HexSync implements HttpHandler {
 			LOGGER.log(Level.SEVERE, "读取响应时出错: " + error.getMessage());
 			isErrorDownload = true;
 		}
-		// 记录整体文件列表
-		StringBuilder fileListBuilder = new StringBuilder("接收到文件列表:" + LINE_SEPARATOR);
-		logMap(requestMap, fileListBuilder);
+		LOGGER.log(Level.INFO, "请求文件列表成功,共收到" + requestMap.size() + "个文件"); // 记录请求成功日志
 		return requestMap;
 	}
-	private static void logMap(Map<String, String> map, StringBuilder fileListBuilder) {
-		map.forEach((key, value) -> fileListBuilder.append(key).append(LINE_SEPARATOR));
-		LOGGER.log(Level.INFO, fileListBuilder.toString().trim());
-	}
 	// 从服务器下载文件
-	private static boolean downloadHTTPFile(String fileName, String filePath, Map<String, String> filesToDownloadMap) {
+	private static boolean downloadHTTPFile(String filePath, Map<String, String> filesToDownloadMap) {
+		if (clientHTTPThread == null) return false; // 客户端线程已关闭
 		File clientFile = new File(filePath); // 目标本地文件
+		String fileName = filePath.substring(clientSyncDirectory.length() + 1); // 去除同步文件夹路径
 		String requestSHA = filesToDownloadMap.get(fileName);
 		try {
 			int responseCode = getResponseCode(new URL(
@@ -392,7 +386,7 @@ public class HexSync implements HttpHandler {
 	}
 	private static void headlessSettingsHelp() {
 		System.out.println("设置服务端HTTP端口: 'sp <端口号>'");
-		System.out.println("设置服务端上传速率: 'sl <速率> <单位>'");
+		System.out.println("设置服务端上传速率: 'sl <速率> <'B/s'/'KB/s'/'MB/s'/'GB/s'>'");
 		System.out.println("设置服务端同步目录: 'sd <目录>'");
 		System.out.println("设置服务端自动启动: 'ss <y/n>'");
 		System.out.println("设置客户端HTTP端口: 'cp <端口号>'");
@@ -552,7 +546,7 @@ public class HexSync implements HttpHandler {
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		scrollPane.setPreferredSize(new Dimension(screenSize.width / 5, screenSize.height / 15));
 		// 创建自定义对话框
-		JDialog dialog = new JDialog(frame, "关于", Dialog.ModalityType.APPLICATION_MODAL);
+		JDialog dialog = new JDialog(frame, "关于", Dialog.ModalityType.MODELESS);
 		dialog.getContentPane().add(scrollPane); // 添加内容
 		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE); // 关闭方式
 		dialog.pack(); // 调整大小
@@ -562,7 +556,6 @@ public class HexSync implements HttpHandler {
 	private static JScrollPane getJScrollPane(String htmlContent) {
 		JEditorPane aboutEditorPane = new JEditorPane("text/html", htmlContent);
 		aboutEditorPane.setEditable(false);
-		// 处理链接点击事件
 		aboutEditorPane.addHyperlinkListener(hyperlinkEvent -> {
 			if (HyperlinkEvent.EventType.ACTIVATED.equals(hyperlinkEvent.getEventType())) {
 				try {
@@ -641,6 +634,10 @@ public class HexSync implements HttpHandler {
 					String rateInput = input.substring(command.length()).trim();
 					if (rateInput.matches("\\d+(\\s+B/s|\\s+KB/s|\\s+MB/s|\\s+GB/s)")) {
 						String[] rateParts = rateInput.split("\\s+");
+						if (!isNumberInLong(rateParts[0])) {
+							System.out.println("无效输入,请输入数字.");
+							continue;
+						}
 						serverUploadRateLimit = Long.parseLong(rateParts[0]);
 						serverUploadRateLimitUnit = rateParts[1];
 						LOGGER.log(Level.INFO,
@@ -774,17 +771,15 @@ public class HexSync implements HttpHandler {
 	// 下载所有文件
 	private static void downloadHTTPFiles(Map<String, String> filesToDownloadMap) {
 		if (filesToDownloadMap.isEmpty()) {
-			LOGGER.log(Level.INFO, "没有需要下载的文件");
+			LOGGER.log(Level.INFO, "同步目录已是最新,无需下载.");
 			return;
 		}
-		StringBuilder fileListBuilder = new StringBuilder("需要下载:" + LINE_SEPARATOR);
-		logMap(filesToDownloadMap, fileListBuilder);
+		LOGGER.log(Level.INFO, "开始下载 " + filesToDownloadMap.size() + " 个文件");
 		int downloadedCount = 0;
 		int filesToDownloadMapSize = filesToDownloadMap.size();
 		for (Map.Entry<String, String> entry : filesToDownloadMap.entrySet()) {
-			String fileName = entry.getKey(); // 文件名
-			String filePath = clientSyncDirectory + FILE_SEPARATOR + fileName; // 设置下载路径
-			if (downloadHTTPFile(fileName, filePath, filesToDownloadMap)) {
+			String filePath = clientSyncDirectory + FILE_SEPARATOR + entry.getKey(); // 设置下载路径
+			if (downloadHTTPFile(filePath, filesToDownloadMap)) {
 				downloadedCount++; // 成功下载时增加计数
 				LOGGER.log(
 						Level.INFO, "已下载: [" + downloadedCount + "/" + filesToDownloadMapSize + "] " + filePath
@@ -805,19 +800,18 @@ public class HexSync implements HttpHandler {
 		frame.setTitle(HEX_SYNC_NAME + "控制面板");
 		frame.setSize(screenSize.width / 5, screenSize.height / 10);
 		frame.setLocationRelativeTo(null); // 居中显示
-		buttonPanel(frame);// 创建按钮面板
+		buttonPanel(frame, screenSize);// 创建按钮面板
 		icon(frame);
 		if (serverAutoStart) startHTTPServer(); // 启动服务端
 		if (clientAutoStart) startHTTPClient(); // 启动客户端
 	}
-	private static void buttonPanel(JFrame frame) {
+	private static void buttonPanel(JFrame frame, Dimension screenSize) {
 		JButton openLogButton = new JButton("日志");
 		JButton settingsButton = new JButton("设置");
 		JButton shutdownButton = new JButton("退出");
 		JButton toggleServerButton = new JButton("启动服务端");
 		JButton toggleClientButton = new JButton("启动客户端");
 		// 设置按钮的首选大小
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		Dimension buttonSize = new Dimension(screenSize.width / 17, screenSize.height / 40);
 		openLogButton.setPreferredSize(buttonSize);
 		settingsButton.setPreferredSize(buttonSize);
@@ -888,7 +882,7 @@ public class HexSync implements HttpHandler {
 		);
 		trayIcon.setImageAutoSize(true); // 自动调整图标大小
 		trayIcon.setToolTip(HEX_SYNC_NAME + "控制面板");
-		trayIcon.setPopupMenu(getPopupMenu(frame));
+		trayIcon.setPopupMenu(popupMenu(frame));
 		trayIcon.addActionListener(event -> frame.setVisible(true));
 		try {
 			SystemTray systemTray = SystemTray.getSystemTray();
@@ -903,8 +897,8 @@ public class HexSync implements HttpHandler {
 			LOGGER.log(Level.SEVERE, "添加托盘图标失败: " + error.getMessage());
 		}
 	}
-	private static PopupMenu getPopupMenu(JFrame frame) {
-		PopupMenu popup = new PopupMenu();
+	private static PopupMenu popupMenu(JFrame frame) {
+		PopupMenu popupMenu = new PopupMenu();
 		MenuItem openItem = new MenuItem("Open");
 		MenuItem hideItem = new MenuItem("Hide");
 		MenuItem settingsItem = new MenuItem("Settings");
@@ -916,27 +910,24 @@ public class HexSync implements HttpHandler {
 		aboutItem.addActionListener(event -> aboutButtonAction(frame));
 		exitItem.addActionListener(event -> System.exit(0));
 		// 将菜单项添加到弹出菜单
-		popup.add(openItem);
-		popup.addSeparator();
-		popup.add(hideItem);
-		popup.addSeparator();
-		popup.add(settingsItem);
-		popup.addSeparator();
-		popup.add(exitItem);
-		return popup;
+		popupMenu.add(openItem);
+		popupMenu.addSeparator();
+		popupMenu.add(hideItem);
+		popupMenu.addSeparator();
+		popupMenu.add(settingsItem);
+		popupMenu.addSeparator();
+		popupMenu.add(aboutItem);
+		popupMenu.addSeparator();
+		popupMenu.add(exitItem);
+		return popupMenu;
 	}
 	// 打开设置对话框
 	private static void openSettingsDialog(JFrame frame) {
 		loadConfig();
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		int inputHeight = (int) (screenSize.height * 0.05);
-		int inputWidth = (int) (screenSize.width * 0.2);
-		JDialog settingsDialog = new JDialog(frame, "设置", true);
+		JDialog settingsDialog = new JDialog(frame, "设置",  Dialog.ModalityType.MODELESS);
 		// 创建选项卡面板
 		JPanel serverPanel = new JPanel(new GridLayout(5, 2));
 		JPanel clientPanel = new JPanel(new GridLayout(5, 2));
-		serverPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-		clientPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		JTextField serverPortField = new JTextField(String.valueOf(serverHTTPPort));
 		JTextField serverUploadRateLimitField = new JTextField(String.valueOf(serverUploadRateLimit));
 		JTextField serverSyncDirectoryPathField = new JTextField(serverSyncDirectory);
@@ -955,10 +946,6 @@ public class HexSync implements HttpHandler {
 		serverPanel.add(serverUploadRateLimitPanel);
 		serverPanel.add(new JLabel("服务端同步文件夹路径: "));
 		serverPanel.add(serverSyncDirectoryPathField);
-		serverPortField.setSize(new Dimension(inputWidth, inputHeight));
-		serverSyncDirectoryPathField.setSize(new Dimension(inputWidth, inputHeight));
-		serverUploadRateLimitField.setSize(new Dimension(inputWidth * 3 / 4, inputHeight));
-		serverUploadRateLimitUnitBox.setSize(new Dimension(inputWidth / 4, inputHeight));
 		// 创建文本框
 		JTextField clientPortField = new JTextField(String.valueOf(clientHTTPPort));
 		JTextField clientAddressField = new JTextField(serverAddress);
@@ -1016,8 +1003,7 @@ public class HexSync implements HttpHandler {
 		buttonPanel.add(aboutButton);
 		// 添加按钮面板到对话框的南部
 		settingsDialog.add(buttonPanel, BorderLayout.SOUTH);
-		// 设置对话框的基本属性
-		settingsDialog.setSize(screenSize.width / 4, screenSize.height / 5);
+		settingsDialog.pack(); // 自动调整大小
 		settingsDialog.setLocationRelativeTo(frame); // 居中
 		settingsDialog.setVisible(true); // 显示对话框
 	}
