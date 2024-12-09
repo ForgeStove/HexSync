@@ -310,8 +310,8 @@ public class HexSync implements HttpHandler {
 	// 发送数据
 	private static void sendHTTPResponse(HttpExchange exchange, byte[] responseBytes, int HTTPCode) {
 		new Thread(() -> {
+			if (responseBytes == null) return;
 			int responseBytesLength = responseBytes.length;
-			if (responseBytesLength == 0) return;
 			long maxUploadRateInBytes = convertToBytes(serverUploadRateLimit, serverUploadRateLimitUnit);
 			long lastFillTime = System.currentTimeMillis(); // 最近一次填充时间
 			try (OutputStream outputStream = exchange.getResponseBody()) {
@@ -360,14 +360,6 @@ public class HexSync implements HttpHandler {
 				return 0;
 		}
 	}
-	private static String readServerFiles(String SHA512) {
-		return SERVER_MAP.entrySet().stream().filter(
-						entry -> SHA512.equals(entry.getValue()
-						))
-				.map(entry -> serverSyncDirectory + FILE_SEPARATOR + entry.getKey())
-				.findFirst()
-				.orElse(null); // 如果没有匹配，返回null
-	}
 	// 检查文件是否已存在并进行SHA512校验
 	private static boolean checkFile(File localFile, String fileName, Map<String, String> requestMap) {
 		if (!localFile.exists()) return false; // 文件不存在,直接返回
@@ -415,7 +407,14 @@ public class HexSync implements HttpHandler {
 		int HTTPCode = HttpURLConnection.HTTP_NOT_FOUND;
 		switch (requestURI) {
 			case "/list":
-				sendHTTPList(exchange);
+				StringBuilder responseBuilder = new StringBuilder(); // 用于构建响应内容
+				for (Map.Entry<String, String> entry : SERVER_MAP.entrySet()) {
+					String fileName = entry.getKey();
+					String SHA512Value = entry.getValue();
+					responseBuilder.append(fileName).append(LINE_SEPARATOR).append(SHA512Value).append(LINE_SEPARATOR);
+				}
+				responseBytes = responseBuilder.toString().getBytes(); // 转换为字节数组
+				HTTPCode = HttpURLConnection.HTTP_OK; // 设置响应码为200
 				break;
 			case "/favicon.ico":
 				responseBytes = "IconI.png".getBytes(); // 发送图标
@@ -424,28 +423,24 @@ public class HexSync implements HttpHandler {
 			default:
 				if (requestURI.startsWith("/download/")) {
 					String requestSHA512 = requestURI.substring(requestURI.lastIndexOf("/") + 1);
-					String filePath = readServerFiles(requestSHA512); // 读取文件路径
-					if (filePath != null) {
-						File file = new File(filePath); // 构造文件对象
-						if (SERVER_MAP.containsValue(requestSHA512) && file.exists() && file.isFile()) {
-							responseBytes = Files.readAllBytes(file.toPath()); // 读取文件内容
-							HTTPCode = HttpURLConnection.HTTP_OK; // 发送成功,返回200
-							LOGGER.log(Level.INFO, "已发送文件: " + filePath);
-						}
+					String filePath = null;
+					for (Map.Entry<String, String> entry : SERVER_MAP.entrySet()) {
+						if (!requestSHA512.equals(entry.getValue())) continue;
+						filePath = serverSyncDirectory + FILE_SEPARATOR + entry.getKey();
+						break;
+					}
+					// 读取文件路径
+					if (filePath == null) break;
+					File file = new File(filePath); // 构造文件对象
+					if (SERVER_MAP.containsValue(requestSHA512) && file.exists() && file.isFile()) {
+						responseBytes = Files.readAllBytes(file.toPath()); // 读取文件内容
+						HTTPCode = HttpURLConnection.HTTP_OK; // 发送成功,返回200
+						LOGGER.log(Level.INFO, "已发送文件: " + filePath);
 					}
 				} else LOGGER.log(Level.WARNING, "未知的请求: " + requestURI);
 				break;
 		}
 		sendHTTPResponse(exchange, responseBytes, HTTPCode);
-	}
-	// 发送文件名和校验码列表
-	private static void sendHTTPList(HttpExchange exchange) {
-		StringBuilder responseBuilder = new StringBuilder(); // 用于构建响应内容
-		SERVER_MAP.forEach((fileName, SHA512Value) ->
-				responseBuilder.append(fileName).append(LINE_SEPARATOR).append(SHA512Value).append(LINE_SEPARATOR)
-		); // 遍历服务端文件列表,将文件名和校验码拼接成字符串
-		sendHTTPResponse(exchange, responseBuilder.toString().getBytes(), HttpURLConnection.HTTP_OK);
-		LOGGER.log(Level.INFO, "已发送列表");
 	}
 	// 检测端口号有效性的方法
 	private static boolean isPort(String portInput) {
