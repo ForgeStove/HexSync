@@ -36,7 +36,7 @@ public class HexSync implements HttpHandler {
 	private static final String SERVER_ADDRESS_CONFIG = "ServerAddress"; // 服务器地址配置项
 	private static final String CLIENT_SYNC_DIRECTORY_CONFIG = "ClientSyncDirectoryPath"; // 客户端同步文件夹路径配置项
 	private static final String CLIENT_AUTO_START_CONFIG = "clientAutoStart"; // 客户端自动启动配置项
-	private static final String GITHUB_URL = "https://github.com/ForgeStove/HexSync";// 转换为字节
+	private static final String GITHUB_URL = "https://github.com/ForgeStove/HexSync"; // 项目GitHub地址
 	private static String serverSyncDirectory = "mods"; // 服务端同步文件夹目录，默认值"mods"
 	private static String clientSyncDirectory = "mods"; // 客户端同步文件夹目录，默认值"mods"
 	private static String serverUploadRateLimitUnit = "MB/s"; // 上传速率限制单位，默认MB/s
@@ -536,7 +536,7 @@ public class HexSync implements HttpHandler {
 		saveConfig(); // 保存配置
 		settingsDialog.dispose(); // 关闭对话框
 	}
-	private static void aboutButtonAction(JFrame frame) {
+	private static void aboutButtonAction(Dialog dialog) {
 		JScrollPane scrollPane = getJScrollPane(
 				"<html><body style=\"font-family: sans-serif;\">"
 						+ HEX_SYNC_NAME + "<br>By: ForgeStove<br>GitHub: <a href=\""
@@ -546,12 +546,12 @@ public class HexSync implements HttpHandler {
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		scrollPane.setPreferredSize(new Dimension(screenSize.width / 5, screenSize.height / 15));
 		// 创建自定义对话框
-		JDialog dialog = new JDialog(frame, "关于", Dialog.ModalityType.MODELESS);
-		dialog.getContentPane().add(scrollPane); // 添加内容
-		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE); // 关闭方式
-		dialog.pack(); // 调整大小
-		dialog.setLocationRelativeTo(frame); // 居中显示
-		dialog.setVisible(true);// 显示对话框
+		JDialog aboutDialog = new JDialog(dialog, "关于", Dialog.ModalityType.MODELESS);
+		aboutDialog.getContentPane().add(scrollPane); // 添加内容
+		aboutDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE); // 关闭方式
+		aboutDialog.pack(); // 调整大小
+		aboutDialog.setLocationRelativeTo(dialog); // 居中显示
+		aboutDialog.setVisible(true);// 显示对话框
 	}
 	private static JScrollPane getJScrollPane(String htmlContent) {
 		JEditorPane aboutEditorPane = new JEditorPane("text/html", htmlContent);
@@ -732,8 +732,10 @@ public class HexSync implements HttpHandler {
 	}
 	private static void stopHTTPClient() {
 		if (HTTPURLConnection != null) HTTPURLConnection.disconnect();
-		clientHTTPThread = null; // 清除线程引用
-		LOGGER.log(Level.INFO, HEX_SYNC_NAME + "Client已关闭");
+		if (clientHTTPThread != null) {
+			clientHTTPThread = null; // 清除线程引用
+			LOGGER.log(Level.INFO, HEX_SYNC_NAME + "Client已关闭");
+		}
 		if (clientAutoStart && !isErrorDownload) System.exit(0); // 自动退出
 	}
 	private static void startHTTPClient() {
@@ -757,7 +759,7 @@ public class HexSync implements HttpHandler {
 	) {
 		Map<String, Boolean> clientMap = new HashMap<>();
 		for (File file : Objects.requireNonNull(new File(clientSyncDirectory).listFiles()))
-			clientMap.put(calculateSHA(file), true);
+			clientMap.put(calculateSHA(file), null);
 		for (Map.Entry<String, String> entry : requestMap.entrySet()) {
 			String fileName = entry.getKey();
 			String SHAValue = entry.getValue();
@@ -791,21 +793,21 @@ public class HexSync implements HttpHandler {
 		}
 		LOGGER.log(Level.INFO, "下载完成: [" + downloadedCount + "/" + filesToDownloadMapSize + "]");
 	}
-	// 创建用户界面
 	private static void createUI() {
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		JFrame frame = new JFrame(HEX_SYNC_NAME + " 控制面板");
-		frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-		frame.setVisible(!serverAutoStart);
-		frame.setTitle(HEX_SYNC_NAME + "控制面板");
-		frame.setSize(screenSize.width / 5, screenSize.height / 10);
-		frame.setLocationRelativeTo(null); // 居中显示
-		buttonPanel(frame, screenSize);// 创建按钮面板
-		icon(frame);
+		JDialog dialog = new JDialog();
+		dialog.setTitle(HEX_SYNC_NAME + " 控制面板");
+		dialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
+		dialog.setSize(screenSize.width / 5, screenSize.height / 10);
+		dialog.setLocationRelativeTo(null); // 居中显示
+		// 创建按钮面板
+		buttonPanel(dialog, screenSize);
+		icon(dialog);
 		if (serverAutoStart) startHTTPServer(); // 启动服务端
 		if (clientAutoStart) startHTTPClient(); // 启动客户端
+		dialog.setVisible(true); // 显示对话框
 	}
-	private static void buttonPanel(JFrame frame, Dimension screenSize) {
+	private static void buttonPanel(Dialog dialog, Dimension screenSize) {
 		JButton openLogButton = new JButton("日志");
 		JButton settingsButton = new JButton("设置");
 		JButton shutdownButton = new JButton("退出");
@@ -825,7 +827,7 @@ public class HexSync implements HttpHandler {
 		toggleServerButton.setFocusPainted(false);
 		toggleClientButton.setFocusPainted(false);
 		// 添加按钮监听事件
-		actionListener(frame, openLogButton, settingsButton, shutdownButton, toggleServerButton, toggleClientButton);
+		actionListener(dialog, openLogButton, settingsButton, shutdownButton, toggleServerButton, toggleClientButton);
 		// 添加按钮到按钮面板
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.add(openLogButton);
@@ -836,42 +838,42 @@ public class HexSync implements HttpHandler {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout());
 		panel.add(buttonPanel, BorderLayout.CENTER); // 添加按钮面板到主面板
-		frame.add(panel);  // 添加主面板到窗口
+		dialog.add(panel);  // 添加主面板到窗口
 	}
 	// 按钮监听事件
 	private static void actionListener(
-			JFrame frame, JButton openLogButton, JButton settingsButton,
+			Dialog dialog, JButton openLogButton, JButton settingsButton,
 			JButton shutdownButton, JButton toggleServerButton, JButton toggleClientButton
 	) {
 		openLogButton.addActionListener(event -> openLog());
 		toggleButtonAction(
 				toggleServerButton, HexSync::startHTTPServer, HexSync::stopHTTPServer,
-				"启动服务端", "停止服务端", frame
+				"启动服务端", "停止服务端", dialog
 		);
 		toggleButtonAction(
 				toggleClientButton, HexSync::startHTTPClient, HexSync::stopHTTPClient,
-				"启动客户端", "停止客户端", frame
+				"启动客户端", "停止客户端", dialog
 		);
-		settingsButton.addActionListener(event -> openSettingsDialog(frame)); // 打开设置对话框
+		settingsButton.addActionListener(event -> openSettingsDialog(dialog)); // 打开设置对话框
 		shutdownButton.addActionListener(event -> System.exit(0)); // 关闭程序
 	}
 	// 处理按钮事件的通用方法
 	private static void toggleButtonAction(
 			JButton button, Runnable startAction, Runnable stopAction,
-			String startText, String stopText, JFrame frame
+			String startText, String stopText, Dialog dialog
 	) {
 		button.addActionListener(event -> {
 			button.setEnabled(false);
 			if (button.getText().equals(startText)) startAction.run();
 			else stopAction.run();
 			button.setText(button.getText().equals(startText) ? stopText : startText);
-			icon(frame);
+			icon(dialog);
 			button.setEnabled(true);
 		});
 	}
 	// 切换图标
-	private static void icon(JFrame frame) {
-		frame.setIconImage(Toolkit.getDefaultToolkit().getImage(HexSync.class.getResource(
+	private static void icon(Dialog dialog) {
+		dialog.setIconImage(Toolkit.getDefaultToolkit().getImage(HexSync.class.getResource(
 				serverHTTPThread != null || clientHTTPThread != null ? "IconO.png" : "IconI.png"
 		)));
 		if (!SystemTray.isSupported()) return;
@@ -882,8 +884,8 @@ public class HexSync implements HttpHandler {
 		);
 		trayIcon.setImageAutoSize(true); // 自动调整图标大小
 		trayIcon.setToolTip(HEX_SYNC_NAME + "控制面板");
-		trayIcon.setPopupMenu(popupMenu(frame));
-		trayIcon.addActionListener(event -> frame.setVisible(true));
+		trayIcon.setPopupMenu(popupMenu(dialog));
+		trayIcon.addActionListener(event -> dialog.setVisible(true));
 		try {
 			SystemTray systemTray = SystemTray.getSystemTray();
 			if (systemTray.getTrayIcons().length == 0) systemTray.add(trayIcon);
@@ -897,17 +899,17 @@ public class HexSync implements HttpHandler {
 			LOGGER.log(Level.SEVERE, "添加托盘图标失败: " + error.getMessage());
 		}
 	}
-	private static PopupMenu popupMenu(JFrame frame) {
+	private static PopupMenu popupMenu(Dialog dialog) {
 		PopupMenu popupMenu = new PopupMenu();
 		MenuItem openItem = new MenuItem("Open");
 		MenuItem hideItem = new MenuItem("Hide");
 		MenuItem settingsItem = new MenuItem("Settings");
 		MenuItem aboutItem = new MenuItem("About");
 		MenuItem exitItem = new MenuItem("Exit");
-		openItem.addActionListener(event -> frame.setVisible(true));
-		hideItem.addActionListener(event -> frame.setVisible(false));
-		settingsItem.addActionListener(event -> openSettingsDialog(frame));
-		aboutItem.addActionListener(event -> aboutButtonAction(frame));
+		openItem.addActionListener(event -> dialog.setVisible(true));
+		hideItem.addActionListener(event -> dialog.setVisible(false));
+		settingsItem.addActionListener(event -> openSettingsDialog(dialog));
+		aboutItem.addActionListener(event -> aboutButtonAction(dialog));
 		exitItem.addActionListener(event -> System.exit(0));
 		// 将菜单项添加到弹出菜单
 		popupMenu.add(openItem);
@@ -922,9 +924,9 @@ public class HexSync implements HttpHandler {
 		return popupMenu;
 	}
 	// 打开设置对话框
-	private static void openSettingsDialog(JFrame frame) {
+	private static void openSettingsDialog(Dialog dialog) {
 		loadConfig();
-		JDialog settingsDialog = new JDialog(frame, "设置",  Dialog.ModalityType.MODELESS);
+		JDialog settingsDialog = new JDialog(dialog, "设置", Dialog.ModalityType.MODELESS);
 		// 创建选项卡面板
 		JPanel serverPanel = new JPanel(new GridLayout(5, 2));
 		JPanel clientPanel = new JPanel(new GridLayout(5, 2));
@@ -995,7 +997,7 @@ public class HexSync implements HttpHandler {
 				settingsDialog
 		));
 		cancelButton.addActionListener(event -> settingsDialog.dispose()); // 关闭对话框而不保存
-		aboutButton.addActionListener(event -> aboutButtonAction(frame));
+		aboutButton.addActionListener(event -> aboutButtonAction(dialog));
 		// 按钮面板
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.add(configSaveButton);
@@ -1004,7 +1006,7 @@ public class HexSync implements HttpHandler {
 		// 添加按钮面板到对话框的南部
 		settingsDialog.add(buttonPanel, BorderLayout.SOUTH);
 		settingsDialog.pack(); // 自动调整大小
-		settingsDialog.setLocationRelativeTo(frame); // 居中
+		settingsDialog.setLocationRelativeTo(dialog); // 居中
 		settingsDialog.setVisible(true); // 显示对话框
 	}
 	@Override
