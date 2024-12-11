@@ -766,7 +766,8 @@ public class HexSync implements HttpHandler {
 			LOGGER.log(Level.INFO, HEX_SYNC_NAME + "Client正在启动...");
 			initializeFiles(false);
 			Map<String, String> requestMap = requestHTTPList();
-			if (requestMap.isEmpty()) isErrorDownload = true;
+			isErrorDownload = requestMap.isEmpty();
+			if (isErrorDownload) return;
 			else {
 				LOGGER.log(Level.INFO, "获取到 " + requestMap.size() + " 个文件");
 				Map<String, String> toDownloadMap = new HashMap<>(); // 用于存储需要下载的文件列表
@@ -799,15 +800,13 @@ public class HexSync implements HttpHandler {
 	private static void copyAllFiles(String source, String target) {
 		File targetDirectory = new File(target);
 		createDirectory(String.valueOf(targetDirectory));
-		// 获取源目录下的所有文件和目录
 		File[] files = new File(source).listFiles();
 		if (files != null) for (File file : files) {
 			File targetFile = new File(targetDirectory, file.getName());
 			// 递归复制子目录
 			if (file.isDirectory()) copyAllFiles(file.getAbsolutePath(), targetFile.getAbsolutePath());
 			else {
-				if (targetFile.exists()) continue;// 检查目标文件是否存在
-				// 复制文件
+				if (targetFile.exists()) continue;
 				try (InputStream inputStream = Files.newInputStream(file.toPath());
 					 OutputStream outputStream = Files.newOutputStream(targetFile.toPath())) {
 					byte[] buffer = new byte[8192];
@@ -859,18 +858,35 @@ public class HexSync implements HttpHandler {
 				isErrorDownload = true; // 记录下载失败
 			}
 		}
+		if (progressDialog != null) progressDialog.dispose();
+		if (!headless) {
+			JDialog dialog = new JDialog();
+			dialog(dialog);
+			JLabel label = new JLabel(
+					isErrorDownload
+							? "下载失败,请检查网络连接."
+							: "下载完成: [" + downloadedCount + "/" + toDownloadMapSize + "]"
+			);
+			label.setFont(UIManager.getFont("Label.font").deriveFont(18f));
+			dialog.add(label, BorderLayout.CENTER);
+			dialog.setVisible(true);
+			if (clientAutoStart) System.exit(0); // 自动退出
+		}
 		LOGGER.log(Level.INFO, "下载完成: [" + downloadedCount + "/" + toDownloadMapSize + "]");
 	}
-	// 创建并显示进度条对话框
-	private static JDialog createProgressDialog(int totalFiles) {
-		JDialog dialog = new JDialog();
-		dialog.setTitle("下载进度");
+	private static void dialog(JDialog dialog) {
 		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		dialog.setSize(screenSize.width / 5, screenSize.height / 15);
 		dialog.setLocationRelativeTo(null);
 		dialog.setAlwaysOnTop(true);
 		icon(dialog);
+	}
+	// 创建并显示进度条对话框
+	private static JDialog createProgressDialog(int totalFiles) {
+		JDialog dialog = new JDialog();
+		dialog.setTitle("下载进度");
+		dialog(dialog);
 		JProgressBar progressBar = new JProgressBar(0, totalFiles);
 		progressBar.setStringPainted(true);
 		progressBar.setForeground(Color.getColor("#008080"));
