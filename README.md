@@ -62,14 +62,14 @@ HexSync
 </a>
 
 ## 贡献者
+<h1>
 <a href="https://github.com/ForgeStove/HexSync/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=ForgeStove/HexSync" />
 </a>
 <a href="https://github.com/donywang922/HexSyncReborn/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=donywang922/HexSyncReborn" />
 </a>
-
----
+</h1>
 
 [download-url]: https://github.com/ForgeStove/HexSync/releases "下载"
 [download-image]: https://img.shields.io/github/downloads/ForgeStove/HexSync/total?style=flat-square&logo=github&label=%E6%80%BB%E4%B8%8B%E8%BD%BD%E6%95%B0 "总下载数"
