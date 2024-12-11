@@ -55,6 +55,7 @@ public class HexSync implements HttpHandler {
 	private static boolean isErrorDownload; // 客户端下载文件时是否发生错误，影响客户端是否自动关闭
 	private static boolean serverAutoStart; // 服务端自动启动，默认不自动启动
 	private static boolean clientAutoStart; // 客户端自动启动，默认不自动启动
+	private static boolean headless;
 	private static int serverHTTPPort = 65535;// HTTP 端口，默认值65535
 	private static int clientHTTPPort = 65535; // 客户端 HTTP 端口，默认值65535
 	private static long serverUploadRateLimit = 1; // 上传速率限制值，默认限速1MB/s
@@ -78,7 +79,8 @@ public class HexSync implements HttpHandler {
 	}
 	// 初始化UI
 	private static void initializeUI(String[] args) {
-		if (GraphicsEnvironment.isHeadless() || Arrays.asList(args).contains("-headless")) headlessUI(); // 无头模式
+		headless = GraphicsEnvironment.isHeadless() || Arrays.asList(args).contains("-headless");
+		if (headless) headlessUI(); // 无头模式
 		else try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			SwingUtilities.invokeLater(HexSync::createUI);// 有头模式
@@ -256,10 +258,8 @@ public class HexSync implements HttpHandler {
 		try (FileOutputStream outputStream = new FileOutputStream(filePath)) {
 			byte[] buffer = new byte[8192]; // 缓冲区
 			int bytesRead;
-			while ((bytesRead = HTTPURLConnection.getInputStream().read(buffer)) != -1) {
+			while ((bytesRead = HTTPURLConnection.getInputStream().read(buffer)) != -1)
 				outputStream.write(buffer, 0, bytesRead);
-				printDownloadProgress(outputStream.getChannel().position(), clientFile.length()); // 输出进度
-			}
 		} catch (IOException error) {
 			LOGGER.log(Level.SEVERE, "读取响应时出错: " + error.getMessage());
 		}
@@ -273,17 +273,6 @@ public class HexSync implements HttpHandler {
 		LOGGER.log(Level.SEVERE, "校验失败,文件可能已损坏: " + fileName);
 		if (!clientFile.delete()) LOGGER.log(Level.SEVERE, "无法删除损坏的文件: " + clientFile.getPath());
 		return false;
-	}
-	private static void printDownloadProgress(long bytesRead, long totalBytes) {
-		int barLength = 50; // 进度条长度
-		int progress = (int) ((double) bytesRead / totalBytes * barLength);
-		StringBuilder progressBar = new StringBuilder("[");
-		for (int i = 0; i < barLength; i++) {
-			if (i < progress) progressBar.append('=');
-			else progressBar.append(' ');
-		}
-		progressBar.append("] ").append(bytesRead).append("/").append(totalBytes);
-		LOGGER.log(Level.INFO, "\r" + progressBar); // \r用于在同一行更新
 	}
 	private static int getResponseCode(URL requestURL) throws IOException {
 		HTTPURLConnection = (HttpURLConnection) requestURL.openConnection(); // 打开连接
@@ -737,11 +726,10 @@ public class HexSync implements HttpHandler {
 		}
 	}
 	private static void stopHTTPServer() {
+		if (HTTPServer == null) return;
 		LOGGER.log(Level.INFO, HEX_SYNC_NAME + "Server正在关闭...");
-		if (HTTPServer != null) {
-			HTTPServer.stop(0); // 停止服务
-			serverHTTPThread = null; // 清除线程引用
-		}
+		HTTPServer.stop(0); // 停止服务
+		serverHTTPThread = null; // 清除线程引用
 		LOGGER.log(Level.INFO, HEX_SYNC_NAME + "Server已关闭");
 	}
 	private static void startHTTPServer() {
@@ -848,12 +836,16 @@ public class HexSync implements HttpHandler {
 	// 下载需要的文件
 	private static void downloadFilesInMap(Map<String, String> toDownloadMap) {
 		if (toDownloadMap.isEmpty()) {
-			LOGGER.log(Level.INFO, "同步目录已是最新,无需下载.");
+			LOGGER.log(Level.INFO, "已是最新,无需下载.");
+			if (!headless && !isErrorDownload)
+				JOptionPane.showMessageDialog(null, "已是最新,无需下载.");
 			return;
 		}
 		LOGGER.log(Level.INFO, "开始下载 " + toDownloadMap.size() + " 个文件");
 		int downloadedCount = 0;
 		int toDownloadMapSize = toDownloadMap.size();
+		JDialog progressDialog = null;
+		if (!headless) progressDialog = createProgressDialog(toDownloadMapSize);
 		for (Map.Entry<String, String> entry : toDownloadMap.entrySet()) {
 			String filePath = clientSyncDirectory + FILE_SEPARATOR + entry.getKey(); // 设置下载路径
 			if (downloadFile(filePath, toDownloadMap)) {
@@ -861,12 +853,38 @@ public class HexSync implements HttpHandler {
 				LOGGER.log(
 						Level.INFO, "已下载: [" + downloadedCount + "/" + toDownloadMapSize + "] " + filePath
 				);
+				if (!headless && progressDialog != null) updateProgressDialog(progressDialog, downloadedCount);
 			} else {
 				LOGGER.log(Level.SEVERE, "下载失败: " + filePath);
 				isErrorDownload = true; // 记录下载失败
 			}
 		}
 		LOGGER.log(Level.INFO, "下载完成: [" + downloadedCount + "/" + toDownloadMapSize + "]");
+	}
+	// 创建并显示进度条对话框
+	private static JDialog createProgressDialog(int totalFiles) {
+		JDialog dialog = new JDialog();
+		dialog.setTitle("下载进度");
+		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		dialog.setSize(screenSize.width / 5, screenSize.height / 15);
+		dialog.setLocationRelativeTo(null);
+		dialog.setAlwaysOnTop(true);
+		icon(dialog);
+		JProgressBar progressBar = new JProgressBar(0, totalFiles);
+		progressBar.setStringPainted(true);
+		progressBar.setForeground(Color.getColor("#008080"));
+		progressBar.setBackground(Color.getColor("#D3D3D3"));
+		progressBar.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		progressBar.setFont(UIManager.getFont("Label.font").deriveFont(18f));
+		dialog.add(progressBar, BorderLayout.CENTER);
+		dialog.setVisible(true);
+		return dialog;
+	}
+	// 更新进度条
+	private static void updateProgressDialog(JDialog dialog, int completedFiles) {
+		JProgressBar progressBar = (JProgressBar) dialog.getContentPane().getComponent(0);
+		progressBar.setValue(completedFiles);
 	}
 	private static void createUI() {
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -875,7 +893,6 @@ public class HexSync implements HttpHandler {
 		dialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
 		dialog.setSize(screenSize.width / 5, screenSize.height / 10);
 		dialog.setLocationRelativeTo(null); // 居中显示
-		dialog.setAlwaysOnTop(true);
 		// 创建按钮面板
 		buttonPanel(dialog, screenSize);
 		icon(dialog);
