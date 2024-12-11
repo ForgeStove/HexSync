@@ -10,7 +10,6 @@ import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -24,7 +23,7 @@ import java.util.logging.SimpleFormatter;
 public class HexSync implements HttpHandler {
 	private static final String HEX_SYNC_NAME = HexSync.class.getName(); // 程序名称
 	private static final Logger LOGGER = Logger.getLogger(HEX_SYNC_NAME); // 日志记录器
-	private static final AtomicLong availableTokens = new AtomicLong(0); // 当前可用令牌数量
+	private static final AtomicLong AVAILABLE_TOKENS = new AtomicLong(0); // 当前可用令牌数量
 	private static final String FILE_SEPARATOR = File.separator; // 文件分隔符
 	private static final String LINE_SEPARATOR = System.lineSeparator(); // 换行符
 	private static final String HEX_SYNC_DIRECTORY = HEX_SYNC_NAME; // 文件夹目录
@@ -40,8 +39,9 @@ public class HexSync implements HttpHandler {
 	private static final String CLIENT_SYNC_DIRECTORY_CONFIG = "clientSyncDirectoryPath"; // 客户端同步文件夹路径配置项
 	private static final String CLIENT_ONLY_DIRECTORY_CONFIG = "clientOnlyDirectoryPath"; // 仅客户端文件夹路径配置项
 	private static final String CLIENT_AUTO_START_CONFIG = "clientAutoStart"; // 客户端自动启动配置项
-	private static final String MINE_CRAFT_UPDATE_MODE_CONFIG = "MineCraftUpdateMode"; // MC更新模式配置项
 	private static final String GITHUB_URL = "https://github.com/ForgeStove/HexSync"; // 项目GitHub地址
+	private static final String ICON_I = "iconI.png";
+	private static final String ICON_O = "iconO.png";
 	private static Map<String, String> serverMap = new HashMap<>(); // 存储服务端文件名和对应的SHA数据
 	private static String serverSyncDirectory = "mods"; // 服务端同步文件夹目录，默认值"mods"
 	private static String clientSyncDirectory = "mods"; // 客户端同步文件夹目录，默认值"mods"
@@ -55,7 +55,6 @@ public class HexSync implements HttpHandler {
 	private static boolean isErrorDownload; // 客户端下载文件时是否发生错误，影响客户端是否自动关闭
 	private static boolean serverAutoStart; // 服务端自动启动，默认不自动启动
 	private static boolean clientAutoStart; // 客户端自动启动，默认不自动启动
-	private static boolean updateMineCraftMode; // 客户端是否为MC更新模式，默认不启用
 	private static int serverHTTPPort = 65535;// HTTP 端口，默认值65535
 	private static int clientHTTPPort = 65535; // 客户端 HTTP 端口，默认值65535
 	private static long serverUploadRateLimit = 1; // 上传速率限制值，默认限速1MB/s
@@ -80,12 +79,12 @@ public class HexSync implements HttpHandler {
 	// 初始化UI
 	private static void initializeUI(String[] args) {
 		if (GraphicsEnvironment.isHeadless() || Arrays.asList(args).contains("-headless")) headlessUI(); // 无头模式
-		try {
+		else try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			SwingUtilities.invokeLater(HexSync::createUI);// 有头模式
 		} catch (Exception error) {
 			LOGGER.log(Level.SEVERE, "设置外观失败: " + error.getMessage());
 		}
-		SwingUtilities.invokeLater(HexSync::createUI);// 创建窗口
 	}
 	// 初始化文件
 	private static void initializeFiles(boolean isServer) {
@@ -165,9 +164,6 @@ public class HexSync implements HttpHandler {
 			case CLIENT_AUTO_START_CONFIG:
 				clientAutoStart = Boolean.parseBoolean(tail);
 				break;
-			case MINE_CRAFT_UPDATE_MODE_CONFIG:
-				updateMineCraftMode = Boolean.parseBoolean(tail);
-				break;
 			default:
 				LOGGER.log(Level.WARNING, "不正确的配置项: " + head);
 				break;
@@ -192,7 +188,7 @@ public class HexSync implements HttpHandler {
 	// 计算SHA校验码
 	private static String calculateSHA(File file) {
 		try (FileInputStream fileInputStream = new FileInputStream(file)) {
-			byte[] byteBuffer = new byte[8192]; // 缓冲区大小
+			byte[] byteBuffer = new byte[8192]; // 缓冲区
 			int bytesRead; // 读取字节数
 			MessageDigest SHA = MessageDigest.getInstance("SHA-256"); // 获取SHA算法
 			while ((bytesRead = fileInputStream.read(byteBuffer)) != -1) SHA.update(byteBuffer, 0, bytesRead);
@@ -256,14 +252,14 @@ public class HexSync implements HttpHandler {
 			LOGGER.log(Level.SEVERE, "连接服务器时出错: " + error.getMessage());
 			return false;
 		}
-		// 下载成功,读取输入流并写入本地文件
-		try (
-				InputStream inputStream = HTTPURLConnection.getInputStream();
-				FileOutputStream outputStream = new FileOutputStream(filePath)
-		) {
-			byte[] buffer = new byte[8192]; // 8KB缓冲区
+		// 读取输入流并写入本地文件
+		try (FileOutputStream outputStream = new FileOutputStream(filePath)) {
+			byte[] buffer = new byte[8192]; // 缓冲区
 			int bytesRead;
-			while ((bytesRead = inputStream.read(buffer)) != -1) outputStream.write(buffer, 0, bytesRead);
+			while ((bytesRead = HTTPURLConnection.getInputStream().read(buffer)) != -1) {
+				outputStream.write(buffer, 0, bytesRead);
+				printDownloadProgress(outputStream.getChannel().position(), clientFile.length()); // 输出进度
+			}
 		} catch (IOException error) {
 			LOGGER.log(Level.SEVERE, "读取响应时出错: " + error.getMessage());
 		}
@@ -277,6 +273,17 @@ public class HexSync implements HttpHandler {
 		LOGGER.log(Level.SEVERE, "校验失败,文件可能已损坏: " + fileName);
 		if (!clientFile.delete()) LOGGER.log(Level.SEVERE, "无法删除损坏的文件: " + clientFile.getPath());
 		return false;
+	}
+	private static void printDownloadProgress(long bytesRead, long totalBytes) {
+		int barLength = 50; // 进度条长度
+		int progress = (int) ((double) bytesRead / totalBytes * barLength);
+		StringBuilder progressBar = new StringBuilder("[");
+		for (int i = 0; i < barLength; i++) {
+			if (i < progress) progressBar.append('=');
+			else progressBar.append(' ');
+		}
+		progressBar.append("] ").append(bytesRead).append("/").append(totalBytes);
+		LOGGER.log(Level.INFO, "\r" + progressBar); // \r用于在同一行更新
 	}
 	private static int getResponseCode(URL requestURL) throws IOException {
 		HTTPURLConnection = (HttpURLConnection) requestURL.openConnection(); // 打开连接
@@ -297,7 +304,6 @@ public class HexSync implements HttpHandler {
 				{CLIENT_SYNC_DIRECTORY_CONFIG, clientSyncDirectory},
 				{CLIENT_ONLY_DIRECTORY_CONFIG, clientOnlyDirectory},
 				{CLIENT_AUTO_START_CONFIG, String.valueOf(clientAutoStart)},
-				{MINE_CRAFT_UPDATE_MODE_CONFIG, String.valueOf(updateMineCraftMode)},
 		};
 		StringBuilder configContent = new StringBuilder();
 		for (String[] entry : configEntries) {
@@ -333,17 +339,17 @@ public class HexSync implements HttpHandler {
 				}
 				while (totalBytesSent < responseBytesLength) {
 					long currentTime = System.currentTimeMillis();
-					availableTokens.addAndGet((currentTime - lastFillTime) * maxUploadRateInBytes / 1000);
+					AVAILABLE_TOKENS.addAndGet((currentTime - lastFillTime) * maxUploadRateInBytes / 1000);
 					lastFillTime = currentTime; // 更新时间
 					// 尝试发送数据
-					int bytesToSend = Math.min(16384, responseBytesLength - totalBytesSent); // 每次最多发送16KB
-					if (availableTokens.get() >= bytesToSend) {
+					int bytesToSend = Math.min(16384, responseBytesLength - totalBytesSent);
+					if (AVAILABLE_TOKENS.get() >= bytesToSend) {
 						outputStream.write(responseBytes, totalBytesSent, bytesToSend); // 写入数据
 						totalBytesSent += bytesToSend; // 更新已发送字节数
-						availableTokens.addAndGet(-bytesToSend); // 减少可用令牌
+						AVAILABLE_TOKENS.addAndGet(-bytesToSend); // 减少可用令牌
 					} else {
 						// 如果没有足够的令牌，计算需要等待的时间
-						long requiredTokens = bytesToSend - availableTokens.get();
+						long requiredTokens = bytesToSend - AVAILABLE_TOKENS.get();
 						long sleepTime = (requiredTokens * 1000) / maxUploadRateInBytes;
 						Thread.sleep(sleepTime); // 暂停
 					}
@@ -409,9 +415,9 @@ public class HexSync implements HttpHandler {
 		System.out.println("设置服务端地址: 'sa <地址>'");
 		System.out.println("设置客户端同步目录: 'cd <目录>'");
 		System.out.println("设置客户端自动启动: 'cs <y/n>'");
-		System.out.println("帮助: 'help'");
 		System.out.println("GitHub地址: 'github'");
 		System.out.println("保存并退出: 'save'");
+		System.out.println("帮助: 'help'");
 	}
 	// 处理请求
 	private static void processHTTPRequest(String requestURI, HttpExchange exchange) throws IOException {
@@ -430,8 +436,16 @@ public class HexSync implements HttpHandler {
 				HTTPCode = HttpURLConnection.HTTP_OK; // 设置响应码为200
 				break;
 			case "/favicon.ico":
-				responseBytes = Files.readAllBytes(Paths.get("IconI.png")); // 读取为字节数组
-				HTTPCode = HttpURLConnection.HTTP_OK;
+				try (InputStream inputStream = HexSync.class.getResourceAsStream(ICON_I)) {
+					if (inputStream == null) break;
+					ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+					byte[] buffer = new byte[2048]; // 缓冲区
+					int bytesRead;
+					while ((bytesRead = inputStream.read(buffer)) != -1)
+						byteArrayOutputStream.write(buffer, 0, bytesRead); // 将读取的字节写入输出流
+					responseBytes = byteArrayOutputStream.toByteArray(); // 转换为字节数组
+					HTTPCode = HttpURLConnection.HTTP_OK; // 设置200响应码
+				}
 				break;
 			default:
 				if (requestURI.startsWith("/download/")) {
@@ -447,14 +461,14 @@ public class HexSync implements HttpHandler {
 					File file = new File(filePath); // 构造文件对象
 					if (serverMap.containsValue(requestSHA) && file.exists() && file.isFile()) {
 						try (InputStream inputStream = Files.newInputStream(file.toPath())) {
-							ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-							byte[] buffer = new byte[4096]; // 设定每次读取的字节数
+							ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+							byte[] buffer = new byte[8192]; // 设定每次读取的字节数
 							int bytesRead;
 							while ((bytesRead = inputStream.read(buffer)) != -1)
-								outputStream.write(buffer, 0, bytesRead); // 将读取到的字节写入输出流
-							responseBytes = outputStream.toByteArray(); // 转换为字节数组
-						} catch (IOException e) {
-							LOGGER.log(Level.SEVERE, "读取文件时发生错误: " + e.getMessage());
+								byteArrayOutputStream.write(buffer, 0, bytesRead); // 将读取到的字节写入输出流
+							responseBytes = byteArrayOutputStream.toByteArray(); // 转换为字节数组
+						} catch (IOException error) {
+							LOGGER.log(Level.SEVERE, "读取文件时发生错误: " + error.getMessage());
 						}
 						HTTPCode = HttpURLConnection.HTTP_OK; // 发送成功,返回200
 						LOGGER.log(Level.INFO, "已发送文件: " + filePath);
@@ -496,7 +510,6 @@ public class HexSync implements HttpHandler {
 			JTabbedPane tabbedPane,
 			JCheckBox serverAutoStartBox,
 			JCheckBox clientAutoStartBox,
-			JCheckBox updateMineCraftModeBox,
 			JComboBox<String> serverUploadRateLimitUnitBox,
 			JDialog settingsDialog
 	) {
@@ -553,16 +566,16 @@ public class HexSync implements HttpHandler {
 		serverAddress = clientAddressField.getText().trim();
 		clientSyncDirectory = clientSyncDirectoryPathField.getText().trim();
 		clientOnlyDirectory = clientOnlyDirectoryField.getText().trim();
-		updateMineCraftMode = updateMineCraftModeBox.isSelected();
 		saveConfig(); // 保存配置
 		settingsDialog.dispose(); // 关闭对话框
 	}
 	private static void aboutButtonAction(Dialog dialog) {
 		JScrollPane scrollPane = getJScrollPane(
-				"<html><body style=\"font-family: sans-serif;\">"
-						+ HEX_SYNC_NAME + "<br>By: ForgeStove<br>GitHub: <a href=\""
-						+ GITHUB_URL + "\">"
-						+ GITHUB_URL + "</a>" + "</body></html>"
+				"<html><body>"
+						+ HEX_SYNC_NAME
+						+ "<br>By: ForgeStove"
+						+ "<br>GitHub仓库地址: " + "<a href=\"" + GITHUB_URL + "\">" + GITHUB_URL + "</a>"
+						+ "</body></html>"
 		);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		scrollPane.setPreferredSize(new Dimension(screenSize.width / 5, screenSize.height / 15));
@@ -596,7 +609,7 @@ public class HexSync implements HttpHandler {
 		Scanner scanner = new Scanner(System.in);
 		String command;
 		while (true) {
-			System.out.print(HEX_SYNC_NAME + "> ");
+			System.out.print(HEX_SYNC_NAME + ">");
 			command = scanner.nextLine();
 			switch (command) {
 				case "rs":
@@ -621,6 +634,7 @@ public class HexSync implements HttpHandler {
 					System.out.println(" 停止客户端: 'sc'");
 					System.out.println(" 设置: 'set'");
 					System.out.println(" 退出: 'exit'");
+					System.out.println("帮助: 'help'");
 					break;
 				case "exit":
 					System.exit(0);
@@ -634,7 +648,7 @@ public class HexSync implements HttpHandler {
 		headlessSettingsHelp();
 		Scanner scanner = new Scanner(System.in);
 		while (true) {
-			System.out.print(HEX_SYNC_NAME + "Settings> ");
+			System.out.print(HEX_SYNC_NAME + "Settings>");
 			String input = scanner.nextLine();
 			String[] parts = input.split("\\s+");
 			String command = parts[0];
@@ -770,12 +784,12 @@ public class HexSync implements HttpHandler {
 				Map<String, String> toDownloadMap = new HashMap<>(); // 用于存储需要下载的文件列表
 				Map<String, String> clientOnlyMap = new HashMap<>(); // 用于存储客户端仅同步的文件列表
 				clientOnlyMap = initializeMap(clientOnlyDirectory, clientOnlyMap); // 初始化客户端仅同步的文件列表
-				if (updateMineCraftMode) deleteFilesNotInMap(requestMap, clientOnlyMap);
+				deleteFilesNotInMap(requestMap, clientOnlyMap);
 				Map<String, String> clientMap = new HashMap<>(); // 用于存储客户端文件列表
 				clientMap = initializeMap(clientSyncDirectory, clientMap); // 初始化客户端文件列表
 				createToDownloadMap(requestMap, toDownloadMap, clientMap); // 构建需要下载的文件列表
 				downloadFilesInMap(toDownloadMap); // 下载文件
-				if (updateMineCraftMode) copyAllFiles(clientOnlyDirectory, clientSyncDirectory);
+				copyAllFiles(clientOnlyDirectory, clientSyncDirectory);
 			}
 			stopHTTPClient();
 		});
@@ -790,7 +804,7 @@ public class HexSync implements HttpHandler {
 					&& !clientOnlyMap.containsKey(fileName)
 					&& checkNoFile(file, fileName, requestMap)
 					&& checkNoFile(file, fileName, clientOnlyMap)
-			) if (file.delete()) LOGGER.log(Level.INFO, "已删除不存在于服务端的文件: " + fileName);
+			) if (file.delete()) LOGGER.log(Level.INFO, "已删除文件: " + fileName);
 			else LOGGER.log(Level.SEVERE, "删除文件失败: " + fileName);
 		}
 	}
@@ -806,13 +820,11 @@ public class HexSync implements HttpHandler {
 			else {
 				if (targetFile.exists()) continue;// 检查目标文件是否存在
 				// 复制文件
-				try (InputStream in = Files.newInputStream(file.toPath());
-					 OutputStream out = Files.newOutputStream(targetFile.toPath())) {
+				try (InputStream inputStream = Files.newInputStream(file.toPath());
+					 OutputStream outputStream = Files.newOutputStream(targetFile.toPath())) {
 					byte[] buffer = new byte[8192];
 					int length;
-					while ((length = in.read(buffer)) > 0) {
-						out.write(buffer, 0, length);
-					}
+					while ((length = inputStream.read(buffer)) > 0) outputStream.write(buffer, 0, length);
 					LOGGER.log(Level.INFO, "已复制文件: " + file.getName() + " 到 " + targetFile.getAbsolutePath());
 				} catch (IOException error) {
 					LOGGER.log(Level.SEVERE, "复制文件失败: " + file.getName(), error);
@@ -863,6 +875,7 @@ public class HexSync implements HttpHandler {
 		dialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
 		dialog.setSize(screenSize.width / 5, screenSize.height / 10);
 		dialog.setLocationRelativeTo(null); // 居中显示
+		dialog.setAlwaysOnTop(true);
 		// 创建按钮面板
 		buttonPanel(dialog, screenSize);
 		icon(dialog);
@@ -937,13 +950,15 @@ public class HexSync implements HttpHandler {
 	// 切换图标
 	private static void icon(Dialog dialog) {
 		dialog.setIconImage(Toolkit.getDefaultToolkit().getImage(HexSync.class.getResource(
-				serverHTTPThread != null || clientHTTPThread != null ? "IconO.png" : "IconI.png"
+				serverHTTPThread != null || clientHTTPThread != null ? ICON_O : ICON_I
 		)));
 		if (!SystemTray.isSupported()) return;
 		TrayIcon trayIcon; // 托盘图标
 		boolean running = serverHTTPThread != null || clientHTTPThread != null; // 状态标记
-		trayIcon = new TrayIcon(Toolkit.getDefaultToolkit().getImage(HexSync.class.getResource(
-				running ? "IconO.png" : "IconI.png")), HEX_SYNC_NAME
+		trayIcon = new TrayIcon(
+				Toolkit.getDefaultToolkit().getImage(
+						HexSync.class.getResource(running ? ICON_O : ICON_I)
+				), HEX_SYNC_NAME
 		);
 		trayIcon.setImageAutoSize(true); // 自动调整图标大小
 		trayIcon.setToolTip(HEX_SYNC_NAME + "控制面板");
@@ -955,7 +970,7 @@ public class HexSync implements HttpHandler {
 			else {
 				TrayIcon existingIcon = systemTray.getTrayIcons()[0];
 				existingIcon.setImage(Toolkit.getDefaultToolkit().getImage(HexSync.class.getResource(
-						running ? "IconO.png" : "IconI.png"
+						running ? ICON_O : ICON_I
 				)));
 			}
 		} catch (AWTException error) {
@@ -1028,18 +1043,14 @@ public class HexSync implements HttpHandler {
 		// 添加选项卡到选项卡面板
 		JCheckBox serverAutoStartBox = new JCheckBox("自动启动服务端");
 		JCheckBox clientAutoStartBox = new JCheckBox("自动启动客户端");
-		JCheckBox updateMineCraftModeBox = new JCheckBox("MineCraft更新模式");
 		serverAutoStartBox.setFocusPainted(false);
 		clientAutoStartBox.setFocusPainted(false);
-		updateMineCraftModeBox.setFocusPainted(false);
 		// 设置复选框初始状态
 		serverAutoStartBox.setSelected(serverAutoStart);
 		clientAutoStartBox.setSelected(clientAutoStart);
-		updateMineCraftModeBox.setSelected(updateMineCraftMode);
 		// 添加复选框到设置面板
 		serverPanel.add(serverAutoStartBox);
 		clientPanel.add(clientAutoStartBox);
-		clientPanel.add(updateMineCraftModeBox);
 		// 添加选项卡面板到设置对话框
 		JTabbedPane tabbedPane = new JTabbedPane();
 		tabbedPane.addTab("服务端设置", serverPanel);
@@ -1064,7 +1075,6 @@ public class HexSync implements HttpHandler {
 				tabbedPane,
 				serverAutoStartBox,
 				clientAutoStartBox,
-				updateMineCraftModeBox,
 				serverUploadRateLimitUnitBox,
 				settingsDialog
 		));
@@ -1087,7 +1097,7 @@ public class HexSync implements HttpHandler {
 			String requestMethod = exchange.getRequestMethod(); // 获取请求方法
 			if (!requestMethod.equalsIgnoreCase("GET")) return;
 			processHTTPRequest(exchange.getRequestURI().getPath(), exchange); // 处理请求
-		} catch (IOException error) {
+		} catch (Exception error) {
 			LOGGER.log(Level.SEVERE, "处理请求时出错: " + error.getMessage(), error);
 		}
 	}
