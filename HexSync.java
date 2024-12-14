@@ -13,27 +13,20 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.security.MessageDigest;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
+import java.util.logging.*;
 
 import static java.util.logging.Level.*;
-public class HexSync implements HttpHandler {
+public class HexSync extends SimpleFormatter implements HttpHandler {
 	private static final String HEX_SYNC_NAME = HexSync.class.getName(); // 程序名称
-	private static final Logger LOGGER = Logger.getLogger(HEX_SYNC_NAME); // 日志记录器
+	private static final Logger LOGGER = Logger.getLogger(HEX_SYNC_NAME); // 日志记录
 	private static final AtomicLong AVAILABLE_TOKENS = new AtomicLong(0); // 当前可用令牌数量
 	private static final String FILE_SEPARATOR = File.separator; // 文件分隔符
 	private static final String LINE_SEPARATOR = System.lineSeparator(); // 换行符
-	private static final String HEX_SYNC_DIRECTORY = HEX_SYNC_NAME; // 文件夹目录
-	private static final String HEX_SYNC_NAME_PATH = HEX_SYNC_DIRECTORY + FILE_SEPARATOR + HEX_SYNC_NAME; // 程序名称路径
-	private static final String LOG_FILE = HEX_SYNC_NAME_PATH + ".log"; // 日志文件路径
-	private static final String CONFIG_FILE_PATH = HEX_SYNC_NAME_PATH + "Config.properties"; // 配置文件路径
+	private static final String LOG_FILE = HEX_SYNC_NAME + FILE_SEPARATOR + "latest.log"; // 日志文件路径
+	private static final String CONFIG_FILE_PATH = HEX_SYNC_NAME + FILE_SEPARATOR + "config.properties"; // 配置文件路径
 	private static final String SERVER_HTTP_PORT_CONFIG = "serverHTTPPort"; // 服务端端口配置项
 	private static final String SERVER_SYNC_DIRECTORY_CONFIG = "serverSyncDirectoryPath"; // 服务端同步文件夹路径配置项
 	private static final String SERVER_UPLOAD_RATE_LIMIT_CONFIG = "serverUploadRateLimit"; // 上传速率限制配置项
@@ -44,8 +37,6 @@ public class HexSync implements HttpHandler {
 	private static final String CLIENT_ONLY_DIRECTORY_CONFIG = "clientOnlyDirectoryPath"; // 仅客户端文件夹路径配置项
 	private static final String CLIENT_AUTO_START_CONFIG = "clientAutoStart"; // 客户端自动启动配置项
 	private static final String GITHUB_URL = "https://github.com/ForgeStove/HexSync"; // 项目GitHub地址
-	private static final String ICON_I = "iconI.png";
-	private static final String ICON_O = "iconO.png";
 	private static Map<String, String> serverMap = new HashMap<>(); // 存储服务端文件名和对应的SHA数据
 	private static String serverSyncDirectory = "mods"; // 服务端同步文件夹目录，默认值"mods"
 	private static String clientSyncDirectory = "mods"; // 客户端同步文件夹目录，默认值"mods"
@@ -79,9 +70,9 @@ public class HexSync implements HttpHandler {
 	private static void initializeLogger() {
 		new Thread(() -> {
 			try {
-				createDirectory(HEX_SYNC_DIRECTORY);
+				createDirectory(HEX_SYNC_NAME);
 				FileHandler fileHandler = new FileHandler(LOG_FILE, false);
-				fileHandler.setFormatter(new SimpleFormatter());
+				fileHandler.setFormatter(new HexSync());
 				LOGGER.addHandler(fileHandler);
 			} catch (Exception error) {
 				log(SEVERE, "初始化日志时出错: " + error.getMessage());
@@ -104,24 +95,21 @@ public class HexSync implements HttpHandler {
 	// 初始化文件
 	private static void initializeFiles(boolean isServer) {
 		createDirectory(isServer ? serverSyncDirectory : clientSyncDirectory); // 创建同步文件夹
-		createDirectory(HEX_SYNC_DIRECTORY); // 在当前目录下创建HexSync文件夹
+		createDirectory(HEX_SYNC_NAME); // 在当前目录下创建HexSync文件夹
 		loadConfig(); // 加载配置文件
 		if (isServer) serverMap = initializeMap(serverSyncDirectory, serverMap); // 初始化服务端文件列表
 		else createDirectory(clientOnlyDirectory); // 创建仅客户端文件夹
 		log(INFO, isServer ? "服务端初始化完成" : "客户端初始化完成");
 	}
+	// 初始化文件名校验码键值对表
 	private static Map<String, String> initializeMap(String directory, Map<String, String> map) {
 		map.clear(); // 清空同步文件列表
 		File[] fileList = new File(directory).listFiles(); // 获取同步文件夹下的所有文件
 		if (fileList == null) return null;
-		for (File file : fileList)
-			if (file.isFile()) {
-				String SHAValue = calculateSHA(file);
-				map.put(file.getName(), SHAValue);
-			}
+		for (File file : fileList) if (file.isFile()) map.put(file.getName(), calculateSHA(file));
 		return map;
 	}
-	// 检测并创建文件夹
+	// 创建文件夹
 	private static void createDirectory(String directoryPath) {
 		File directory = new File(directoryPath);
 		if (directory.isDirectory()) return;
@@ -131,10 +119,13 @@ public class HexSync implements HttpHandler {
 	// 加载配置文件
 	private static void loadConfig() {
 		File configFile = new File(CONFIG_FILE_PATH);
-		if (!configFile.isFile()) return;
+		if (!configFile.isFile()) {
+			saveConfig();
+			return;
+		}
 		try (BufferedReader bufferedReader = new BufferedReader(new FileReader(configFile))) {
 			String line;
-			while ((line = bufferedReader.readLine()) != null) processConfigLine(line.trim()); // 处理每一行配置
+			while ((line = bufferedReader.readLine()) != null) processConfigLine(line.trim());
 		} catch (IOException error) {
 			log(SEVERE, "配置读取失败: " + error.getMessage());
 		}
@@ -154,7 +145,12 @@ public class HexSync implements HttpHandler {
 				serverHTTPPort = Integer.parseInt(tail);
 				break;
 			case SERVER_UPLOAD_RATE_LIMIT_CONFIG:
-				parseRateLimit(tail, line);
+				String[] limitParts = tail.split(" ");
+				if (limitParts.length != 2) log(WARNING, "上传速率限制格式不正确,跳过: " + line);
+				else {
+					serverUploadRateLimit = Long.parseLong(limitParts[0]);
+					serverUploadRateLimitUnit = limitParts[1];
+				}
 				break;
 			case SERVER_SYNC_DIRECTORY_CONFIG:
 				serverSyncDirectory = tail;
@@ -178,25 +174,17 @@ public class HexSync implements HttpHandler {
 				clientAutoStart = Boolean.parseBoolean(tail);
 				break;
 			default:
-				log(WARNING, "不正确的配置项: " + head);
+				log(WARNING, "不正确的配置项: " + line);
 				break;
-		}
-	}
-	// 解析上传速率限制
-	private static void parseRateLimit(String tail, String originalLine) {
-		String[] limitParts = tail.split(" ");
-		if (limitParts.length != 2) log(WARNING, "上传速率限制格式不正确,跳过: " + originalLine);
-		else {
-			serverUploadRateLimit = Long.parseLong(limitParts[0]);
-			serverUploadRateLimitUnit = limitParts[1];
 		}
 	}
 	// 地址格式化,转换为HTTP协议
 	private static String formatHTTP(String address) {
 		if (address.endsWith("/")) address = address.substring(0, address.length() - 1); // 去除末尾的分隔符
-		return address.startsWith("https://") ? address.replace(
-				"https://", "http://"
-		) : "http://" + address;
+		return address.startsWith("https://")
+				? address.replace("https://", "http://")
+				: "http://"
+				+ address;
 	}
 	// 计算文件校验码
 	private static String calculateSHA(File file) {
@@ -213,14 +201,13 @@ public class HexSync implements HttpHandler {
 			return null;
 		}
 	}
-	// 从服务器请求文件名和SHA值列表
+	// 从服务器请求文件名和校验码列表
 	private static Map<String, String> requestHTTPList() {
 		String URL = formatHTTP(serverAddress) + ":" + clientHTTPPort + "/list"; // 服务器地址
 		log(INFO, "正在连接到: " + URL); // 记录请求开始日志
 		Map<String, String> requestMap = new HashMap<>(); // 复制请求列表
 		try {
-			URL requestURL = new URL(URL); // 创建URL
-			int responseCode = getResponseCode(requestURL);
+			int responseCode = getResponseCode(new URL(URL));
 			if (responseCode != HttpURLConnection.HTTP_OK) {
 				if (clientHTTPThread != null)
 					log(SEVERE, "请求文件列表失败,HTTP错误代码: " + responseCode); // 记录错误日志
@@ -235,9 +222,9 @@ public class HexSync implements HttpHandler {
 		try (BufferedReader in = new BufferedReader(new InputStreamReader(HTTPURLConnection.getInputStream()))) {
 			String fileName; // 临时变量,用于存储文件名
 			while ((fileName = in.readLine()) != null) { // 读取文件名
-				String SHAValue = in.readLine(); // 读取对应的SHA值
+				String SHAValue = in.readLine(); // 读取对应的校验码
 				if (SHAValue == null) continue;
-				requestMap.put(fileName.trim(), SHAValue.trim()); // 将文件名与SHA值放入Map
+				requestMap.put(fileName.trim(), SHAValue.trim()); // 将文件名与校验码放入Map
 			}
 		} catch (IOException error) {
 			log(SEVERE, "读取响应时出错: " + error.getMessage());
@@ -284,6 +271,7 @@ public class HexSync implements HttpHandler {
 		if (!clientFile.delete()) log(SEVERE, "无法删除损坏的文件: " + clientFile.getPath());
 		return false;
 	}
+	// 获取HTTP响应码
 	private static int getResponseCode(URL requestURL) throws IOException {
 		HTTPURLConnection = (HttpURLConnection) requestURL.openConnection(); // 打开连接
 		HTTPURLConnection.setRequestMethod("GET"); // 设置请求方式为GET
@@ -403,16 +391,16 @@ public class HexSync implements HttpHandler {
 		}
 	}
 	private static void headlessSettingsHelp() {
-		println("设置服务端HTTP端口: 'sp <端口号>'\n"
-				+ "设置服务端上传速率: 'sl <速率> <'B/s'/'KB/s'/'MB/s'/'GB/s'>'\n"
-				+ "设置服务端同步目录: 'sd <目录>'\n"
-				+ "设置服务端自动启动: 'ss <y/n>'\n"
-				+ "设置客户端HTTP端口: 'cp <端口号>'\n"
-				+ "设置服务器地址: 'sa <地址>'\n"
-				+ "设置客户端同步目录: 'cd <目录>'\n"
-				+ "设置客户端自动启动: 'cs <y/n>'\n"
-				+ "仓库地址: 'github'\n"
-				+ "保存并退出: 'save'\n"
+		println("设置服务端HTTP端口: 'sp <端口号>'" + LINE_SEPARATOR
+				+ "设置服务端上传速率: 'sl <速率> <'B/s'/'KB/s'/'MB/s'/'GB/s'>'" + LINE_SEPARATOR
+				+ "设置服务端同步目录: 'sd <目录>'" + LINE_SEPARATOR
+				+ "设置服务端自动启动: 'ss <y/n>'" + LINE_SEPARATOR
+				+ "设置客户端HTTP端口: 'cp <端口号>'" + LINE_SEPARATOR
+				+ "设置服务器地址: 'sa <地址>'" + LINE_SEPARATOR
+				+ "设置客户端同步目录: 'cd <目录>'" + LINE_SEPARATOR
+				+ "设置客户端自动启动: 'cs <y/n>'" + LINE_SEPARATOR
+				+ "仓库地址: 'github'" + LINE_SEPARATOR
+				+ "保存并退出: 'save'" + LINE_SEPARATOR
 				+ "帮助: 'help'");
 	}
 	private static void println(String message) {
@@ -459,7 +447,8 @@ public class HexSync implements HttpHandler {
 			try {
 				String encodedName = URLEncoder.encode(file.getName(), "UTF-8").replace("+", "%20");
 				exchange.getResponseHeaders().set(
-						"Content-Disposition", "attachment; filename=\""
+						"Content-Disposition",
+						"attachment; filename=\""
 								+ encodedName
 								+ "\"; filename*=UTF-8''"
 								+ encodedName
@@ -654,10 +643,10 @@ public class HexSync implements HttpHandler {
 		}
 	}
 	private static void stopHTTPServer() {
-		if (HTTPServer == null) return;
+		if (serverHTTPThread == null) return;
 		log(INFO, HEX_SYNC_NAME + "Server正在关闭...");
-		HTTPServer.stop(0); // 停止服务
-		serverHTTPThread = null; // 清除线程引用
+		HTTPServer.stop(0);
+		serverHTTPThread = null;
 		log(INFO, HEX_SYNC_NAME + "Server已关闭");
 	}
 	private static void startHTTPServer() {
@@ -665,7 +654,7 @@ public class HexSync implements HttpHandler {
 			log(INFO, HEX_SYNC_NAME + "Server正在启动...");
 			initializeFiles(true);
 			if (serverMap.isEmpty()) {
-				log(WARNING, serverSyncDirectory + "无文件,无法启动服务器");
+				log(WARNING, serverSyncDirectory + "没有文件,无法启动服务器");
 				stopHTTPServer();
 				return;
 			}
@@ -684,10 +673,10 @@ public class HexSync implements HttpHandler {
 	private static void stopHTTPClient() {
 		if (HTTPURLConnection != null) HTTPURLConnection.disconnect();
 		if (clientHTTPThread != null) {
-			clientHTTPThread = null; // 清除线程引用
+			clientHTTPThread = null;
 			log(INFO, HEX_SYNC_NAME + "Client已关闭");
 		}
-		if (clientAutoStart && !isErrorDownload) System.exit(0); // 自动退出
+		if (clientAutoStart && !isErrorDownload) System.exit(0);
 	}
 	private static void startHTTPClient() {
 		clientHTTPThread = new Thread(() -> {
@@ -749,11 +738,11 @@ public class HexSync implements HttpHandler {
 	) {
 		for (Map.Entry<String, String> entry : requestMap.entrySet()) {
 			String fileName = entry.getKey();
-			String SHAValue = entry.getValue();
-			if (fileName.isEmpty() || SHAValue.isEmpty()) return;
-			if (!clientMap.containsKey(fileName) && !clientMap.containsValue(SHAValue) && checkNoFile(
+			String SHA = entry.getValue();
+			if (fileName.isEmpty() || SHA.isEmpty()) continue;
+			if (!clientMap.containsKey(fileName) && !clientMap.containsValue(SHA) && checkNoFile(
 					new File(clientSyncDirectory + FILE_SEPARATOR + fileName), fileName, requestMap
-			)) toDownloadMap.put(fileName, SHAValue);
+			)) toDownloadMap.put(fileName, SHA);
 		}
 	}
 	// 下载需要的文件
@@ -792,44 +781,41 @@ public class HexSync implements HttpHandler {
 	}
 	private static JDialog createDialog(String title) {
 		JDialog dialog = new JDialog();
-		toggleIcon(dialog);
+		setIcon(dialog);
 		dialog.setTitle(title);
-		dialog.setVisible(true);
 		dialog.setResizable(false);
 		dialog.setAlwaysOnTop(true);
 		dialog.setLocationRelativeTo(null);
 		dialog.setSize(SCREEN_SIZE.width / 5, SCREEN_SIZE.height / 15);
+		dialog.setVisible(true);
 		return dialog;
 	}
 	// 创建进度条对话框
 	private static JDialog createProgressDialog(int totalFiles) {
 		JDialog dialog = createDialog("下载进度");
-		SwingUtilities.invokeLater(() -> {
-			JProgressBar progressBar = new JProgressBar(0, totalFiles);
-			progressBar.setStringPainted(true);
-			progressBar.setForeground(Color.getColor("#008080"));
-			progressBar.setBackground(Color.getColor("#D3D3D3"));
-			progressBar.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-			progressBar.setFont(UIManager.getFont("Label.font").deriveFont(18f));
-			dialog.add(progressBar, BorderLayout.CENTER);
-		});
+		JProgressBar progressBar = new JProgressBar(0, totalFiles);
+		progressBar.setStringPainted(true);
+		progressBar.setForeground(Color.getColor("#008080"));
+		progressBar.setBackground(Color.getColor("#D3D3D3"));
+		progressBar.setFont(UIManager.getFont("Label.font").deriveFont(18f));
+		dialog.add(progressBar, BorderLayout.CENTER);
 		return dialog;
 	}
 	// 更新进度对话框
 	private static void updateProgressDialog(JDialog dialog, int completedFiles) {
-		SwingUtilities.invokeLater(() -> {
-			JProgressBar progressBar = (JProgressBar) dialog.getContentPane().getComponent(0);
-			progressBar.setValue(completedFiles);
-		});
+		JProgressBar progressBar = (JProgressBar) dialog.getContentPane().getComponent(0);
+		progressBar.setValue(completedFiles);
 	}
+	// 创建UI界面
 	private static void createUI() {
 		JDialog dialog = createDialog(HEX_SYNC_NAME + " 控制面板");
 		dialog.setSize(SCREEN_SIZE.width / 5, SCREEN_SIZE.height / 10);
-		buttonPanel(dialog); // 添加按钮面板
-		toggleIcon(dialog);
+		setIcon(dialog);
+		setTrayIcon(dialog);
+		addButtonPanel(dialog);
 	}
-	private static void buttonPanel(Dialog dialog) {
-		JButton openLogButton = newJButton("打开日志", event -> openLog());
+	private static void addButtonPanel(Dialog dialog) {
+		JButton openLogButton = newJButton("日志", event -> openLog());
 		JButton settingsButton = newJButton("设置", event -> openSettingsDialog());
 		JButton shutdownButton = newJButton("退出", event -> System.exit(0));
 		JButton toggleServerButton = newJButton("启动服务端", null);
@@ -851,12 +837,13 @@ public class HexSync implements HttpHandler {
 		panel.add(buttonPanel, BorderLayout.CENTER); // 添加按钮面板到主面板
 		dialog.add(panel);  // 添加主面板到窗口
 	}
+	// 处理按钮绘制
 	private static JButton setButton(JButton button, Dimension buttonSize) {
 		button.setPreferredSize(buttonSize);
 		button.setFocusPainted(false);
 		return button;
 	}
-	// 处理按钮事件的通用方法
+	// 处理按钮事件
 	private static void toggleButtonAction(
 			JButton button, Runnable startAction, Runnable stopAction,
 			String startText, String stopText, Dialog dialog
@@ -866,44 +853,43 @@ public class HexSync implements HttpHandler {
 			if (button.getText().equals(startText)) startAction.run();
 			else stopAction.run();
 			button.setText(button.getText().equals(startText) ? stopText : startText);
-			toggleIcon(dialog);
+			setIcon(dialog);
 			button.setEnabled(true);
 		});
 	}
-	// 切换图标
-	private static void toggleIcon(Dialog dialog) {
-		boolean running = serverHTTPThread != null || clientHTTPThread != null; // 状态标记
-		dialog.setIconImage(getImage(running));
+	// 设置窗口图标
+	private static void setIcon(Dialog dialog) {
+		dialog.setIconImage(getImage());
+	}
+	// 设置托盘图标
+	private static void setTrayIcon(Dialog dialog) {
 		if (!SystemTray.isSupported()) return;
 		TrayIcon trayIcon; // 托盘图标
-		trayIcon = new TrayIcon(getImage(running), HEX_SYNC_NAME);
+		trayIcon = new TrayIcon(getImage(), HEX_SYNC_NAME);
 		trayIcon.setImageAutoSize(true); // 自动调整图标大小
-		trayIcon.setToolTip(HEX_SYNC_NAME + "控制面板");
-		trayIcon.setPopupMenu(popupMenu(dialog));
-		trayIcon.addActionListener(event -> dialog.setVisible(true));
-		try {
-			SystemTray systemTray = SystemTray.getSystemTray();
-			if (systemTray.getTrayIcons().length == 0) systemTray.add(trayIcon);
-			else {
-				TrayIcon existingIcon = systemTray.getTrayIcons()[0];
-				existingIcon.setImage(getImage(running));
-			}
-		} catch (AWTException error) {
-			log(SEVERE, "添加托盘图标失败: " + error.getMessage());
-		}
-	}
-	private static Image getImage(boolean running) {
-		return Toolkit.getDefaultToolkit().getImage(HexSync.class.getResource(running ? ICON_O : ICON_I));
-	}
-	// 右键菜单
-	private static PopupMenu popupMenu(Dialog dialog) {
+		trayIcon.setToolTip(HEX_SYNC_NAME);
 		PopupMenu popupMenu = new PopupMenu();
 		popupMenu.add(createMenuItem("Open", event -> dialog.setVisible(true)));
 		popupMenu.add(createMenuItem("Hide", event -> dialog.setVisible(false)));
 		popupMenu.add(createMenuItem("Settings", event -> openSettingsDialog()));
 		popupMenu.add(createMenuItem("About", event -> aboutButtonAction()));
 		popupMenu.add(createMenuItem("Exit", event -> System.exit(0)));
-		return popupMenu;
+		trayIcon.setPopupMenu(popupMenu);
+		trayIcon.addActionListener(event -> dialog.setVisible(true));
+		try {
+			SystemTray systemTray = SystemTray.getSystemTray();
+			if (systemTray.getTrayIcons().length == 0) systemTray.add(trayIcon);
+			else {
+				TrayIcon existingIcon = systemTray.getTrayIcons()[0];
+				existingIcon.setImage(getImage());
+			}
+		} catch (AWTException error) {
+			log(SEVERE, "添加托盘图标失败: " + error.getMessage());
+		}
+	}
+	// 获取图标
+	private static Image getImage() {
+		return Toolkit.getDefaultToolkit().getImage(HexSync.class.getResource("icon.png"));
 	}
 	// 辅助方法创建菜单项
 	private static MenuItem createMenuItem(String text, ActionListener actionListener) {
@@ -1045,10 +1031,17 @@ public class HexSync implements HttpHandler {
 		button.addActionListener(actionListener);
 		return button;
 	}
-	@Override
+	// 处理请求
 	public void handle(HttpExchange exchange) {
 		String requestMethod = exchange.getRequestMethod();
 		if (!requestMethod.equalsIgnoreCase("GET")) return;
 		processHTTPRequest(exchange.getRequestURI().getPath(), exchange);
+	}
+	// 格式化日志
+	public String format(LogRecord record) {
+		return new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]")
+				.format(new Date(record.getMillis()))
+				+ "-[" + record.getLevel() + "]"
+				+ record.getMessage() + LINE_SEPARATOR;
 	}
 }
