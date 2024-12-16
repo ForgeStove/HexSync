@@ -57,6 +57,7 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 	private static int clientHTTPPort = 65535; // 客户端 HTTP 端口，默认值65535
 	private static long serverUploadRateLimit = 1; // 上传速率限制值，默认限速1MB/s
 	public static void main(String[] args) {
+		createDirectory(HEX_SYNC_NAME);
 		initializeLogger();
 		loadConfig();
 		createDirectory(serverSyncDirectory);
@@ -73,8 +74,7 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 	private static void initializeLogger() {
 		new Thread(() -> {
 			try {
-				createDirectory(HEX_SYNC_NAME);
-				FileHandler fileHandler = new FileHandler(LOG_FILE, false);
+				FileHandler fileHandler = new FileHandler(LOG_FILE, 1024*1024,1,false);
 				fileHandler.setFormatter(new HexSync());
 				LOGGER.addHandler(fileHandler);
 			} catch (Exception error) {
@@ -1045,7 +1045,7 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 	}
 	// 格式化日志
 	public String format(LogRecord record) {
-		return new SimpleDateFormat("[HH:mm:ss]")
+		return new SimpleDateFormat("[HH:mm]")
 				.format(new Date(record.getMillis()))
 				+ " - [" + record.getLevel() + "] "
 				+ record.getMessage()
