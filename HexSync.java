@@ -46,11 +46,13 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 	private static HttpURLConnection HTTPURLConnection; // 用于存储HTTP连接实例
 	private static Thread serverHTTPThread; // 服务器线程
 	private static Thread clientHTTPThread; // 客户端线程
+	private static Dimension screenSize; // 屏幕尺寸
+	private static Dimension buttonSize; // 按钮尺寸
+	private static JLabel statusLabel; // 状态标签
 	private static boolean isErrorDownload; // 客户端下载文件时是否发生错误，影响客户端是否自动关闭
 	private static boolean serverAutoStart; // 服务端自动启动，默认不自动启动
 	private static boolean clientAutoStart; // 客户端自动启动，默认不自动启动
 	private static boolean headless = GraphicsEnvironment.isHeadless();
-	private static final Dimension SCREEN_SIZE = headless ? null : Toolkit.getDefaultToolkit().getScreenSize();
 	private static int serverHTTPPort = 65535;// HTTP 端口，默认值65535
 	private static int clientHTTPPort = 65535; // 客户端 HTTP 端口，默认值65535
 	private static long serverUploadRateLimit = 1; // 上传速率限制值，默认限速1MB/s
@@ -65,6 +67,7 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 	// 简化日志记录器
 	private static void log(Level level, String message) {
 		LOGGER.log(level, message);
+		if (!headless) statusLabel.setText("[" + level + "] " + message);
 	}
 	// 初始化日志记录器
 	private static void initializeLogger() {
@@ -87,9 +90,16 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 		if (headless) headlessUI(); // 无头模式
 		else try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-			SwingUtilities.invokeLater(HexSync::createUI);// 有头模式
+			SwingUtilities.invokeLater(() -> {
+				screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+				buttonSize = new Dimension(screenSize.width/15, screenSize.height/35);
+				JDialog dialog = createDialog(screenSize.width / 5, screenSize.height / 5,
+						HEX_SYNC_NAME + " 控制面板");
+				setSystemTray(dialog);
+				addPanel(dialog);
+			});// 有头模式
 		} catch (Exception error) {
-			log(SEVERE, "设置外观失败: " + error.getMessage());
+			log(SEVERE, "初始化UI时出错:" + error.getMessage());
 		}
 	}
 	// 初始化文件
@@ -230,7 +240,7 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 			log(SEVERE, "读取响应时出错: " + error.getMessage());
 			isErrorDownload = true;
 		}
-		log(INFO, "请求文件列表成功,共收到 [" + requestMap.size() + "] 个文件"); // 记录请求成功日志
+		log(INFO, "获取到 [" + requestMap.size() + "] 个文件"); // 记录请求成功日志
 		return requestMap;
 	}
 	// 从服务器下载文件
@@ -304,7 +314,7 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 		File configFile = new File(CONFIG_FILE_PATH);
 		try (BufferedWriter writer = new BufferedWriter(new FileWriter(configFile))) {
 			writer.write(configContent.toString());// 写入配置文件
-			log(INFO, "配置已保存: " + System.lineSeparator() + configContent);
+			log(CONFIG, "配置已保存: " + System.lineSeparator() + configContent);
 		} catch (IOException error) {
 			log(SEVERE, "配置保存失败: " + error.getMessage());
 		}
@@ -498,16 +508,14 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 						+ "<br>GitHub仓库地址: " + "<a href=\"" + GITHUB_URL + "\">" + GITHUB_URL + "</a>"
 						+ "</body></html>"
 		);
-		scrollPane.setPreferredSize(new Dimension(SCREEN_SIZE.width / 5, SCREEN_SIZE.height / 15));
-		JDialog aboutDialog = createDialog("关于");
+		JDialog aboutDialog = createDialog(screenSize.width/5, screenSize.height/5, "关于");
 		aboutDialog.getContentPane().add(scrollPane);
-		aboutDialog.pack();
 	}
 	// HTML内容转JScrollPane
 	private static JScrollPane getJScrollPane(String htmlContent) {
-		JEditorPane aboutEditorPane = new JEditorPane("text/html", htmlContent);
-		aboutEditorPane.setEditable(false);
-		aboutEditorPane.addHyperlinkListener(hyperlinkEvent -> {
+		JEditorPane editorPane = new JEditorPane("text/html", htmlContent);
+		editorPane.setEditable(false);
+		editorPane.addHyperlinkListener(hyperlinkEvent -> {
 			if (HyperlinkEvent.EventType.ACTIVATED.equals(hyperlinkEvent.getEventType())) {
 				try {
 					Desktop.getDesktop().browse(hyperlinkEvent.getURL().toURI());
@@ -516,7 +524,7 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 				}
 			}
 		});
-		return new JScrollPane(aboutEditorPane);
+		return new JScrollPane(editorPane);
 	}
 	// 无头模式UI
 	private static void headlessUI() {
@@ -701,7 +709,6 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 			isErrorDownload = requestMap.isEmpty();
 			if (isErrorDownload) return;
 			else {
-				log(INFO, "获取到 " + requestMap.size() + " 个文件");
 				Map<String, String> toDownloadMap = new HashMap<>(); // 用于存储需要下载的文件列表
 				Map<String, String> clientOnlyMap = new HashMap<>(); // 用于存储客户端仅同步的文件列表
 				clientOnlyMap = initializeMap(clientOnlyDirectory, clientOnlyMap); // 初始化客户端仅同步的文件列表
@@ -767,8 +774,7 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 		if (toDownloadMap.isEmpty()) {
 			log(INFO, "已是最新,无需下载.");
 			if (headless || isErrorDownload) return;
-			JDialog dialog = createDialog("已是最新,无需下载.");
-			dialog.setSize(SCREEN_SIZE.width / 5, 0);
+			createDialog(screenSize.width/5, 0, "已是最新,无需下载.");
 			return;
 		}
 		log(INFO, "开始下载 " + toDownloadMap.size() + " 个文件");
@@ -789,27 +795,30 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 		}
 		if (progressDialog != null) progressDialog.dispose();
 		if (!headless) {
-			JDialog dialog = createDialog(isErrorDownload ? "下载失败,请检查网络连接."
-					: "下载完成: [" + downloadedCount + "/" + toDownloadMapSize + "]");
-			dialog.setSize(SCREEN_SIZE.width / 5, 0);
+			createDialog(
+					screenSize.width/5, 0,
+					isErrorDownload
+							? "下载失败,请检查网络连接."
+							: "下载完成: [" + downloadedCount + "/" + toDownloadMapSize + "]"
+			);
 			if (clientAutoStart) System.exit(0); // 自动退出
 		}
 		log(INFO, "下载完成: [" + downloadedCount + "/" + toDownloadMapSize + "]");
 	}
-	// 创建基础对话框模板
-	private static JDialog createDialog(String title) {
+	// 创建基础对话框
+	private static JDialog createDialog(int width, int height, String title) {
 		JDialog dialog = new JDialog();
-		dialog.setIconImage(getImage());
 		dialog.setTitle(title);
+		dialog.setIconImage(getImage());
 		dialog.setAlwaysOnTop(true);
-		dialog.setLocationRelativeTo(null);
-		dialog.setSize(SCREEN_SIZE.width / 5, SCREEN_SIZE.height / 15);
 		dialog.setVisible(true);
+		dialog.setSize(width, height);
+		dialog.setLocationRelativeTo(null);
 		return dialog;
 	}
 	// 创建进度条对话框
 	private static JDialog createProgressDialog(int totalFiles) {
-		JDialog dialog = createDialog("下载进度");
+		JDialog dialog = createDialog(screenSize.width/5, screenSize.height/15, "下载进度");
 		JProgressBar progressBar = new JProgressBar(0, totalFiles);
 		progressBar.setStringPainted(true);
 		progressBar.setForeground(Color.getColor("#008080"));
@@ -822,14 +831,6 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 	private static void updateProgressDialog(JDialog dialog, int completedFiles) {
 		JProgressBar progressBar = (JProgressBar) dialog.getContentPane().getComponent(0);
 		progressBar.setValue(completedFiles);
-	}
-	// 创建UI界面
-	private static void createUI() {
-		JDialog dialog = createDialog(HEX_SYNC_NAME + " 控制面板");
-		dialog.setSize(SCREEN_SIZE.width / 6, SCREEN_SIZE.height / 6);
-		dialog.setIconImage(getImage());
-		setSystemTray(dialog);
-		addPanel(dialog);
 	}
 	// 设置托盘图标
 	private static void setSystemTray(JDialog dialog) {
@@ -863,7 +864,6 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 	}
 	// 按钮和状态面板
 	private static void addPanel(JDialog dialog) {
-		Dimension buttonSize = new Dimension(SCREEN_SIZE.width / 17, SCREEN_SIZE.height / 40);
 		JButton openLogButton = newJButton("日志", buttonSize, event -> openLog());
 		JButton settingsButton = newJButton("设置", buttonSize, event -> openSettingsDialog());
 		JButton startServerButton = newJButton("启动服务端", buttonSize, event -> startHTTPServer());
@@ -882,9 +882,16 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 		buttonPanel.add(shutdownButton);
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout());
+		JSeparator topSeparator = new JSeparator();
+		panel.add(topSeparator, BorderLayout.NORTH);
 		panel.add(buttonPanel, BorderLayout.CENTER);
-		JLabel statusLabel = new JLabel("状态: 就绪", SwingConstants.CENTER);
-		panel.add(statusLabel, BorderLayout.SOUTH);
+		JPanel statusPanel = new JPanel();
+		statusPanel.setLayout(new BorderLayout());
+		JSeparator separator = new JSeparator();
+		statusPanel.add(separator, BorderLayout.NORTH);
+		statusLabel = new JLabel("", JLabel.CENTER);
+		statusPanel.add(statusLabel, BorderLayout.SOUTH);
+		panel.add(statusPanel, BorderLayout.SOUTH);
 		dialog.add(panel);
 	}
 	// 辅助方法创建菜单项
@@ -896,8 +903,7 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 	// 打开设置对话框
 	private static void openSettingsDialog() {
 		loadConfig();
-		Dimension buttonSize = new Dimension(SCREEN_SIZE.width / 17, SCREEN_SIZE.height / 40);
-		JDialog settingsDialog = createDialog("设置");
+		JDialog settingsDialog = createDialog(screenSize.width/5, screenSize.height/5, "设置");
 		// 服务端选项卡
 		JPanel serverPanel = new JPanel(new GridLayout(5, 2));
 		String[][] serverLabelsAndFields = {
@@ -1039,7 +1045,7 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 	}
 	// 格式化日志
 	public String format(LogRecord record) {
-		return new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]")
+		return new SimpleDateFormat("[HH:mm:ss]")
 				.format(new Date(record.getMillis()))
 				+ " - [" + record.getLevel() + "] "
 				+ record.getMessage()
