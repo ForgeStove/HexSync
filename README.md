@@ -2,7 +2,6 @@ HexSync
 =
 
 [![Github Downloads][download-image]][download-url]
-[![Github Hits][hits-image]][hits-url]
 [![GitHub stars][stars-image]][stars-url]
 [![GitHub issues][issues-image]][issues-url]
 [![Github Pulls][pulls-image]][pulls-url]
@@ -87,26 +86,23 @@ HexSync
 </h1>
 
 [download-url]: https://github.com/ForgeStove/HexSync/releases "下载"
-[download-image]: https://img.shields.io/github/downloads/ForgeStove/HexSync/total?style=flat-square&logo=github&label=%E6%80%BB%E4%B8%8B%E8%BD%BD%E6%95%B0 "总下载数"
-
-[hits-url]: https://hits.dwyl.com/ "访问量"
-[hits-image]: https://custom-icon-badges.demolab.com/endpoint?url=https%3A%2F%2Fhits.dwyl.com%2FTC999%2FAppDataCleaner.json%3Fcolor%3Dgreen&label=%E8%AE%BF%E9%97%AE%E9%87%8F&logo=graph 
+[download-image]: https://img.shields.io/github/downloads/ForgeStove/HexSync/total?logo=github&label=总下载数
 
 [stars-url]: https://github.com/ForgeStove/HexSync/stargazers "星标"
-[stars-image]: https://img.shields.io/github/stars/ForgeStove/HexSync?style=flat-square&logo=github&label=星标
+[stars-image]: https://img.shields.io/github/stars/ForgeStove/HexSync?style=flat&logo=github&label=星标
 
 [issues-url]: https://github.com/ForgeStove/HexSync/issues "议题"
-[issues-image]: https://img.shields.io/github/issues/ForgeStove/HexSync?style=flat-square&logo=github&label=议题
+[issues-image]: https://img.shields.io/github/issues/ForgeStove/HexSync?style=flat&logo=github&label=议题
 
 [pulls-url]: https://github.com/ForgeStove/HexSync/pulls "拉取请求"
-[pulls-image]: https://custom-icon-badges.demolab.com/github/issues-pr-raw/ForgeStove/HexSync?style=flat&logo=git-pull-request&%3Fcolor%3Dgreen&label=%E6%8B%89%E5%8F%96%E8%AF%B7%E6%B1%82
+[pulls-image]: https://custom-icon-badges.demolab.com/github/issues-pr-raw/ForgeStove/HexSync?logo=git-pull-request&label=拉取请求
 
 
 [forks-url]: https://github.com/ForgeStove/HexSync/fork "复刻"
-[forks-image]: https://img.shields.io/github/forks/ForgeStove/HexSync?style=flat-square&logo=github&label=复刻
+[forks-image]: https://img.shields.io/github/forks/ForgeStove/HexSync?style=flat&logo=github&label=复刻
 
-[repo-url]: https://github.com/ForgeStove/HexSync "仓库地址"
-[repo-size-image]:https://img.shields.io/github/repo-size/ForgeStove/HexSync?style=flat-square&label=%E4%BB%93%E5%BA%93%E5%A4%A7%E5%B0%8F
+[repo-url]: https://github.com/ForgeStove/HexSync "仓库"
+[repo-size-image]:https://img.shields.io/github/repo-size/ForgeStove/HexSync?style=flat&logo=github&label=仓库
 
 [license-url]: https://github.com/ForgeStove/HexSync/blob/main/LICENSE "许可证"
-[license-image]: https://custom-icon-badges.demolab.com/github/license/ForgeStove/HexSync?style=flat&logo=law&label=%E8%AE%B8%E5%8F%AF%E8%AF%81
+[license-image]: https://custom-icon-badges.demolab.com/github/license/ForgeStove/HexSync?style=flat&logo=law&label=许可证
