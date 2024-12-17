@@ -40,12 +40,12 @@ HexSync
 - 可以在控制面板的设置内修改配置并保存。
 - #### 服务端设置
 - 端口号(默认65535)
-- 上传速率限制(0为无限制)(可以设置单位"B/s" / "KB/s" / "MB/s" / "GB/s")
+- 上传速率限制(0为无限制)(可以设置单位为 B/s / KB/s / MB/s / GB/s )
 - 服务端同步文件夹路径(默认为mods，绝对路径和相对路径均可以使用，如果目标文件夹不存在会尝试创建，但是无法在目标文件夹的目录不存在的情况下创建文件夹)
 - 自动启动服务端(默认为否)
 - #### 客户端设置
 - 端口号(默认65535)
-- 服务器地址(默认localhost，使用前务必修改为对应的服务器地址，请不要在服务器地址内放入端口号，不需要"http://"前缀)
+- 服务器地址(默认localhost，使用前务必修改为对应的服务器地址，请不要在服务器地址内放入端口号，可以不添加"http://"前缀)
 - 客户端同步文件夹路径(默认为mods)
 - 仅客户端模组文件夹路径(默认为clientOnlyMods，请把仅客户端模组放入此文件夹内，如果需要更新仅客户端模组需要自行更新(其实是还没想好怎么实现))
 - 自动启动客户端(默认为否)
@@ -86,7 +86,7 @@ HexSync
 </h1>
 
 [download-url]: https://github.com/ForgeStove/HexSync/releases "下载"
-[download-image]: https://img.shields.io/github/downloads/ForgeStove/HexSync/total?logo=github&label=总下载数
+[download-image]: https://img.shields.io/github/downloads/ForgeStove/HexSync/total?style=flat&logo=markdown&label=总下载数
 
 [stars-url]: https://github.com/ForgeStove/HexSync/stargazers "星标"
 [stars-image]: https://img.shields.io/github/stars/ForgeStove/HexSync?style=flat&logo=github&label=星标
@@ -95,7 +95,7 @@ HexSync
 [issues-image]: https://img.shields.io/github/issues/ForgeStove/HexSync?style=flat&logo=github&label=议题
 
 [pulls-url]: https://github.com/ForgeStove/HexSync/pulls "拉取请求"
-[pulls-image]: https://custom-icon-badges.demolab.com/github/issues-pr-raw/ForgeStove/HexSync?logo=git-pull-request&label=拉取请求
+[pulls-image]: https://custom-icon-badges.demolab.com/github/issues-pr-raw/ForgeStove/HexSync?style=flat&logo=git-pull-request&label=拉取请求
 
 
 [forks-url]: https://github.com/ForgeStove/HexSync/fork "复刻"
