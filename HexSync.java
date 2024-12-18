@@ -16,6 +16,7 @@ import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import java.util.logging.*;
 
 import static java.io.File.separator;
@@ -57,24 +58,21 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 	private static int clientHTTPPort = 65535; // 客户端 HTTP 端口，默认值65535
 	private static long serverUploadRateLimit = 1; // 上传速率限制值，默认限速1MB/s
 	public static void main(String[] args) {
-		createDirectory(HEX_SYNC_NAME);
 		initializeLogger();
 		loadConfig();
-		createDirectory(serverSyncDirectory);
-		createDirectory(clientSyncDirectory);
-		createDirectory(clientOnlyDirectory);
 		initializeUI(args);
 	}
 	// 简化日志记录器
 	private static void log(Level level, String message) {
 		LOGGER.log(level, message);
-		if (!headless) statusLabel.setText("[" + level + "] " + message);
+		if (!headless && statusLabel != null) statusLabel.setText("[" + level + "] " + message);
 	}
 	// 初始化日志记录器
 	private static void initializeLogger() {
 		new Thread(() -> {
 			try {
-				FileHandler fileHandler = new FileHandler(LOG_FILE, 1024*1024,1,false);
+				makeDirectory(HEX_SYNC_NAME);
+				FileHandler fileHandler = new FileHandler(LOG_FILE, 1024 * 1024, 1, false);
 				fileHandler.setFormatter(new HexSync());
 				LOGGER.addHandler(fileHandler);
 			} catch (Exception error) {
@@ -92,8 +90,8 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			SwingUtilities.invokeLater(() -> {
 				screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-				buttonSize = new Dimension(screenSize.width/15, screenSize.height/35);
-				JDialog dialog = createDialog(screenSize.width / 5, screenSize.height / 5,
+				buttonSize = new Dimension(screenSize.width / 15, screenSize.height / 35);
+				JDialog dialog = newJDialog(screenSize.width / 5, screenSize.height / 5,
 						HEX_SYNC_NAME + " 控制面板");
 				setSystemTray(dialog);
 				addPanel(dialog);
@@ -104,11 +102,11 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 	}
 	// 初始化文件
 	private static void initializeFiles(boolean isServer) {
-		createDirectory(isServer ? serverSyncDirectory : clientSyncDirectory); // 创建同步文件夹
-		createDirectory(HEX_SYNC_NAME); // 在当前目录下创建HexSync文件夹
+		makeDirectory(isServer ? serverSyncDirectory : clientSyncDirectory); // 创建同步文件夹
+		makeDirectory(HEX_SYNC_NAME); // 在当前目录下创建HexSync文件夹
 		loadConfig(); // 加载配置文件
 		if (isServer) serverMap = initializeMap(serverSyncDirectory, serverMap); // 初始化服务端文件列表
-		else createDirectory(clientOnlyDirectory); // 创建仅客户端文件夹
+		else makeDirectory(clientOnlyDirectory); // 创建仅客户端文件夹
 		log(INFO, isServer ? "服务端初始化完成" : "客户端初始化完成");
 	}
 	// 初始化文件名校验码键值对表
@@ -120,7 +118,7 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 		return map;
 	}
 	// 创建文件夹
-	private static void createDirectory(String directoryPath) {
+	private static void makeDirectory(String directoryPath) {
 		File directory = new File(directoryPath);
 		if (directory.isDirectory()) return;
 		if (directory.mkdirs()) log(INFO, "文件夹已创建: " + directoryPath);
@@ -135,66 +133,46 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 		}
 		try (BufferedReader bufferedReader = new BufferedReader(new FileReader(configFile))) {
 			String line;
-			while ((line = bufferedReader.readLine()) != null) processConfigLine(line.trim());
+			Map<String, Consumer<String>> configMap = getConfigMap();
+			while ((line = bufferedReader.readLine()) != null) {
+				if (line.startsWith("#") || line.isEmpty()) continue;
+				String[] parts = line.split("=");
+				if (parts.length != 2) {
+					log(WARNING, "配置格式不正确: " + line);
+					continue;
+				}
+				Consumer<String> action = configMap.get(parts[0].trim());
+				if (action != null) action.accept(parts[1].trim());
+				else log(WARNING, "不正确的配置项: " + line);
+			}
 		} catch (IOException error) {
 			log(SEVERE, "配置读取失败: " + error.getMessage());
 		}
 	}
-	// 处理单行配置
-	private static void processConfigLine(String line) {
-		if (line.isEmpty() || line.startsWith("#")) return;
-		String[] parts = line.split("=");
-		if (parts.length != 2) {
-			log(WARNING, "配置格式不正确: " + line);
-			return;
-		}
-		String head = parts[0].trim();
-		String tail = parts[1].trim();
-		switch (head) {
-			case SERVER_HTTP_PORT_CONFIG:
-				serverHTTPPort = Integer.parseInt(tail);
-				break;
-			case SERVER_UPLOAD_RATE_LIMIT_CONFIG:
-				String[] limitParts = tail.split(" ");
-				if (limitParts.length != 2) log(WARNING, "上传速率限制格式不正确,跳过: " + line);
-				else {
-					serverUploadRateLimit = Long.parseLong(limitParts[0]);
-					serverUploadRateLimitUnit = limitParts[1];
-				}
-				break;
-			case SERVER_SYNC_DIRECTORY_CONFIG:
-				serverSyncDirectory = tail;
-				break;
-			case SERVER_AUTO_START_CONFIG:
-				serverAutoStart = Boolean.parseBoolean(tail);
-				break;
-			case CLIENT_HTTP_PORT_CONFIG:
-				clientHTTPPort = Integer.parseInt(tail);
-				break;
-			case SERVER_ADDRESS_CONFIG:
-				serverAddress = tail;
-				break;
-			case CLIENT_SYNC_DIRECTORY_CONFIG:
-				clientSyncDirectory = tail;
-				break;
-			case CLIENT_ONLY_DIRECTORY_CONFIG:
-				clientOnlyDirectory = tail;
-				break;
-			case CLIENT_AUTO_START_CONFIG:
-				clientAutoStart = Boolean.parseBoolean(tail);
-				break;
-			default:
-				log(WARNING, "不正确的配置项: " + line);
-				break;
-		}
+	private static Map<String, Consumer<String>> getConfigMap() {
+		Map<String, Consumer<String>> configMap = new HashMap<>();
+		configMap.put(SERVER_HTTP_PORT_CONFIG, input -> serverHTTPPort = Integer.parseInt(input));
+		configMap.put(SERVER_UPLOAD_RATE_LIMIT_CONFIG, input -> {
+			String[] limitParts = input.split(" ");
+			if (limitParts.length != 2) log(WARNING, "上传速率限制格式不正确");
+			else {
+				serverUploadRateLimit = Long.parseLong(limitParts[0]);
+				serverUploadRateLimitUnit = limitParts[1];
+			}
+		});
+		configMap.put(SERVER_SYNC_DIRECTORY_CONFIG, input -> serverSyncDirectory = input);
+		configMap.put(SERVER_AUTO_START_CONFIG, input -> serverAutoStart = Boolean.parseBoolean(input));
+		configMap.put(CLIENT_HTTP_PORT_CONFIG, input -> clientHTTPPort = Integer.parseInt(input));
+		configMap.put(SERVER_ADDRESS_CONFIG, input -> serverAddress = input);
+		configMap.put(CLIENT_SYNC_DIRECTORY_CONFIG, input -> clientSyncDirectory = input);
+		configMap.put(CLIENT_ONLY_DIRECTORY_CONFIG, input -> clientOnlyDirectory = input);
+		configMap.put(CLIENT_AUTO_START_CONFIG, input -> clientAutoStart = Boolean.parseBoolean(input));
+		return configMap;
 	}
 	// 地址格式化,转换为HTTP协议
 	private static String formatHTTP(String address) {
 		if (address.endsWith("/")) address = address.substring(0, address.length() - 1); // 去除末尾的分隔符
-		return address.startsWith("https://")
-				? address.replace("https://", "http://")
-				: "http://"
-				+ address;
+		return address.startsWith("http://") ? address : "http://" + address;
 	}
 	// 计算文件校验码
 	private static String calculateSHA(File file) {
@@ -375,11 +353,12 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 			return Long.MAX_VALUE; // 溢出，返回最大值
 		}
 	}
-	// 检查文件是否已存在并进行SHA校验
+	// 检查文件是否已存在并进行校验
 	private static boolean checkNoFile(File file, String fileName, Map<String, String> map) {
 		if (!file.exists()) return true;
 		return !map.get(fileName).equals(calculateSHA(file));
 	}
+	// 打开日志文件
 	private static void openLog() {
 		try {
 			String os = System.getProperty("os.name").toLowerCase();// 检查操作系统类型
@@ -399,24 +378,6 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 		} catch (IOException error) {
 			log(SEVERE, "打开命令行读取日志文件时出错: " + error.getMessage());
 		}
-	}
-	// 无头模式设置帮助
-	private static void headlessSettingsHelp() {
-		println("设置服务端HTTP端口: 'sp <端口号>'" + System.lineSeparator()
-				+ "设置服务端上传速率: 'sl <速率> <'B/s'/'KB/s'/'MB/s'/'GB/s'>'" + System.lineSeparator()
-				+ "设置服务端同步目录: 'sd <目录>'" + System.lineSeparator()
-				+ "设置服务端自动启动: 'ss <y/n>'" + System.lineSeparator()
-				+ "设置客户端HTTP端口: 'cp <端口号>'" + System.lineSeparator()
-				+ "设置服务器地址: 'sa <地址>'" + System.lineSeparator()
-				+ "设置客户端同步目录: 'cd <目录>'" + System.lineSeparator()
-				+ "设置客户端自动启动: 'cs <y/n>'" + System.lineSeparator()
-				+ "仓库地址: 'github'" + System.lineSeparator()
-				+ "保存并退出: 'save'" + System.lineSeparator()
-				+ "帮助: 'help'");
-	}
-	// 简化命令行输出
-	private static void println(String message) {
-		System.out.println(message);
 	}
 	// 处理请求
 	private static void processHTTPRequest(String requestURI, HttpExchange exchange) {
@@ -508,7 +469,7 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 						+ "<br>GitHub仓库地址: " + "<a href=\"" + GITHUB_URL + "\">" + GITHUB_URL + "</a>"
 						+ "</body></html>"
 		);
-		JDialog aboutDialog = createDialog(screenSize.width/5, screenSize.height/5, "关于");
+		JDialog aboutDialog = newJDialog(screenSize.width / 5, screenSize.height / 5, "关于");
 		aboutDialog.getContentPane().add(scrollPane);
 	}
 	// HTML内容转JScrollPane
@@ -529,42 +490,24 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 	// 无头模式UI
 	private static void headlessUI() {
 		println("欢迎使用" + HEX_SYNC_NAME + "!");
-		println("输入 'help' 以获取帮助.");
+		println("输入 help 以获取帮助.");
 		Scanner scanner = new Scanner(System.in);
-		String command;
+		Map<String, Runnable> commandMap = new HashMap<>();
+		commandMap.put("rs", HexSync::startHTTPServer);
+		commandMap.put("rc", HexSync::startHTTPClient);
+		commandMap.put("ss", HexSync::stopHTTPServer);
+		commandMap.put("sc", HexSync::stopHTTPClient);
+		commandMap.put("settings", HexSync::headlessSettings);
+		commandMap.put("github", () -> println("GitHub仓库地址: " + GITHUB_URL));
+		commandMap.put("help", HexSync::headlessHelp);
+		commandMap.put("exit", () -> System.exit(0));
 		while (true) {
-			System.out.print(HEX_SYNC_NAME + ">");
-			command = scanner.nextLine();
-			switch (command) {
-				case "rs":
-					startHTTPServer();
-					break;
-				case "rc":
-					startHTTPClient();
-					break;
-				case "ss":
-					stopHTTPServer();
-					break;
-				case "sc":
-					stopHTTPClient();
-					break;
-				case "set":
-					headlessSettings();
-					break;
-				case "help":
-					println("启动服务端: 'rs'");
-					println("启动客户端: 'rc'");
-					println("停止服务端: 'ss'");
-					println("停止客户端: 'sc'");
-					println("设置: 'set'");
-					println("退出: 'exit'");
-					println("帮助: 'help'");
-					break;
-				case "exit":
-					System.exit(0);
-					break;
-				default:
-					println("无效命令,输入 'help' 以获取帮助.");
+			println(HEX_SYNC_NAME + ">");
+			try {
+				commandMap.getOrDefault(scanner.nextLine(), () -> println("无效命令,输入 help 以获取帮助.")).run();
+			} catch (Exception error) {
+				log(SEVERE, "命令处理时出错: " + error.getMessage());
+				System.exit(1);
 			}
 		}
 	}
@@ -573,13 +516,13 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 		headlessSettingsHelp();
 		Scanner scanner = new Scanner(System.in);
 		while (true) {
-			System.out.print(HEX_SYNC_NAME + "Settings>");
+			println(HEX_SYNC_NAME + "Settings>");
 			String input = scanner.nextLine();
 			String[] parts = input.split("\\s+");
 			String command = parts[0];
 			// 检查是否有参数
-			if (parts.length < 2 && !command.equals("save") && !command.equals("help") && !command.equals("github")) {
-				println("无效命令或缺少参数, 输入 'help' 以获取帮助.");
+			if (parts.length < 2 && !command.equals("save") && !command.equals("help")) {
+				println("无效命令或缺少参数, 输入 help 以获取帮助.");
 				continue;
 			}
 			switch (command) {
@@ -610,14 +553,14 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 					if (!syncDirInput.isEmpty() && !syncDirInput.contains(separator)) {
 						serverSyncDirectory = syncDirInput;
 						log(INFO, "服务端同步目录已设置为: " + serverSyncDirectory);
-					} else println("同步目录格式错误,请输入绝对路径或相对路径.");
+					} else println("目录格式错误,请输入绝对路径或相对路径.");
 					break;
 				case "ss":
 					String autoStartInput = parts[1];
 					if (autoStartInput.matches("[yYnN]")) {
 						serverAutoStart = autoStartInput.matches("[yY]");
 						log(INFO, "服务端自动启动已设置为: " + serverAutoStart);
-					} else println("无效输入,请输入'y'/'Y'或'n'/'N'.");
+					} else println("无效输入,请输入 y/Y 或 n/N .");
 					break;
 				case "cp":
 					String clientPortInput = parts[1];
@@ -634,18 +577,25 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 					} else println("无效输入,请输入IP地址.");
 					break;
 				case "cd":
-					String clientSyncDirInput = parts[1];
-					if (!clientSyncDirInput.isEmpty() && !clientSyncDirInput.contains(separator)) {
-						clientSyncDirectory = clientSyncDirInput;
+					String clientSyncDirectoryInput = parts[1];
+					if (!clientSyncDirectoryInput.isEmpty() && !clientSyncDirectoryInput.contains(separator)) {
+						clientSyncDirectory = clientSyncDirectoryInput;
 						log(INFO, "客户端同步目录已设置为: " + clientSyncDirectory);
-					} else println("同步目录格式错误,请输入绝对路径或相对路径.");
+					} else println("目录格式错误,请输入绝对路径或相对路径.");
+					break;
+				case "co":
+					String clientOnlyDirectoryInput = parts[1];
+					if (!clientOnlyDirectoryInput.isEmpty() && !clientOnlyDirectoryInput.contains(separator)) {
+						clientOnlyDirectory = clientOnlyDirectoryInput;
+						log(INFO, "仅客户端模组目录已设置为: " + clientOnlyDirectory);
+					} else println("目录格式错误,请输入绝对路径或相对路径.");
 					break;
 				case "cs":
 					String clientAutoStartInput = parts[1];
 					if (clientAutoStartInput.matches("[yYnN]")) {
 						clientAutoStart = clientAutoStartInput.matches("[yY]");
 						log(INFO, "客户端自动启动已设置为: " + clientAutoStart);
-					} else println("无效输入,请输入'y'/'Y'或'n'/'N'.");
+					} else println("无效输入,请输入 y/Y 或 n/N .");
 					break;
 				case "save":
 					saveConfig();
@@ -653,20 +603,46 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 				case "help":
 					headlessSettingsHelp();
 					break;
-				case "github":
-					println(GITHUB_URL);
-					break;
 				default:
-					println("无效命令,输入 'help' 以获取帮助.");
+					println("无效命令,输入 help 以获取帮助.");
 			}
 		}
+	}
+	// 无头模式帮助
+	private static void headlessHelp() {
+		println("启动服务端: rs");
+		println("启动客户端: rc");
+		println("停止服务端: ss");
+		println("停止客户端: sc");
+		println("设置: settings");
+		println("仓库地址: github");
+		println("退出: exit");
+		println("帮助: help");
+	}
+	// 无头模式设置帮助
+	private static void headlessSettingsHelp() {
+		println("设置服务端HTTP端口: sp <端口号>");
+		println("设置服务端上传速率: sl <速率> < B/s / KB/s / MB/s / GB/s >");
+		println("设置服务端同步目录: sd <目录>");
+		println("设置服务端自动启动: ss <y/n>");
+		println("设置客户端HTTP端口: cp <端口号>");
+		println("设置服务器地址: sa <地址>");
+		println("设置客户端同步目录: cd <目录>");
+		println("设置客户端仅客户端目录: co <目录>");
+		println("设置客户端自动启动: cs <y/n>");
+		println("保存并退出: save");
+		println("帮助: help");
+	}
+	// 简化命令行输出
+	private static void println(String message) {
+		System.out.println(message);
 	}
 	// 停止服务端
 	private static void stopHTTPServer() {
 		if (serverHTTPThread == null || HTTPServer == null) return;
-		log(INFO, HEX_SYNC_NAME + "Server正在关闭...");
 		HTTPServer.stop(0);
 		serverHTTPThread = null;
+		serverMap.clear();
 		log(INFO, HEX_SYNC_NAME + "Server已关闭");
 	}
 	// 启动服务端
@@ -685,7 +661,8 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 				HTTPServer.setExecutor(null);
 				HTTPServer.start();
 			} catch (IOException error) {
-				log(SEVERE, "服务器异常: " + error.getMessage());
+				log(SEVERE, HEX_SYNC_NAME + "Server无法启动: " + error.getMessage());
+				return;
 			}
 			log(INFO, HEX_SYNC_NAME + "Server正在运行...端口号为: " + serverHTTPPort);
 		});
@@ -693,11 +670,10 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 	}
 	// 停止客户端
 	private static void stopHTTPClient() {
-		if (HTTPURLConnection != null) HTTPURLConnection.disconnect();
-		if (clientHTTPThread != null) {
-			clientHTTPThread = null;
-			log(INFO, HEX_SYNC_NAME + "Client已关闭");
-		}
+		if (clientHTTPThread == null || HTTPURLConnection == null) return;
+		HTTPURLConnection.disconnect();
+		clientHTTPThread = null;
+		log(INFO, HEX_SYNC_NAME + "Client已关闭");
 		if (clientAutoStart && !isErrorDownload) System.exit(0);
 	}
 	// 启动客户端
@@ -706,18 +682,17 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 			log(INFO, HEX_SYNC_NAME + "Client正在启动...");
 			initializeFiles(false);
 			Map<String, String> requestMap = requestHTTPList();
-			isErrorDownload = requestMap.isEmpty();
-			if (isErrorDownload) return;
+			if (requestMap.isEmpty()) return;
 			else {
 				Map<String, String> toDownloadMap = new HashMap<>(); // 用于存储需要下载的文件列表
 				Map<String, String> clientOnlyMap = new HashMap<>(); // 用于存储客户端仅同步的文件列表
 				clientOnlyMap = initializeMap(clientOnlyDirectory, clientOnlyMap); // 初始化客户端仅同步的文件列表
-				deleteFilesNotInMap(requestMap, clientOnlyMap);
+				deleteFilesNotInMap(requestMap, clientOnlyMap); // 删除同时不存在于服务端同步文件夹和仅客户端模组文件夹的文件
 				Map<String, String> clientMap = new HashMap<>(); // 用于存储客户端文件列表
 				clientMap = initializeMap(clientSyncDirectory, clientMap); // 初始化客户端文件列表
 				createToDownloadMap(requestMap, toDownloadMap, clientMap); // 构建需要下载的文件列表
 				downloadFilesInMap(toDownloadMap); // 下载文件
-				copyAllFiles(clientOnlyDirectory, clientSyncDirectory);
+				copyAllFiles(clientOnlyDirectory, clientSyncDirectory); // 复制仅客户端模组文件夹中的文件到客户端同步文件夹
 			}
 			stopHTTPClient();
 		});
@@ -736,7 +711,7 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 	// 复制客户端仅同步文件夹中的文件到客户端同步文件夹
 	private static void copyAllFiles(String source, String target) {
 		File targetDirectory = new File(target);
-		createDirectory(String.valueOf(targetDirectory));
+		makeDirectory(String.valueOf(targetDirectory));
 		File[] fileList = new File(source).listFiles();
 		if (fileList != null) for (File file : fileList) {
 			File targetFile = new File(targetDirectory, file.getName());
@@ -774,7 +749,7 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 		if (toDownloadMap.isEmpty()) {
 			log(INFO, "已是最新,无需下载.");
 			if (headless || isErrorDownload) return;
-			createDialog(screenSize.width/5, 0, "已是最新,无需下载.");
+			newJDialog(screenSize.width / 5, 0, "已是最新,无需下载.");
 			return;
 		}
 		log(INFO, "开始下载 " + toDownloadMap.size() + " 个文件");
@@ -795,18 +770,16 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 		}
 		if (progressDialog != null) progressDialog.dispose();
 		if (!headless) {
-			createDialog(
-					screenSize.width/5, 0,
-					isErrorDownload
-							? "下载失败,请检查网络连接."
-							: "下载完成: [" + downloadedCount + "/" + toDownloadMapSize + "]"
+			newJDialog(
+					screenSize.width / 5, 0, isErrorDownload
+							? "下载失败,请检查网络连接." : "下载完成: [" + downloadedCount + "/" + toDownloadMapSize + "]"
 			);
-			if (clientAutoStart) System.exit(0); // 自动退出
 		}
 		log(INFO, "下载完成: [" + downloadedCount + "/" + toDownloadMapSize + "]");
+		if (clientAutoStart) System.exit(0); // 自动退出
 	}
 	// 创建基础对话框
-	private static JDialog createDialog(int width, int height, String title) {
+	private static JDialog newJDialog(int width, int height, String title) {
 		JDialog dialog = new JDialog();
 		dialog.setTitle(title);
 		dialog.setIconImage(getImage());
@@ -818,7 +791,7 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 	}
 	// 创建进度条对话框
 	private static JDialog createProgressDialog(int totalFiles) {
-		JDialog dialog = createDialog(screenSize.width/5, screenSize.height/15, "下载进度");
+		JDialog dialog = newJDialog(screenSize.width / 5, screenSize.height / 15, "下载进度");
 		JProgressBar progressBar = new JProgressBar(0, totalFiles);
 		progressBar.setStringPainted(true);
 		progressBar.setForeground(Color.getColor("#008080"));
@@ -840,11 +813,11 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 		trayIcon.setImageAutoSize(true); // 自动调整图标大小
 		trayIcon.setToolTip(HEX_SYNC_NAME);
 		PopupMenu popupMenu = new PopupMenu();
-		popupMenu.add(createMenuItem("Open", event -> dialog.setVisible(true)));
-		popupMenu.add(createMenuItem("Hide", event -> dialog.setVisible(false)));
-		popupMenu.add(createMenuItem("Settings", event -> openSettingsDialog()));
-		popupMenu.add(createMenuItem("About", event -> aboutButtonAction()));
-		popupMenu.add(createMenuItem("Exit", event -> System.exit(0)));
+		newMenuItem(popupMenu, "Open", event -> dialog.setVisible(true));
+		newMenuItem(popupMenu, "Hide", event -> dialog.setVisible(false));
+		newMenuItem(popupMenu, "Settings", event -> openSettingsDialog());
+		newMenuItem(popupMenu, "About", event -> aboutButtonAction());
+		newMenuItem(popupMenu, "Exit", event -> System.exit(0));
 		trayIcon.setPopupMenu(popupMenu);
 		trayIcon.addActionListener(event -> dialog.setVisible(true));
 		try {
@@ -864,22 +837,14 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 	}
 	// 按钮和状态面板
 	private static void addPanel(JDialog dialog) {
-		JButton openLogButton = newJButton("日志", buttonSize, event -> openLog());
-		JButton settingsButton = newJButton("设置", buttonSize, event -> openSettingsDialog());
-		JButton startServerButton = newJButton("启动服务端", buttonSize, event -> startHTTPServer());
-		JButton startClientButton = newJButton("启动客户端", buttonSize, event -> startHTTPClient());
-		JButton stopServerButton = newJButton("停止服务端", buttonSize, event -> stopHTTPServer());
-		JButton stopClientButton = newJButton("停止客户端", buttonSize, event -> stopHTTPClient());
-		JButton shutdownButton = newJButton("退出", buttonSize, event -> System.exit(0));
-		// 添加按钮到按钮面板
 		JPanel buttonPanel = new JPanel();
-		buttonPanel.add(openLogButton);
-		buttonPanel.add(settingsButton);
-		buttonPanel.add(startServerButton);
-		buttonPanel.add(startClientButton);
-		buttonPanel.add(stopServerButton);
-		buttonPanel.add(stopClientButton);
-		buttonPanel.add(shutdownButton);
+		newJButton(buttonPanel, "日志", event -> openLog());
+		newJButton(buttonPanel, "设置", event -> openSettingsDialog());
+		newJButton(buttonPanel, "启动服务端", event -> startHTTPServer());
+		newJButton(buttonPanel, "启动客户端", event -> startHTTPClient());
+		newJButton(buttonPanel, "停止服务端", event -> stopHTTPServer());
+		newJButton(buttonPanel, "停止客户端", event -> stopHTTPClient());
+		newJButton(buttonPanel, "退出", event -> System.exit(0));
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout());
 		JSeparator topSeparator = new JSeparator();
@@ -895,15 +860,15 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 		dialog.add(panel);
 	}
 	// 辅助方法创建菜单项
-	private static MenuItem createMenuItem(String text, ActionListener actionListener) {
+	private static void newMenuItem(PopupMenu popupMenu, String text, ActionListener actionListener) {
 		MenuItem menuItem = new MenuItem(text);
 		menuItem.addActionListener(actionListener);
-		return menuItem;
+		popupMenu.add(menuItem);
 	}
 	// 打开设置对话框
 	private static void openSettingsDialog() {
 		loadConfig();
-		JDialog settingsDialog = createDialog(screenSize.width/5, screenSize.height/5, "设置");
+		JDialog settingsDialog = newJDialog(screenSize.width / 5, screenSize.height / 5, "设置");
 		// 服务端选项卡
 		JPanel serverPanel = new JPanel(new GridLayout(5, 2));
 		String[][] serverLabelsAndFields = {
@@ -951,15 +916,17 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 		JTextField clientSyncDirectoryPathField = clientTextFields[2];
 		JTextField clientOnlyDirectoryPathField = clientTextFields[3];
 		// 添加选项卡到选项卡面板
-		JCheckBox serverAutoStartBox = newJCheckBox("自动启动服务端", serverAutoStart, serverPanel);
-		JCheckBox clientAutoStartBox = newJCheckBox("自动启动客户端", clientAutoStart, clientPanel);
+		JCheckBox serverAutoStartBox = newJCheckBox(serverPanel, "自动启动服务端", serverAutoStart);
+		JCheckBox clientAutoStartBox = newJCheckBox(clientPanel, "自动启动客户端", clientAutoStart);
 		// 添加选项卡面板到设置对话框
 		JTabbedPane tabbedPane = new JTabbedPane();
 		tabbedPane.addTab("服务端设置", serverPanel);
 		tabbedPane.addTab("客户端设置", clientPanel);
 		tabbedPane.setFocusable(false);
 		settingsDialog.add(tabbedPane, BorderLayout.CENTER);
-		JButton configSaveButton = newJButton("保存", buttonSize, event -> {
+		// 按钮面板
+		JPanel buttonPanel = new JPanel();
+		newJButton(buttonPanel, "保存", event -> {
 			// 定义输入框数组及其对应的提示信息和选项卡索引
 			Object[][] inputs = {
 					{serverPortField, "服务端端口", 0},
@@ -1005,13 +972,8 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 			saveConfig(); // 保存配置
 			settingsDialog.dispose(); // 关闭对话框
 		});
-		JButton cancelButton = newJButton("取消", buttonSize, event -> settingsDialog.dispose());
-		JButton aboutButton = newJButton("关于", buttonSize, event -> aboutButtonAction());
-		// 按钮面板
-		JPanel buttonPanel = new JPanel();
-		buttonPanel.add(configSaveButton);
-		buttonPanel.add(cancelButton);
-		buttonPanel.add(aboutButton);
+		newJButton(buttonPanel, "取消", event -> settingsDialog.dispose());
+		newJButton(buttonPanel, "关于", event -> aboutButtonAction());
 		// 添加按钮面板到对话框的南部
 		settingsDialog.add(buttonPanel, BorderLayout.SOUTH);
 		settingsDialog.pack(); // 自动调整大小
@@ -1022,25 +984,24 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 		textField.selectAll(); // 选中输入框
 	}
 	// 基础选定按钮框架
-	private static JCheckBox newJCheckBox(String text, boolean selected, JPanel serverPanel) {
+	private static JCheckBox newJCheckBox(JPanel panel, String text, boolean selected) {
 		JCheckBox checkBox = new JCheckBox(text);
 		checkBox.setFocusPainted(false);
 		checkBox.setSelected(selected);
-		serverPanel.add(checkBox);
+		panel.add(checkBox);
 		return checkBox;
 	}
 	// 基础按钮框架
-	private static JButton newJButton(String text, Dimension buttonSize, ActionListener actionListener) {
+	private static void newJButton(JPanel panel, String text, ActionListener actionListener) {
 		JButton button = new JButton(text);
 		button.setFocusPainted(false);
 		button.setPreferredSize(buttonSize);
 		button.addActionListener(actionListener);
-		return button;
+		panel.add(button);
 	}
 	// 处理请求
 	public void handle(HttpExchange exchange) {
-		String requestMethod = exchange.getRequestMethod();
-		if (!requestMethod.equalsIgnoreCase("GET")) return;
+		if (!exchange.getRequestMethod().equalsIgnoreCase("GET")) return;
 		processHTTPRequest(exchange.getRequestURI().getPath(), exchange);
 	}
 	// 格式化日志
