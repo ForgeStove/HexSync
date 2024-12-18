@@ -263,6 +263,8 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 	private static int getResponseCode(URL requestURL) throws IOException {
 		HTTPURLConnection = (HttpURLConnection) requestURL.openConnection(); // 打开连接
 		HTTPURLConnection.setRequestMethod("GET"); // 设置请求方式为GET
+		HTTPURLConnection.setConnectTimeout(5000); // 设置连接超时
+		HTTPURLConnection.setReadTimeout(5000); // 设置读取超时
 		return HTTPURLConnection.getResponseCode(); // 返回响应码
 	}
 	// 保存配置
@@ -362,18 +364,12 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 	private static void openLog() {
 		try {
 			String os = System.getProperty("os.name").toLowerCase();// 检查操作系统类型
-			String command;
 			if (os.contains("win")) {// Windows平台
-				command = "Get-Content -Path '" + LOG_FILE + "' -Encoding utf8 -Wait";
 				Runtime.getRuntime().exec(new String[]{
-						"cmd.exe", "/c", "start", "powershell.exe", "-Command", command
-				});
-			} else if (os.contains("mac")) {// macOS平台
-				command = "tail -f " + LOG_FILE;
-				Runtime.getRuntime().exec(new String[]{"/bin/bash", "-c", command});
-			} else if (os.contains("nix") || os.contains("nux")) {// Linux平台
-				command = "tail -f " + LOG_FILE;
-				Runtime.getRuntime().exec(new String[]{"/bin/bash", "-c", command});
+						"cmd.exe", "/c", "start", "powershell.exe", "-Command",
+						"Get-Content -Path '" + LOG_FILE + "' -Encoding utf8 -Wait"});
+			} else if (os.contains("mac")||os.contains("nix") || os.contains("nux")) {// macOS 和 Linux平台
+				Runtime.getRuntime().exec(new String[]{"/bin/bash", "-c", "tail -f " + LOG_FILE});
 			} else log(WARNING, "不支持的操作系统: " + os);
 		} catch (IOException error) {
 			log(SEVERE, "打开命令行读取日志文件时出错: " + error.getMessage());
