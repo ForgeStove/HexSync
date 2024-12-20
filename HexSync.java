@@ -1,16 +1,11 @@
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
+import com.sun.net.httpserver.*;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.*;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
@@ -92,7 +87,7 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 				screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 				buttonSize = new Dimension(screenSize.width / 15, screenSize.height / 35);
 				JDialog dialog = newJDialog(screenSize.width / 5, screenSize.height / 5,
-						HEX_SYNC_NAME + " 控制面板");
+											HEX_SYNC_NAME + " 控制面板");
 				setSystemTray(dialog);
 				addPanel(dialog);
 			});// 有头模式
@@ -382,20 +377,20 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 		if ("/list".equals(requestURI)) {
 			StringBuilder responseBuilder = new StringBuilder(); // 用于构建响应内容
 			serverMap.forEach((fileName, SHA) ->
-					responseBuilder
-							.append(fileName)
-							.append(System.lineSeparator())
-							.append(SHA)
-							.append(System.lineSeparator()));
+									  responseBuilder
+											  .append(fileName)
+											  .append(System.lineSeparator())
+											  .append(SHA)
+											  .append(System.lineSeparator()));
 			responseBytes = responseBuilder.toString().getBytes();
 			HTTPCode = HttpURLConnection.HTTP_OK;
 		} else if (requestURI.startsWith("/download/")) {
 			String requestSHA = requestURI.substring(requestURI.lastIndexOf("/") + 1);
 			String filePath = serverMap.entrySet().stream()
-					.filter(entry -> requestSHA.equals(entry.getValue()))
-					.map(entry -> serverSyncDirectory + separator + entry.getKey())
-					.findFirst()
-					.orElse(null);
+									   .filter(entry -> requestSHA.equals(entry.getValue()))
+									   .map(entry -> serverSyncDirectory + separator + entry.getKey())
+									   .findFirst()
+									   .orElse(null);
 			if (filePath == null) {
 				log(SEVERE, "无法找到对应的文件: " + requestSHA);
 				sendHTTPResponse(exchange, responseBytes, HTTPCode);
@@ -424,7 +419,7 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 								+ encodedName
 								+ "\"; filename*=UTF-8''"
 								+ encodedName
-				);
+												 );
 			} catch (UnsupportedEncodingException error) {
 				log(SEVERE, "编码文件名时出错: " + error.getMessage());
 			}
@@ -471,7 +466,7 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 						+ "<br>By: ForgeStove"
 						+ "<br>GitHub仓库地址: " + "<a href=\"" + GITHUB_URL + "\">" + GITHUB_URL + "</a>"
 						+ "</body></html>"
-		);
+											   );
 		JDialog aboutDialog = newJDialog(screenSize.width / 5, screenSize.height / 5, "关于");
 		aboutDialog.getContentPane().add(scrollPane);
 	}
@@ -700,8 +695,10 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 			if (file.isDirectory()) copyAllFiles(file.getAbsolutePath(), targetFile.getAbsolutePath());
 			else {
 				if (targetFile.exists()) continue;
-				try (InputStream inputStream = Files.newInputStream(file.toPath());
-					 OutputStream outputStream = Files.newOutputStream(targetFile.toPath())) {
+				try (
+						InputStream inputStream = Files.newInputStream(file.toPath());
+						OutputStream outputStream = Files.newOutputStream(targetFile.toPath())
+				) {
 					byte[] buffer = new byte[16384];
 					int length;
 					while ((length = inputStream.read(buffer)) > 0) outputStream.write(buffer, 0, length);
@@ -715,14 +712,15 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 	// 构建需要下载的文件列表
 	private static void createToDownloadMap(
 			Map<String, String> requestMap, Map<String, String> toDownloadMap, Map<String, String> clientMap
-	) {
+										   ) {
 		for (Map.Entry<String, String> entry : requestMap.entrySet()) {
 			String fileName = entry.getKey();
 			String SHA = entry.getValue();
 			if (fileName.isEmpty() || SHA.isEmpty()) continue;
 			if (!clientMap.containsKey(fileName) && !clientMap.containsValue(SHA) && checkNoFile(
 					new File(clientSyncDirectory + separator + fileName), fileName, requestMap
-			)) toDownloadMap.put(fileName, SHA);
+																								))
+				toDownloadMap.put(fileName, SHA);
 		}
 	}
 	// 从服务端同步文件夹下载客户端缺少的文件
@@ -754,7 +752,7 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 			newJDialog(
 					screenSize.width / 5, 0, isErrorDownload
 							? "下载失败,请检查网络连接." : "下载完成: [" + downloadedCount + "/" + toDownloadMapSize + "]"
-			);
+					  );
 		}
 		log(INFO, "下载完成: [" + downloadedCount + "/" + toDownloadMapSize + "]");
 		if (clientAutoStart) System.exit(0); // 自动退出
