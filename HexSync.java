@@ -197,8 +197,7 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 		try {
 			int responseCode = getResponseCode(new URL(URL));
 			if (responseCode != HttpURLConnection.HTTP_OK) {
-				if (clientHTTPThread != null)
-					log(SEVERE, "请求文件列表失败,HTTP错误代码: " + responseCode); // 记录错误日志
+				if (clientHTTPThread != null) log(SEVERE, "请求文件列表失败,HTTP错误代码: " + responseCode);
 				isErrorDownload = true;
 				return requestMap;
 			}
@@ -368,7 +367,7 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 				Runtime.getRuntime().exec(new String[]{
 						"cmd.exe", "/c", "start", "powershell.exe", "-Command",
 						"Get-Content -Path '" + LOG_FILE + "' -Encoding utf8 -Wait"});
-			} else if (os.contains("mac")||os.contains("nix") || os.contains("nux")) {// macOS 和 Linux平台
+			} else if (os.contains("mac") || os.contains("nix") || os.contains("nux")) {// macOS 和 Linux平台
 				Runtime.getRuntime().exec(new String[]{"/bin/bash", "-c", "tail -f " + LOG_FILE});
 			} else log(WARNING, "不支持的操作系统: " + os);
 		} catch (IOException error) {
@@ -434,26 +433,34 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 		} else log(WARNING, "未知的请求: " + requestURI);
 		sendHTTPResponse(exchange, responseBytes, HTTPCode);
 	}
-	// 检测端口号有效性的方法
-	private static boolean isPort(String portInput) {
-		if (
-				isNumberInLong(portInput)
-						&& portInput.trim().length() < 6
-						&& Integer.parseInt(portInput) > 0
-						&& Integer.parseInt(portInput) < 65536
-		) return true;
-		log(WARNING, "端口号不在0~65535的范围内: " + portInput);
-		return false; // 端口号不合法
+	// 字符串转端口
+	private static boolean getPort(String portInput, boolean isServer) {
+		try {
+			int port = Integer.parseInt(portInput);
+			if (port > 0 && port < 65536) {
+				if (isServer) {
+					serverHTTPPort = port;
+					log(INFO, "服务端HTTP端口已设置为: " + serverHTTPPort);
+				} else {
+					clientHTTPPort = port;
+					log(INFO, "客户端HTTP端口已设置为: " + clientHTTPPort);
+				}
+				return true;
+			} else return false;
+		} catch (NumberFormatException error) {
+			log(WARNING, "端口号格式错误: " + portInput);
+			return false;
+		}
 	}
 	// 检测数字输入是否在Long范围内
-	private static boolean isNumberInLong(String numberInput) {
-		if (numberInput == null || numberInput.trim().isEmpty()) return false; // 空字符串返回false
+	private static boolean invalidLong(String numberInput) {
+		if (numberInput == null || numberInput.trim().isEmpty()) return true;
 		try {
-			Long.parseLong(numberInput.trim()); // 尝试将文本转换为长整型
-			return true; // 转换成功，返回true
+			Long.parseLong(numberInput.trim());
+			return false;
 		} catch (NumberFormatException error) {
-			log(WARNING, "不正确的数字格式或超出范围: " + numberInput);
-			return false; // 转换失败，返回false
+			log(WARNING, "错误的数字格式或超出范围: " + numberInput);
+			return true;
 		}
 	}
 	// 关于按钮
@@ -488,120 +495,52 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 		println("欢迎使用" + HEX_SYNC_NAME + "!");
 		println("输入 help 以获取帮助.");
 		Scanner scanner = new Scanner(System.in);
-		Map<String, Runnable> commandMap = new HashMap<>();
-		commandMap.put("rs", HexSync::startHTTPServer);
-		commandMap.put("rc", HexSync::startHTTPClient);
-		commandMap.put("ss", HexSync::stopHTTPServer);
-		commandMap.put("sc", HexSync::stopHTTPClient);
-		commandMap.put("settings", HexSync::headlessSettings);
-		commandMap.put("github", () -> println("GitHub仓库地址: " + GITHUB_URL));
-		commandMap.put("help", HexSync::headlessHelp);
-		commandMap.put("exit", () -> System.exit(0));
+		// 命令映射
+		Map<String, Runnable> map = new HashMap<>();
+		map.put("rs", HexSync::startHTTPServer);
+		map.put("rc", HexSync::startHTTPClient);
+		map.put("ss", HexSync::stopHTTPServer);
+		map.put("sc", HexSync::stopHTTPClient);
+		map.put("settings", HexSync::headlessSettings);
+		map.put("github", () -> println(GITHUB_URL));
+		map.put("help", HexSync::headlessHelp);
+		map.put("exit", () -> System.exit(0));
 		while (true) {
-			println(HEX_SYNC_NAME + ">");
+			print(HEX_SYNC_NAME + ">");
 			try {
-				commandMap.getOrDefault(scanner.nextLine(), () -> println("无效命令,输入 help 以获取帮助.")).run();
+				map.getOrDefault(scanner.nextLine().trim(), () -> println("无效命令,输入 help 以获取帮助.")).run();
 			} catch (Exception error) {
 				log(SEVERE, "命令处理时出错: " + error.getMessage());
-				System.exit(1);
+				break;
 			}
 		}
 	}
 	// 无头模式设置
 	private static void headlessSettings() {
 		headlessSettingsHelp();
-		Scanner scanner = new Scanner(System.in);
+		// 命令映射
+		Map<String, Consumer<String[]>> map = new HashMap<>();
+		map.put("sp", args -> getPort(args[1], true));
+		map.put("sl", args -> setRate(args[1]));
+		map.put("sd", args -> setDirectory(args[1], "服务端同步", value -> serverSyncDirectory = value));
+		map.put("ss", args -> setAutoStart(args[1], "服务端", value -> serverAutoStart = value));
+		map.put("cp", args -> getPort(args[1], false));
+		map.put("sa", args -> setAddress(args[1]));
+		map.put("cd", args -> setDirectory(args[1], "客户端同步", value -> clientSyncDirectory = value));
+		map.put("co", args -> setDirectory(args[1], "仅客户端模组", value -> clientOnlyDirectory = value));
+		map.put("cs", args -> setAutoStart(args[1], "客户端", value -> clientAutoStart = value));
+		map.put("save", args -> saveConfig());
+		map.put("help", args -> headlessSettingsHelp());
 		while (true) {
-			println(HEX_SYNC_NAME + "Settings>");
-			String input = scanner.nextLine();
-			String[] parts = input.split("\\s+");
-			String command = parts[0];
-			// 检查是否有参数
-			if (parts.length < 2 && !command.equals("save") && !command.equals("help")) {
-				println("无效命令或缺少参数, 输入 help 以获取帮助.");
+			print(HEX_SYNC_NAME + "Settings>");
+			String[] parts = new Scanner(System.in).nextLine().split("\\s+");
+			try {
+				map.getOrDefault(parts[0], args -> println("无效命令,输入 help 以获取帮助.")).accept(parts);
+			} catch (Exception error) {
+				println("无效命令,输入 help 以获取帮助.");
 				continue;
 			}
-			switch (command) {
-				case "sp":
-					String portInput = parts[1];
-					if (isPort(portInput)) {
-						serverHTTPPort = Integer.parseInt(portInput);
-						log(INFO, "服务端HTTP端口已设置为: " + serverHTTPPort);
-					}
-					break;
-				case "sl":
-					String rateInput = input.substring(command.length()).trim();
-					if (rateInput.matches("\\d+(\\s+B/s|\\s+KB/s|\\s+MB/s|\\s+GB/s)")) {
-						String[] rateParts = rateInput.split("\\s+");
-						if (!isNumberInLong(rateParts[0])) {
-							println("无效输入,请输入数字.");
-							break;
-						}
-						serverUploadRateLimit = Long.parseLong(rateParts[0]);
-						serverUploadRateLimitUnit = rateParts[1];
-						log(INFO,
-								"服务端上传速率已设置为: " + serverUploadRateLimit + " " + serverUploadRateLimitUnit
-						);
-					} else println("无效输入,请输入数字及单位.");
-					break;
-				case "sd":
-					String syncDirInput = parts[1];
-					if (!syncDirInput.isEmpty() && !syncDirInput.contains(separator)) {
-						serverSyncDirectory = syncDirInput;
-						log(INFO, "服务端同步目录已设置为: " + serverSyncDirectory);
-					} else println("目录格式错误,请输入绝对路径或相对路径.");
-					break;
-				case "ss":
-					String autoStartInput = parts[1];
-					if (autoStartInput.matches("[yYnN]")) {
-						serverAutoStart = autoStartInput.matches("[yY]");
-						log(INFO, "服务端自动启动已设置为: " + serverAutoStart);
-					} else println("无效输入,请输入 y/Y 或 n/N .");
-					break;
-				case "cp":
-					String clientPortInput = parts[1];
-					if (isPort(clientPortInput)) {
-						clientHTTPPort = Integer.parseInt(clientPortInput);
-						log(INFO, "客户端HTTP端口已设置为: " + clientHTTPPort);
-					}
-					break;
-				case "sa":
-					String addressInput = parts[1];
-					if (addressInput.matches("\\d+\\.\\d+")) {
-						serverAddress = addressInput;
-						log(INFO, "服务端地址已设置为: " + serverAddress);
-					} else println("无效输入,请输入IP地址.");
-					break;
-				case "cd":
-					String clientSyncDirectoryInput = parts[1];
-					if (!clientSyncDirectoryInput.isEmpty() && !clientSyncDirectoryInput.contains(separator)) {
-						clientSyncDirectory = clientSyncDirectoryInput;
-						log(INFO, "客户端同步目录已设置为: " + clientSyncDirectory);
-					} else println("目录格式错误,请输入绝对路径或相对路径.");
-					break;
-				case "co":
-					String clientOnlyDirectoryInput = parts[1];
-					if (!clientOnlyDirectoryInput.isEmpty() && !clientOnlyDirectoryInput.contains(separator)) {
-						clientOnlyDirectory = clientOnlyDirectoryInput;
-						log(INFO, "仅客户端模组目录已设置为: " + clientOnlyDirectory);
-					} else println("目录格式错误,请输入绝对路径或相对路径.");
-					break;
-				case "cs":
-					String clientAutoStartInput = parts[1];
-					if (clientAutoStartInput.matches("[yYnN]")) {
-						clientAutoStart = clientAutoStartInput.matches("[yY]");
-						log(INFO, "客户端自动启动已设置为: " + clientAutoStart);
-					} else println("无效输入,请输入 y/Y 或 n/N .");
-					break;
-				case "save":
-					saveConfig();
-					return;
-				case "help":
-					headlessSettingsHelp();
-					break;
-				default:
-					println("无效命令,输入 help 以获取帮助.");
-			}
+			if (parts[0].equals("save")) break;
 		}
 	}
 	// 无头模式帮助
@@ -611,7 +550,7 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 		println("停止服务端: ss");
 		println("停止客户端: sc");
 		println("设置: settings");
-		println("仓库地址: github");
+		println("仓库: github");
 		println("退出: exit");
 		println("帮助: help");
 	}
@@ -629,9 +568,55 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 		println("保存并退出: save");
 		println("帮助: help");
 	}
-	// 简化命令行输出
+	// 简化print方法
+	private static void print(String message) {
+		System.out.print(message);
+	}
+	// 简化println方法
 	private static void println(String message) {
 		System.out.println(message);
+	}
+	// 设置上传速率
+	private static void setRate(String input) {
+		String rateInput;
+		try {
+			rateInput = input.substring(input.indexOf(" ") + 1);
+		} catch (IndexOutOfBoundsException error) {
+			println("无效输入,请输入数字及单位.");
+			return;
+		}
+		if (rateInput.matches("\\d+(\\s+B/s|\\s+KB/s|\\s+MB/s|\\s+GB/s)")) {
+			String[] rateParts = rateInput.split("\\s+");
+			if (invalidLong(rateParts[0])) {
+				println("无效输入,请输入数字.");
+				return;
+			}
+			serverUploadRateLimit = Long.parseLong(rateParts[0]);
+			serverUploadRateLimitUnit = rateParts[1];
+			log(INFO, "服务端上传速率已设置为: " + serverUploadRateLimit + " " + serverUploadRateLimitUnit);
+		} else println("无效输入,请输入数字及单位.");
+	}
+	// 设置服务端地址
+	private static void setAddress(String addressInput) {
+		if (addressInput.matches("\\d+\\.\\d+")) {
+			serverAddress = addressInput;
+			log(INFO, "服务端地址已设置为: " + serverAddress);
+		} else println("无效输入,请输入IP地址.");
+	}
+	// 设置目录
+	private static void setDirectory(String directory, String log, Consumer<String> setter) {
+		if (!directory.isEmpty() && !directory.contains(separator)) {
+			setter.accept(directory);
+			log(INFO, log + "目录已设置为: " + directory);
+		} else println("目录格式错误,请输入绝对路径或相对路径.");
+	}
+	// 设置自动启动
+	private static void setAutoStart(String input, String log, Consumer<Boolean> setter) {
+		if (input.matches("[yYnN]")) {
+			boolean value = input.matches("[yY]");
+			setter.accept(value);
+			log(INFO, log + "自动启动已设置为: " + value);
+		} else println("无效输入,请输入 y/Y 或 n/N.");
 	}
 	// 停止服务端
 	private static void stopHTTPServer() {
@@ -944,24 +929,22 @@ public class HexSync extends SimpleFormatter implements HttpHandler {
 					return;
 				}
 			}
-			// 检测端口号是否是数字且在合法范围内
-			if (!isPort(serverPortField.getText().trim())) selectAndFocus(serverPortField);
-			if (!isPort(clientPortField.getText().trim())) selectAndFocus(clientPortField);
+			// 检测输入框是否为数字且在合法范围内并尝试转换
+			if (!getPort(serverPortField.getText().trim(), true)) selectAndFocus(serverPortField);
+			if (!getPort(clientPortField.getText().trim(), false)) selectAndFocus(clientPortField);
 			// 检测上传速率上限
 			String uploadRateLimitText = serverUploadRateLimitField.getText().trim();
-			if (!isNumberInLong(uploadRateLimitText) || Long.parseLong(uploadRateLimitText) < 0) {
+			if (invalidLong(uploadRateLimitText) || Long.parseLong(uploadRateLimitText) < 0) {
 				log(WARNING, "上传速率上限不正确: " + uploadRateLimitText);
 				tabbedPane.setSelectedIndex(0);
 				selectAndFocus(serverUploadRateLimitField);
 				return;
 			}
 			serverAutoStart = serverAutoStartBox.isSelected();
-			clientAutoStart = clientAutoStartBox.isSelected();
-			serverHTTPPort = Integer.parseInt(serverPortField.getText().trim());
 			serverUploadRateLimit = Long.parseLong(uploadRateLimitText);
 			serverUploadRateLimitUnit = (String) serverUploadRateLimitUnitBox.getSelectedItem();
 			serverSyncDirectory = serverSyncDirectoryPathField.getText().trim();
-			clientHTTPPort = Integer.parseInt(clientPortField.getText().trim());
+			clientAutoStart = clientAutoStartBox.isSelected();
 			serverAddress = serverAddressField.getText().trim();
 			clientSyncDirectory = clientSyncDirectoryPathField.getText().trim();
 			clientOnlyDirectory = clientOnlyDirectoryPathField.getText().trim();
