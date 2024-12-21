@@ -117,7 +117,7 @@ public class HexSync {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			SwingUtilities.invokeLater(() -> {
 				screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-				JDialog dialog = newJDialog(screenSize.width / 5, screenSize.height / 5, HEX_SYNC_NAME + " 控制面板");
+				JDialog dialog = newJDialog(screenSize.width / 4, screenSize.height / 5, HEX_SYNC_NAME + " 控制面板");
 				setSystemTray(dialog);
 				addPanel(dialog);
 			});
@@ -900,7 +900,7 @@ public class HexSync {
 	private static void newJButton(JPanel panel, String text, ActionListener actionListener) {
 		JButton button = new JButton(text);
 		button.setFocusPainted(false);
-		button.setPreferredSize(new Dimension(screenSize.width / 15, screenSize.height / 35));
+		button.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height / 35));
 		button.addActionListener(actionListener);
 		panel.add(button);
 	}
