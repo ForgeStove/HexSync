@@ -20,7 +20,7 @@ import static java.lang.String.*;
 import static java.lang.System.*;
 import static java.net.HttpURLConnection.*;
 import static java.nio.file.Files.*;
-public class HexSync implements HttpHandler {
+public class HexSync {
 	private static final String HEX_SYNC_NAME = HexSync.class.getName(); // 程序名称
 	private static final AtomicLong AVAILABLE_TOKENS = new AtomicLong(0); // 当前可用令牌数量
 	private static final String LOG_FILE = HEX_SYNC_NAME + separator + "latest.log"; // 日志文件路径
@@ -52,7 +52,7 @@ public class HexSync implements HttpHandler {
 	private static Thread clientHTTPThread; // 客户端线程
 	private static Dimension screenSize; // 屏幕尺寸
 	private static JLabel statusLabel; // 状态标签
-	private static boolean isErrorDownload; // 客户端下载文件时是否发生错误，影响客户端是否自动关闭
+	private static boolean errorDownload; // 客户端下载文件时是否发生错误，影响客户端是否自动关闭
 	private static boolean serverAutoStart; // 服务端自动启动，默认不自动启动
 	private static boolean clientAutoStart; // 客户端自动启动，默认不自动启动
 	private static boolean headless; // 是否处于无头模式
@@ -205,12 +205,12 @@ public class HexSync implements HttpHandler {
 			int responseCode = getResponseCode(new URL(URL));
 			if (responseCode != HTTP_OK) {
 				if (clientHTTPThread != null) log(SEVERE, "请求文件列表失败,HTTP错误代码: " + responseCode);
-				isErrorDownload = true;
+				errorDownload = true;
 				return requestMap;
 			}
 		} catch (IOException error) {
 			if (clientHTTPThread != null) log(SEVERE, "连接服务器时出错: " + error.getMessage());
-			isErrorDownload = true;
+			errorDownload = true;
 			return requestMap;
 		}
 		try (
@@ -224,7 +224,7 @@ public class HexSync implements HttpHandler {
 			}
 		} catch (IOException error) {
 			log(SEVERE, "读取响应时出错: " + error.getMessage());
-			isErrorDownload = true;
+			errorDownload = true;
 		}
 		log(INFO, "获取到 [" + requestMap.size() + "] 个文件"); // 记录请求成功日志
 		return requestMap;
@@ -554,7 +554,7 @@ public class HexSync implements HttpHandler {
 			}
 			try {
 				HTTPServer = HttpServer.create(new InetSocketAddress(serverHTTPPort), 0);
-				HTTPServer.createContext("/", new HexSync());
+				HTTPServer.createContext("/", HexSync::processHTTPRequest);
 				HTTPServer.setExecutor(null);
 				HTTPServer.start();
 			} catch (IOException error) {
@@ -571,7 +571,7 @@ public class HexSync implements HttpHandler {
 		HTTPURLConnection.disconnect();
 		clientHTTPThread = null;
 		log(INFO, HEX_SYNC_NAME + "Client已关闭");
-		if (clientAutoStart && !isErrorDownload) exit(0);
+		if (clientAutoStart && !errorDownload) exit(0);
 	}
 	// 启动客户端
 	private static void startHTTPClient() {
@@ -651,7 +651,7 @@ public class HexSync implements HttpHandler {
 	private static void downloadFilesInMap(Map<String, String> toDownloadMap) {
 		if (toDownloadMap.isEmpty()) {
 			log(INFO, "已是最新,无需下载.");
-			if (headless || isErrorDownload) return;
+			if (headless || errorDownload) return;
 			newJDialog(screenSize.width / 5, 0, "已是最新,无需下载.");
 			return;
 		}
@@ -665,22 +665,22 @@ public class HexSync implements HttpHandler {
 			if (successDownloadFile(filePath, toDownloadMap)) {
 				downloadedCount++; // 成功下载时增加计数
 				log(INFO, "已下载: [" + downloadedCount + "/" + toDownloadMapSize + "] " + filePath);
-				if (!headless && progressDialog != null) updateProgressDialog(progressDialog, downloadedCount);
+				if (headless || progressDialog == null) continue;
+				JProgressBar progressBar = (JProgressBar) progressDialog.getContentPane().getComponent(0);
+				progressBar.setValue(downloadedCount);
 			} else {
 				log(SEVERE, "下载失败: " + filePath);
-				isErrorDownload = true; // 记录下载失败
+				errorDownload = true; // 记录下载失败
 			}
 		}
 		if (progressDialog != null) progressDialog.dispose();
-		if (!headless) {
-			newJDialog(
-					screenSize.width / 5,
-					0,
-					isErrorDownload
-							? "下载失败,请检查网络连接."
-							: "下载完成: [" + downloadedCount + "/" + toDownloadMapSize + "]"
-			);
-		}
+		if (!headless) newJDialog(
+				screenSize.width / 5,
+				0,
+				errorDownload
+						? "下载失败,请检查网络连接."
+						: "下载完成: [" + downloadedCount + "/" + toDownloadMapSize + "]"
+		);
 		log(INFO, "下载完成: [" + downloadedCount + "/" + toDownloadMapSize + "]");
 		if (clientAutoStart) exit(0); // 自动退出
 	}
@@ -705,11 +705,6 @@ public class HexSync implements HttpHandler {
 		progressBar.setFont(UIManager.getFont("Label.font").deriveFont(18f));
 		dialog.add(progressBar, BorderLayout.CENTER);
 		return dialog;
-	}
-	// 更新进度对话框
-	private static void updateProgressDialog(JDialog dialog, int completedFiles) {
-		JProgressBar progressBar = (JProgressBar) dialog.getContentPane().getComponent(0);
-		progressBar.setValue(completedFiles);
 	}
 	// 设置托盘图标
 	private static void setSystemTray(JDialog dialog) {
@@ -842,7 +837,7 @@ public class HexSync implements HttpHandler {
 							{clientPortField, "客户端端口", 1},
 							{serverAddressField, "服务器地址", 1},
 							{clientSyncDirectoryPathField, "客户端同步文件夹路径", 1},
-							{clientOnlyDirectoryPathField, "仅客户端模组文件夹路径", 1},
+							{clientOnlyDirectoryPathField, "仅客户端模组文件夹路径", 1}
 					};
 					// 检查输入框是否为空
 					for (Object[] input : inputs) {
@@ -906,7 +901,9 @@ public class HexSync implements HttpHandler {
 		panel.add(button);
 	}
 	// 处理请求
-	private static void processHTTPRequest(String requestURI, HttpExchange exchange) {
+	private static void processHTTPRequest(HttpExchange exchange) {
+		if (!exchange.getRequestMethod().equalsIgnoreCase("GET")) return;
+		String requestURI = exchange.getRequestURI().getPath();
 		log(INFO, "收到请求: " + requestURI);
 		byte[] responseBytes = "".getBytes();
 		int HTTPCode = HTTP_NOT_FOUND;
@@ -1021,10 +1018,5 @@ public class HexSync implements HttpHandler {
 		} catch (UnsupportedEncodingException error) {
 			log(SEVERE, "编码文件名时出错: " + error.getMessage());
 		}
-	}
-	// 处理请求
-	public void handle(HttpExchange exchange) {
-		if (!exchange.getRequestMethod().equalsIgnoreCase("GET")) return;
-		processHTTPRequest(exchange.getRequestURI().getPath(), exchange);
 	}
 }
