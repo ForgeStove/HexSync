@@ -92,25 +92,46 @@ public class HexSync {
 		if (clientAutoStart) startHTTPClient();
 		headless = GraphicsEnvironment.isHeadless() || Arrays.asList(args).contains("-headless");
 		if (headless) headlessUI(); // 无头模式
-		else try {
+		else normalUI(); // 有头模式
+	}
+	// 无头模式UI
+	private static void headlessUI() {
+		println("欢迎使用" + HEX_SYNC_NAME + "!");
+		println("输入 help 以获取帮助.");
+		Scanner scanner = new Scanner(in);
+		// 命令映射
+		Map<String, Runnable> map = getRunnableMap();
+		while (true) {
+			print(HEX_SYNC_NAME + ">");
+			try {
+				map.getOrDefault(scanner.nextLine().trim(), () -> println("无效命令,输入 help 以获取帮助.")).run();
+			} catch (Exception error) {
+				log(SEVERE, "命令处理时出错: " + error.getMessage());
+				break;
+			}
+		}
+	}
+	// 有头模式UI
+	private static void normalUI() {
+		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			SwingUtilities.invokeLater(() -> {
 				screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 				JDialog dialog = newJDialog(screenSize.width / 5, screenSize.height / 5, HEX_SYNC_NAME + " 控制面板");
 				setSystemTray(dialog);
 				addPanel(dialog);
-			});// 有头模式
+			});
 		} catch (Exception error) {
 			log(SEVERE, "初始化UI时出错:" + error.getMessage());
 		}
 	}
 	// 初始化文件
 	private static void initializeFiles(boolean isServer) {
-		makeDirectory(isServer ? serverSyncDirectory : clientSyncDirectory); // 创建同步文件夹
-		makeDirectory(HEX_SYNC_NAME); // 在当前目录下创建HexSync文件夹
-		loadConfig(); // 加载配置文件
-		if (isServer) serverMap = initializeFileSHAMap(serverSyncDirectory, new HashMap<>()); // 初始化服务端文件列表
-		else makeDirectory(clientOnlyDirectory); // 创建仅客户端文件夹
+		makeDirectory(isServer ? serverSyncDirectory : clientSyncDirectory);
+		makeDirectory(HEX_SYNC_NAME);
+		loadConfig();
+		if (isServer) serverMap = initializeFileSHAMap(serverSyncDirectory, new HashMap<>());
+		else makeDirectory(clientOnlyDirectory);
 		log(INFO, isServer ? "服务端初始化完成" : "客户端初始化完成");
 	}
 	// 初始化文件名校验码键值对表
@@ -396,23 +417,6 @@ public class HexSync {
 			}
 		});
 		return new JScrollPane(editorPane);
-	}
-	// 无头模式UI
-	private static void headlessUI() {
-		println("欢迎使用" + HEX_SYNC_NAME + "!");
-		println("输入 help 以获取帮助.");
-		Scanner scanner = new Scanner(in);
-		// 命令映射
-		Map<String, Runnable> map = getRunnableMap();
-		while (true) {
-			print(HEX_SYNC_NAME + ">");
-			try {
-				map.getOrDefault(scanner.nextLine().trim(), () -> println("无效命令,输入 help 以获取帮助.")).run();
-			} catch (Exception error) {
-				log(SEVERE, "命令处理时出错: " + error.getMessage());
-				break;
-			}
-		}
 	}
 	// 构建命令映射
 	private static Map<String, Runnable> getRunnableMap() {
