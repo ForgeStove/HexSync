@@ -441,8 +441,8 @@ public class HexSync {
 			String[] parts = new Scanner(in).nextLine().split("\\s+");
 			try {
 				map.getOrDefault(parts[0], args -> println("无效命令,输入 help 以获取帮助.")).accept(parts);
-			} catch (Exception error) {
 				if (parts[0].equals("save")) break;
+			} catch (Exception error) {
 				println("无效命令,输入 help 以获取帮助.");
 			}
 		}
