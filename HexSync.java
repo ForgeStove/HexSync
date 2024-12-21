@@ -376,7 +376,7 @@ public class HexSync {
 			return false;
 		}
 	}
-	// 检测数字输入是否在Long范围内
+	// 检测数字输入是否不在Long范围内
 	private static boolean invalidLong(String numberInput) {
 		if (numberInput == null || numberInput.trim().isEmpty()) return true;
 		try {
