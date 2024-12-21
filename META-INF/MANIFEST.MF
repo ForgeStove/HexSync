@@ -1,1 +1,2 @@
 Main-Class: HexSync
+Manifest-Version: 1.0
