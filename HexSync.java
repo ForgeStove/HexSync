@@ -35,10 +35,9 @@ public class HexSync {
 	private static final String CLIENT_ONLY_DIRECTORY_CONFIG = "clientOnlyDirectoryPath"; // 仅客户端文件夹路径配置项
 	private static final String CLIENT_AUTO_START_CONFIG = "clientAutoStart"; // 客户端自动启动配置项
 	private static final String GITHUB_URL = "https://github.com/ForgeStove/HexSync"; // 项目GitHub地址
-	private static final String CONFIG = "配置"; // 配置
-	private static final String INFO = "信息"; // 信息
-	private static final String WARNING = "警告"; // 警告
-	private static final String SEVERE = "严重"; // 严重错误
+	private static final String INFO = "信息";
+	private static final String WARNING = "警告";
+	private static final String SEVERE = "严重";
 	private static final boolean HEADLESS = GraphicsEnvironment.isHeadless(); // 是否处于无头模式
 	private static FileWriter logWriter; // 日志记录器
 	private static Map<String, String> serverMap; // 存储服务端文件名和对应的校验码数据
@@ -319,7 +318,7 @@ public class HexSync {
 		File configFile = new File(CONFIG_FILE_PATH);
 		try (BufferedWriter writer = new BufferedWriter(new FileWriter(configFile))) {
 			writer.write(configContent.toString());// 写入配置文件
-			log(CONFIG, "配置已保存: " + lineSeparator() + configContent);
+			log(INFO, "配置已保存: " + lineSeparator() + configContent);
 		} catch (IOException error) {
 			log(SEVERE, "配置保存失败: " + error.getMessage());
 		}
@@ -962,7 +961,7 @@ public class HexSync {
 				exchange.sendResponseHeaders(HTTPCode, responseBytesLength); // 设置响应头
 				int totalBytesSent = 0; // 记录已发送字节数
 				if (serverUploadRateLimit == 0) {
-					outputStream.write(responseBytes);
+					outputStream.write(responseBytes); // 无限制发送数据
 					return;
 				}
 				while (totalBytesSent < responseBytesLength) {
