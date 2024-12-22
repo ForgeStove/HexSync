@@ -81,7 +81,8 @@ public class HexSync {
 			boolean info = level.equals(INFO);
 			boolean warning = level.equals(WARNING);
 			boolean severe = level.equals(SEVERE);
-			out.printf(
+			if (getProperty("ansi", "true").equalsIgnoreCase("false")) out.println(format);
+			else out.printf(
 					"%s%s\u001B[0m%n",
 					info ? "\u001B[32m" : warning ? "\u001B[33m" : severe ? "\u001B[31m" : "\u001B[0m",
 					format
