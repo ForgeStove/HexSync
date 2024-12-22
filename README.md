@@ -28,7 +28,7 @@ HexSync
 
 - Java 8 及以上版本
 
-## 下载与安装
+## 下载
 
 - [下载][download-url]最新的 HexSync.jar 文件或 HexSync.exe 文件。无需安装。
 
