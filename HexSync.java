@@ -236,7 +236,7 @@ public class HexSync {
 			String fileName;
 			while ((fileName = bufferedReader.readLine()) != null) { // 读取文件名
 				String SHAValue = bufferedReader.readLine(); // 读取对应的校验码
-				if (SHAValue != null) requestMap.put(fileName.trim(), SHAValue.trim()); // 将文件名与校验码放入Map
+				if (SHAValue != null) requestMap.put(fileName, SHAValue); // 将文件名与校验码放入Map
 			}
 		} catch (IOException error) {
 			log(SEVERE, "读取响应时出错: " + error.getMessage());
@@ -252,11 +252,12 @@ public class HexSync {
 		String fileName = filePath.substring(clientSyncDirectory.length() + 1); // 去除同步文件夹路径
 		String requestSHA = toDownloadMap.get(fileName);
 		try {
-			int responseCode = getResponseCode(new URL(formatHTTP(serverAddress)
-					+ ":"
-					+ clientHTTPPort
-					+ "/download/"
-					+ requestSHA));
+			int responseCode = getResponseCode(new URL(format(
+					"%s:%d/download/%s",
+					formatHTTP(serverAddress),
+					clientHTTPPort,
+					requestSHA
+			)));
 			if (responseCode != HTTP_OK) {
 				log(SEVERE, "下载失败,HTTP错误代码: " + responseCode);
 				return false;
@@ -279,8 +280,7 @@ public class HexSync {
 			log(SEVERE, "无法获取请求的校验码: " + fileName);
 			return false;
 		}
-		String clientSHA = calculateSHA(clientFile);
-		if (requestSHA.equals(clientSHA)) return true; // 下载成功且校验通过
+		if (requestSHA.equals(calculateSHA(clientFile))) return true; // 下载成功且校验通过
 		log(SEVERE, "校验失败,文件可能已损坏: " + fileName);
 		if (!clientFile.delete()) log(SEVERE, "无法删除损坏的文件: " + clientFile.getPath());
 		return false;
