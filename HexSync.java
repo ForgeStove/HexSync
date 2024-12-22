@@ -127,7 +127,7 @@ public class HexSync {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			SwingUtilities.invokeLater(() -> {
 				screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-				addPanel(newJDialog(screenSize.width / 5, screenSize.width / 5, HEX_SYNC_NAME));
+				addPanel(newJDialog(screenSize.width / 5, screenSize.width / 8, HEX_SYNC_NAME));
 			});
 		} catch (Exception error) {
 			log(SEVERE, "初始化UI时出错:" + error.getMessage());
@@ -755,7 +755,7 @@ public class HexSync {
 	}
 	// 添加按钮，状态面板和托盘图标
 	private static void addPanel(JDialog dialog) {
-		JPanel buttonPanel = new JPanel(new GridLayout(0, 2, 10, 10));
+		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		newJButton(buttonPanel, "日志", event -> openLog());
 		newJButton(buttonPanel, "设置", event -> openSettingsDialog());
 		newJButton(buttonPanel, "启动服务端", event -> startServer());
@@ -777,7 +777,6 @@ public class HexSync {
 		panel.add(statusPanel, BorderLayout.SOUTH);
 		dialog.add(panel);
 		setSystemTray(dialog);
-		dialog.pack(); // 自动调整大小
 	}
 	// 辅助方法创建菜单项
 	private static void newMenuItem(PopupMenu popupMenu, String text, ActionListener actionListener) {
