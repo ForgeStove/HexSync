@@ -39,6 +39,7 @@ public class HexSync {
 	private static final String INFO = "信息"; // 信息
 	private static final String WARNING = "警告"; // 警告
 	private static final String SEVERE = "严重"; // 严重错误
+	private static final boolean HEADLESS = GraphicsEnvironment.isHeadless(); // 是否处于无头模式
 	private static FileWriter logWriter; // 日志记录器
 	private static Map<String, String> serverMap; // 存储服务端文件名和对应的校验码数据
 	private static String serverSyncDirectory = "mods"; // 服务端同步文件夹目录，默认值"mods"
@@ -55,14 +56,13 @@ public class HexSync {
 	private static boolean errorDownload; // 客户端下载文件时是否发生错误，影响客户端是否自动关闭
 	private static boolean serverAutoStart; // 服务端自动启动，默认不自动启动
 	private static boolean clientAutoStart; // 客户端自动启动，默认不自动启动
-	private static boolean headless; // 是否处于无头模式
 	private static int serverHTTPPort = 65535;// HTTP 端口，默认值65535
 	private static int clientHTTPPort = 65535; // 客户端 HTTP 端口，默认值65535
 	private static long serverUploadRateLimit = 1; // 上传速率限制值，默认限速1MB/s
 	public static void main(String[] args) {
 		initializeLogger();
 		loadConfig();
-		initializeUI(args);
+		initializeUI();
 	}
 	// 初始化日志
 	private static void initializeLogger() {
@@ -80,18 +80,17 @@ public class HexSync {
 			logWriter.write(format + lineSeparator());
 			logWriter.flush();
 			println(format);
-			if (!headless) statusLabel.setText(format);
+			if (!HEADLESS) statusLabel.setText(format);
 		} catch (IOException error) {
 			if (logWriter == null) initializeLogger();
 			else err.println("无法写入日志文件: " + error.getMessage());
 		}
 	}
 	// 初始化UI
-	private static void initializeUI(String[] args) {
+	private static void initializeUI() {
 		if (serverAutoStart) startHTTPServer();
 		if (clientAutoStart) startHTTPClient();
-		headless = GraphicsEnvironment.isHeadless() || Arrays.asList(args).contains("-headless");
-		if (headless) headlessUI(); // 无头模式
+		if (HEADLESS) headlessUI(); // 无头模式
 		else normalUI(); // 有头模式
 	}
 	// 无头模式UI
@@ -101,14 +100,12 @@ public class HexSync {
 		Scanner scanner = new Scanner(in);
 		// 命令映射
 		Map<String, Runnable> map = getRunnableMap();
-		while (true) {
+		while (true) try {
 			print(HEX_SYNC_NAME + ">");
-			try {
-				map.getOrDefault(scanner.nextLine().trim(), () -> println("无效命令,输入 help 以获取帮助.")).run();
-			} catch (Exception error) {
-				log(SEVERE, "命令处理时出错: " + error.getMessage());
-				break;
-			}
+			map.getOrDefault(scanner.nextLine().trim(), () -> println("无效命令,输入 help 以获取帮助.")).run();
+		} catch (Exception error) {
+			log(SEVERE, "命令处理时出错: " + error.getMessage());
+			break;
 		}
 	}
 	// 有头模式UI
@@ -117,9 +114,7 @@ public class HexSync {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			SwingUtilities.invokeLater(() -> {
 				screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-				JDialog dialog = newJDialog(screenSize.width / 4, screenSize.height / 5, HEX_SYNC_NAME + " 控制面板");
-				setSystemTray(dialog);
-				addPanel(dialog);
+				addPanel(newJDialog(screenSize.width / 4, screenSize.height / 5, HEX_SYNC_NAME + " 控制面板"));
 			});
 		} catch (Exception error) {
 			log(SEVERE, "初始化UI时出错:" + error.getMessage());
@@ -389,19 +384,18 @@ public class HexSync {
 	}
 	// 关于按钮
 	private static void aboutButtonAction() {
-		JScrollPane scrollPane = getJScrollPane("<html><body>"
-				+ HEX_SYNC_NAME
-				+ "<br>By: ForgeStove"
-				+ "<br>GitHub仓库地址: "
-				+ "<a "
-				+ "href=\""
-				+ GITHUB_URL
-				+ "\">"
-				+ GITHUB_URL
-				+ "</a>"
-				+ "</body></html>");
-		JDialog aboutDialog = newJDialog(screenSize.width / 5, screenSize.height / 5, "关于");
-		aboutDialog.getContentPane().add(scrollPane);
+		newJDialog(screenSize.width / 5, screenSize.height / 5, "关于").getContentPane()
+				.add(getJScrollPane("<html><body>"
+						+ HEX_SYNC_NAME
+						+ "<br>By: ForgeStove"
+						+ "<br>GitHub仓库地址: "
+						+ "<a "
+						+ "href=\""
+						+ GITHUB_URL
+						+ "\">"
+						+ GITHUB_URL
+						+ "</a>"
+						+ "</body></html>"));
 	}
 	// HTML内容转JScrollPane
 	private static JScrollPane getJScrollPane(String htmlContent) {
@@ -436,15 +430,13 @@ public class HexSync {
 		headlessSettingsHelp();
 		// 命令映射
 		Map<String, Consumer<String[]>> map = getConsumerMap();
-		while (true) {
+		while (true) try {
 			print(HEX_SYNC_NAME + "Settings>");
 			String[] parts = new Scanner(in).nextLine().split("\\s+");
-			try {
-				map.getOrDefault(parts[0], args -> println("无效命令,输入 help 以获取帮助.")).accept(parts);
-				if (parts[0].equals("save")) break;
-			} catch (Exception error) {
-				println("无效命令,输入 help 以获取帮助.");
-			}
+			map.getOrDefault(parts[0], args -> println("无效命令,输入 help 以获取帮助.")).accept(parts);
+			if (parts[0].equals("save")) break;
+		} catch (Exception error) {
+			println("无效命令,输入 help 以获取帮助.");
 		}
 	}
 	// 构建设置命令映射
@@ -583,8 +575,7 @@ public class HexSync {
 			log(INFO, HEX_SYNC_NAME + "Client正在启动...");
 			initializeFiles(false);
 			Map<String, String> requestMap = requestHTTPList();
-			if (requestMap.isEmpty()) return;
-			else {
+			if (!requestMap.isEmpty()) {
 				Map<String, String> toDownloadMap = new HashMap<>(); // 用于存储需要下载的文件列表
 				Map<String, String> clientOnlyMap = new HashMap<>(); // 用于存储客户端仅同步的文件列表
 				clientOnlyMap = initializeFileSHAMap(clientOnlyDirectory, clientOnlyMap); // 初始化客户端仅同步的文件列表
@@ -655,7 +646,7 @@ public class HexSync {
 	private static void downloadFilesInMap(Map<String, String> toDownloadMap) {
 		if (toDownloadMap.isEmpty()) {
 			log(INFO, "已是最新,无需下载.");
-			if (headless || errorDownload) return;
+			if (HEADLESS || errorDownload) return;
 			newJDialog(screenSize.width / 5, 0, "已是最新,无需下载.");
 			return;
 		}
@@ -663,13 +654,13 @@ public class HexSync {
 		int downloadedCount = 0;
 		int toDownloadMapSize = toDownloadMap.size();
 		JDialog progressDialog = null;
-		if (!headless) progressDialog = createProgressDialog(toDownloadMapSize);
+		if (!HEADLESS) progressDialog = createProgressDialog(toDownloadMapSize);
 		for (Map.Entry<String, String> entry : toDownloadMap.entrySet()) {
 			String filePath = clientSyncDirectory + separator + entry.getKey(); // 设置下载路径
 			if (successDownloadFile(filePath, toDownloadMap)) {
 				downloadedCount++; // 成功下载时增加计数
 				log(INFO, "已下载: [" + downloadedCount + "/" + toDownloadMapSize + "] " + filePath);
-				if (headless || progressDialog == null) continue;
+				if (HEADLESS) continue;
 				JProgressBar progressBar = (JProgressBar) progressDialog.getContentPane().getComponent(0);
 				progressBar.setValue(downloadedCount);
 			} else {
@@ -678,7 +669,7 @@ public class HexSync {
 			}
 		}
 		if (progressDialog != null) progressDialog.dispose();
-		if (!headless) newJDialog(
+		if (!HEADLESS) newJDialog(
 				screenSize.width / 5,
 				0,
 				errorDownload
@@ -688,7 +679,7 @@ public class HexSync {
 		log(INFO, "下载完成: [" + downloadedCount + "/" + toDownloadMapSize + "]");
 		if (clientAutoStart) exit(0); // 自动退出
 	}
-	// 创建基础对话框
+	// 基础对话框框架
 	private static JDialog newJDialog(int width, int height, String title) {
 		JDialog dialog = new JDialog();
 		dialog.setTitle(title);
@@ -698,6 +689,22 @@ public class HexSync {
 		dialog.setSize(width, height);
 		dialog.setLocationRelativeTo(null);
 		return dialog;
+	}
+	// 基础选定按钮框架
+	private static JCheckBox newJCheckBox(JPanel panel, String text, boolean selected) {
+		JCheckBox checkBox = new JCheckBox(text);
+		checkBox.setFocusPainted(false);
+		checkBox.setSelected(selected);
+		panel.add(checkBox);
+		return checkBox;
+	}
+	// 基础按钮框架
+	private static void newJButton(JPanel panel, String text, ActionListener actionListener) {
+		JButton button = new JButton(text);
+		button.setFocusPainted(false);
+		button.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height / 35));
+		button.addActionListener(actionListener);
+		panel.add(button);
 	}
 	// 创建进度条对话框
 	private static JDialog createProgressDialog(int totalFiles) {
@@ -719,9 +726,13 @@ public class HexSync {
 		trayIcon.setToolTip(HEX_SYNC_NAME);
 		PopupMenu popupMenu = new PopupMenu();
 		newMenuItem(popupMenu, "Open", event -> dialog.setVisible(true));
+		popupMenu.addSeparator();
 		newMenuItem(popupMenu, "Hide", event -> dialog.setVisible(false));
+		popupMenu.addSeparator();
 		newMenuItem(popupMenu, "Settings", event -> openSettingsDialog());
+		popupMenu.addSeparator();
 		newMenuItem(popupMenu, "About", event -> aboutButtonAction());
+		popupMenu.addSeparator();
 		newMenuItem(popupMenu, "Exit", event -> exit(0));
 		trayIcon.setPopupMenu(popupMenu);
 		trayIcon.addActionListener(event -> dialog.setVisible(true));
@@ -740,7 +751,7 @@ public class HexSync {
 	private static Image getImage() {
 		return Toolkit.getDefaultToolkit().getImage(HexSync.class.getResource("icon.png"));
 	}
-	// 按钮和状态面板
+	// 添加按钮，状态面板和托盘图标
 	private static void addPanel(JDialog dialog) {
 		JPanel buttonPanel = new JPanel();
 		newJButton(buttonPanel, "日志", event -> openLog());
@@ -763,6 +774,7 @@ public class HexSync {
 		statusPanel.add(statusLabel, BorderLayout.SOUTH);
 		panel.add(statusPanel, BorderLayout.SOUTH);
 		dialog.add(panel);
+		setSystemTray(dialog);
 	}
 	// 辅助方法创建菜单项
 	private static void newMenuItem(PopupMenu popupMenu, String text, ActionListener actionListener) {
@@ -887,22 +899,6 @@ public class HexSync {
 	private static void selectAndFocus(JTextField textField) {
 		textField.requestFocus(); // 聚焦输入框
 		textField.selectAll(); // 选中输入框
-	}
-	// 基础选定按钮框架
-	private static JCheckBox newJCheckBox(JPanel panel, String text, boolean selected) {
-		JCheckBox checkBox = new JCheckBox(text);
-		checkBox.setFocusPainted(false);
-		checkBox.setSelected(selected);
-		panel.add(checkBox);
-		return checkBox;
-	}
-	// 基础按钮框架
-	private static void newJButton(JPanel panel, String text, ActionListener actionListener) {
-		JButton button = new JButton(text);
-		button.setFocusPainted(false);
-		button.setPreferredSize(new Dimension(screenSize.width / 10, screenSize.height / 35));
-		button.addActionListener(actionListener);
-		panel.add(button);
 	}
 	// 处理请求
 	private static void processHTTPRequest(HttpExchange exchange) {
