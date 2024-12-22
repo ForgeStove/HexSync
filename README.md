@@ -55,9 +55,9 @@ HexSync
 - 通过直接以 Java 打开或者通过命令行执行
 
       java -jar HexSync.jar
-- 在无头环境下会自动切换为无头模式，如果需要强制启动无头模式需要使用-headless参数
+- 在无头环境下会自动切换为无头模式，如果需要切换模式可以修改-Djava.awt.headless=true参数（true为启用无头模式）
 
-      java -jar HexSync.jar -headless
+      java -jar -Djava.awt.headless=true HexSync.jar
 - 通过 "设置" 按钮进入设置界面，配置服务端和客户端的相关参数。
 - 服务端:把需要同步的文件放入同步文件夹内(默认为软件所在的目录中的mods文件夹)，点击"启动服务端"。
 - 客户端:配置设置好后，把仅客户端模组放入clientOnlyMods文件夹(或者是你自定义的文件夹)，点击"启动客户端"。
