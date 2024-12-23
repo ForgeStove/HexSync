@@ -783,7 +783,7 @@ public class HexSync {
 	}
 	// 辅助方法创建菜单项
 	private static void newMenuItem(PopupMenu popupMenu, String text, ActionListener actionListener) {
-		MenuItem menuItem = new MenuItem("<html>" + text);
+		MenuItem menuItem = new MenuItem(text);
 		menuItem.addActionListener(actionListener);
 		popupMenu.add(menuItem);
 	}
