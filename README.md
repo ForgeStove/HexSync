@@ -9,6 +9,10 @@ HexSync
 [![repo-size][repo-size-image]][repo-url]
 [![license][license-image]][license-url]
 
+## 下载
+
+- [下载][download-url]最新的`HexSync.jar`。
+
 ## 项目简介
 
 - `HexSync`是一款基于`Java`开发的双端一体的文件同步工具，主要用于在`MineCraft`客户端和服务端之间同步文件。
@@ -26,10 +30,6 @@ HexSync
 ## 环境要求
 
 - `Java 8`及以上版本
-
-## 下载
-
-- [下载][download-url]最新的`HexSync.jar`。
 
 ## 配置
 
@@ -58,12 +58,12 @@ HexSync
 
       java -jar -Djava.awt.headless=true HexSync.jar
 - 通过 "设置" 按钮进入设置界面，配置服务端和客户端的相关参数。
-- 服务端:把需要同步的文件放入同步文件夹内(默认为软件所在的目录中的mods文件夹)，点击"启动服务端"。
-- 客户端:配置设置好后，把仅客户端模组放入clientOnlyMods文件夹(或者是你自定义的文件夹)，点击"启动客户端"。
+- 服务端:把需要同步的文件放入同步文件夹内(默认为软件所在的目录中的`mods`文件夹)，点击"启动服务端"。
+- 客户端:配置设置好后，把仅客户端模组放入`clientOnlyMods`文件夹(或者是你自定义的文件夹路径)，点击"启动客户端"。
 
 ## 开发与贡献
 
-- 欢迎贡献代码或者提出问题。Pull Request或者提交Issue，我将尽快回复。
+- 欢迎贡献代码或者提出问题。`Pull Request`或者提交`Issue`，我将尽快回复。
 
 ## 星标历史
 <a href="https://star-history.com/#ForgeStove/HexSync&Date">
