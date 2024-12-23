@@ -77,9 +77,9 @@ public class HexSync {
 			err.println("日志初始化失败: " + error.getMessage());
 		}
 		try {
-			logMaxLines = parseInt(getProperty("logMaxLines", "50"));
+			if ((logMaxLines = parseInt(getProperty("logMaxLines", "50"))) < 0) throw new NumberFormatException();
 		} catch (NumberFormatException error) {
-			log(SEVERE, "日志面板最大行数格式错误: " + error.getMessage());
+			log(WARNING, "日志面板最大行数格式错误: " + logMaxLines);
 			logMaxLines = 50;
 		}
 	}
@@ -656,9 +656,9 @@ public class HexSync {
 	// 从服务端同步文件夹下载客户端缺少的文件
 	private static void download(Map<String, String> toDownloadMap) {
 		if (toDownloadMap.isEmpty()) {
-			log(INFO, "已是最新,无需下载.");
+			log(INFO, "模组已经是最新版本");
 			if (HEADLESS || errorDownload) return;
-			newJDialog(screenLength / 5, 0, "已是最新,无需下载.");
+			newJDialog(screenLength / 5, 0, "模组已经是最新版本");
 			return;
 		}
 		log(INFO, "开始下载 " + toDownloadMap.size() + " 个文件");
