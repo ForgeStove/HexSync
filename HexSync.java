@@ -675,8 +675,7 @@ public class HexSync {
 				downloadedCount++; // 成功下载时增加计数
 				log(INFO, "已下载: [" + downloadedCount + "/" + toDownloadMapSize + "] " + filePath);
 				if (HEADLESS) continue;
-				JProgressBar progressBar = (JProgressBar) progressDialog.getContentPane().getComponent(0);
-				progressBar.setValue(downloadedCount);
+				((JProgressBar) progressDialog.getContentPane().getComponent(0)).setValue(downloadedCount);
 			} else {
 				log(SEVERE, "下载失败: " + filePath);
 				errorDownload = true; // 记录下载失败
@@ -720,11 +719,10 @@ public class HexSync {
 	}
 	// 创建进度条对话框
 	private static JDialog createProgressDialog(int totalFiles) {
-		JDialog dialog = newJDialog(screenLength / 5, screenLength / 30, "下载进度");
+		JDialog dialog = newJDialog(screenLength / 5, screenLength / 25, "下载进度");
 		JProgressBar progressBar = new JProgressBar(0, totalFiles);
 		progressBar.setStringPainted(true);
 		progressBar.setForeground(Color.getColor("#008080"));
-		progressBar.setBackground(Color.getColor("#D3D3D3"));
 		progressBar.setFont(UIManager.getFont("Label.font").deriveFont(18f));
 		dialog.add(progressBar, BorderLayout.CENTER);
 		return dialog;
