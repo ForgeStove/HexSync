@@ -41,10 +41,10 @@ public class HexSync {
 	private static final String WARNING = "警告";
 	private static final String SEVERE = "严重";
 	private static final boolean HEADLESS = GraphicsEnvironment.isHeadless(); // 是否处于无头模式
-	private static final ExecutorService logExecutor = Executors.newSingleThreadExecutor();// 创建日志记录线程池
+	private static ExecutorService logExecutor; // 创建日志记录线程池
 	private static int logMaxLines; // 日志面板最大行数
 	private static FileWriter logWriter; // 日志记录器
-	private static String htmlLog = ""; // 日志面板内容
+	private static String htmlLog; // 日志面板内容
 	private static String serverSyncDirectory = "mods"; // 服务端同步文件夹路径，默认值mods
 	private static String clientSyncDirectory = "mods"; // 客户端同步文件夹路径，默认值mods
 	private static String clientOnlyDirectory = "clientOnlyMods"; // 仅客户端文件夹路径，默认值clientOnlyMods
@@ -76,12 +76,13 @@ public class HexSync {
 		} catch (IOException error) {
 			err.println("日志初始化失败: " + error.getMessage());
 		}
-		try {
-			if ((logMaxLines = parseInt(getProperty("logMaxLines", "50"))) < 0) throw new NumberFormatException();
-		} catch (NumberFormatException error) {
-			log(WARNING, "日志面板最大行数格式错误: " + logMaxLines);
-			logMaxLines = 50;
+		if (getProperty("log", "true").equalsIgnoreCase("true")) {
+			logExecutor = Executors.newSingleThreadExecutor();
+			htmlLog = "";
 		}
+		if ((logMaxLines = parseInt(getProperty("logMaxLines", "50"))) >= 0) return;
+		logMaxLines = 50;
+		log(WARNING, "日志面板最大行数设置过小，已设置为50");
 	}
 	// 日志记录
 	private static void log(String level, String message) {
@@ -421,7 +422,7 @@ public class HexSync {
 			if (HyperlinkEvent.EventType.ACTIVATED.equals(event.getEventType())) try {
 				Desktop.getDesktop().browse(event.getURL().toURI());
 			} catch (Exception error) {
-				log(SEVERE, "无法打开超链接: " + error.getMessage());
+				log(WARNING, "无法打开超链接: " + error.getMessage());
 			}
 		});
 		return new JScrollPane(textPane);
@@ -458,7 +459,7 @@ public class HexSync {
 	private static Map<String, Consumer<String[]>> getConsumerMap() {
 		Map<String, Consumer<String[]>> map = new HashMap<>();
 		map.put("SP", args -> getPort(args[1], true));
-		map.put("SL", args -> setRate(args[1]));
+		map.put("SL", args -> setRate(args[1] + " " + args[2]));
 		map.put("SD", args -> setDirectory(args[1], "服务端同步", value -> serverSyncDirectory = value));
 		map.put("SS", args -> setAutoStart(args[1], true, value -> serverAutoStart = value));
 		map.put("CP", args -> getPort(args[1], false));
@@ -530,12 +531,12 @@ public class HexSync {
 			log(INFO, "服务端地址已设置为: " + serverAddress);
 		} else err.println("无效输入,请输入IP地址.");
 	}
-	// 设置目录
+	// 设置文件夹路径
 	private static void setDirectory(String directory, String log, Consumer<String> setter) {
 		if (!directory.isEmpty() && !directory.contains(separator)) {
 			setter.accept(directory);
-			log(INFO, log + "目录已设置为: " + directory);
-		} else err.println("目录格式错误,请输入绝对路径或相对路径.");
+			log(INFO, log + "文件夹路径已设置为: " + directory);
+		} else err.println("路径格式错误,请输入绝对路径或相对路径.");
 	}
 	// 设置自动启动
 	private static void setAutoStart(String input, Boolean isServer, Consumer<Boolean> setter) {
@@ -548,13 +549,14 @@ public class HexSync {
 	// 停止服务端
 	private static void stopServer() {
 		if (serverThread == null || HTTPServer == null) return;
+		serverMap.clear();
 		HTTPServer.stop(0);
 		serverThread = null;
-		serverMap.clear();
 		log(INFO, HEX_SYNC_NAME + "Server已关闭");
 	}
 	// 启动服务端
 	private static void startServer() {
+		if (serverThread != null) return;
 		serverThread = new Thread(() -> {
 			log(INFO, HEX_SYNC_NAME + "Server正在启动...");
 			initFiles(true);
@@ -587,6 +589,7 @@ public class HexSync {
 	}
 	// 启动客户端
 	private static void startClient() {
+		if (clientThread != null) return;
 		clientThread = new Thread(() -> {
 			log(INFO, HEX_SYNC_NAME + "Client正在启动...");
 			initFiles(false);
@@ -753,7 +756,7 @@ public class HexSync {
 				existingIcon.setImage(getImage());
 			}
 		} catch (AWTException error) {
-			log(SEVERE, "添加托盘图标失败: " + error.getMessage());
+			log(WARNING, "无法添加托盘图标: " + error.getMessage());
 		}
 	}
 	// 获取图标
@@ -925,11 +928,11 @@ public class HexSync {
 		int responseCode = HTTP_NOT_FOUND;
 		if ("/list".equals(requestURI)) {
 			StringBuilder responseBuilder = new StringBuilder(); // 用于构建响应内容
-			for (Map.Entry<String, String> entry : serverMap.entrySet()) {
-				String fileName = entry.getKey();
-				String SHA = entry.getValue();
-				responseBuilder.append(fileName).append(lineSeparator()).append(SHA).append(lineSeparator());
-			}
+			for (Map.Entry<String, String> entry : serverMap.entrySet())
+				responseBuilder.append(entry.getKey())
+						.append(lineSeparator())
+						.append(entry.getValue())
+						.append(lineSeparator());
 			responseBytes = responseBuilder.toString().getBytes();
 			responseCode = HTTP_OK;
 		} else if (requestURI.startsWith("/download/")) {
@@ -960,42 +963,35 @@ public class HexSync {
 			} catch (IOException error) {
 				log(SEVERE, "读取文件时发生错误: " + error.getMessage());
 			}
-			encode(exchange, file);
 			responseCode = HTTP_OK; // 发送成功,返回200
 			log(INFO, "发送文件: " + filePath);
-		} else log(WARNING, "未知的请求: " + requestURI);
+		} else log(WARNING, "无效请求: " + requestURI);
 		sendResponse(exchange, responseBytes, responseCode);
 	}
 	// 发送数据
 	private static void sendResponse(HttpExchange exchange, byte[] responseBytes, int responseCode) {
 		new Thread(() -> {
 			if (responseBytes == null) return;
-			int responseBytesLength = responseBytes.length;
-			long maxUploadRateInBytes = convertToBytes(serverUploadRateLimit, serverUploadRateLimitUnit);
-			long lastFillTime = currentTimeMillis(); // 最近一次填充时间
 			try (OutputStream outputStream = exchange.getResponseBody()) {
-				exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=UTF-8"); // 设置Content-Type
+				int responseBytesLength = responseBytes.length;
 				exchange.sendResponseHeaders(responseCode, responseBytesLength); // 设置响应头
-				int totalBytesSent = 0; // 记录已发送字节数
 				if (serverUploadRateLimit == 0) {
 					outputStream.write(responseBytes); // 无限制发送数据
 					return;
 				}
+				int totalBytesSent = 0; // 记录已发送字节数
+				long maxUploadRateInBytes = convertToBytes(serverUploadRateLimit, serverUploadRateLimitUnit);
+				long lastFillTime = currentTimeMillis(); // 最近一次填充时间
 				while (totalBytesSent < responseBytesLength) {
 					long currentTime = currentTimeMillis();
 					AVAILABLE_TOKENS.addAndGet((currentTime - lastFillTime) * maxUploadRateInBytes / 1000);
 					lastFillTime = currentTime; // 更新时间
-					// 尝试发送数据
 					int bytesToSend = min(16384, responseBytesLength - totalBytesSent);
 					if (AVAILABLE_TOKENS.get() >= bytesToSend) {
 						outputStream.write(responseBytes, totalBytesSent, bytesToSend); // 写入数据
 						totalBytesSent += bytesToSend; // 更新已发送字节数
 						AVAILABLE_TOKENS.addAndGet(-bytesToSend); // 减少可用令牌
-					} else {
-						long requiredTokens = bytesToSend - AVAILABLE_TOKENS.get();
-						long sleepTime = (requiredTokens * 1000) / maxUploadRateInBytes;
-						Thread.sleep(sleepTime);
-					}
+					} else Thread.sleep((bytesToSend - AVAILABLE_TOKENS.get()) / maxUploadRateInBytes * 1000);
 				}
 			} catch (Exception error) {
 				log(SEVERE, "发送响应时出错: " + error.getMessage());
@@ -1019,20 +1015,8 @@ public class HexSync {
 					return 0;
 			}
 		} catch (ArithmeticException error) {
-			log(SEVERE, "上传速率溢出，自动转化为无限制: " + error.getMessage());
+			log(WARNING, "上传速率溢出，自动转化为无限制: " + error.getMessage());
 			return 0; // 溢出
-		}
-	}
-	// 编码文件名
-	private static void encode(HttpExchange exchange, File file) {
-		try {
-			String encodedName = URLEncoder.encode(file.getName(), "UTF-8").replace("+", "%20");
-			exchange.getResponseHeaders().set(
-					"Content-Disposition",
-					"attachment; filename=\"" + encodedName + "\"; " + "filename*=UTF-8''" + encodedName
-			);
-		} catch (UnsupportedEncodingException error) {
-			log(SEVERE, "编码文件名时出错: " + error.getMessage());
 		}
 	}
 }
