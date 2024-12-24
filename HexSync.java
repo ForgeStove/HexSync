@@ -48,21 +48,21 @@ public class HexSync {
 	private static String serverSyncDirectory = "mods"; // 服务端同步文件夹路径，默认值mods
 	private static String clientSyncDirectory = "mods"; // 客户端同步文件夹路径，默认值mods
 	private static String clientOnlyDirectory = "clientOnlyMods"; // 仅客户端文件夹路径，默认值clientOnlyMods
-	private static String serverUploadRateLimitUnit = "MB/s"; // 上传速率限制单位，默认MB/s
+	private static String serverUploadRateLimitUnit = "MB"; // 上传速率限制单位，默认MB
 	private static String serverAddress = "localhost"; // 服务器地址，默认值localhost
 	private static Map<String, String> serverMap; // 存储服务端文件名和对应的校验码数据
 	private static HttpServer HTTPServer; // 存储服务器实例
 	private static HttpURLConnection HTTPURLConnection; // 存储客户端连接实例
 	private static Thread serverThread; // 服务器线程
 	private static Thread clientThread; // 客户端线程
-	private static JTextPane textPane; // 状态标签
+	private static JTextPane textPane; // 日志面板
 	private static boolean errorDownload; // 客户端下载文件时是否发生错误，影响客户端是否自动关闭
 	private static boolean serverAutoStart; // 服务端自动启动，默认不自动启动
 	private static boolean clientAutoStart; // 客户端自动启动，默认不自动启动
 	private static int screenLength; // 屏幕长边
 	private static int serverPort = 65535; // 服务端端口，默认值65535
 	private static int clientPort = 65535; // 客户端端口，默认值65535
-	private static long serverUploadRateLimit = 1; // 上传速率限制值，默认限速1MB/s
+	private static long serverUploadRateLimit = 1; // 上传速率限制值，默认限速1MB
 	public static void main(String[] args) {
 		initLog();
 		loadConfig();
@@ -88,7 +88,12 @@ public class HexSync {
 	private static void log(String level, String message) {
 		if (getProperty("log", "true").equalsIgnoreCase("true")) logExecutor.submit(() -> {
 			try {
-				String format = new SimpleDateFormat("[HH:mm:ss]").format(new Date()) + " [" + level + "] " + message;
+				String format = format(
+						"%s [%s] %s",
+						new SimpleDateFormat("[HH:mm:ss]").format(new Date()),
+						level,
+						message
+				);
 				logWriter.write(format + lineSeparator());
 				logWriter.flush();
 				boolean info = level.equals(INFO);
@@ -101,10 +106,11 @@ public class HexSync {
 						format
 				);
 				if (textPane != null) SwingUtilities.invokeLater(() -> {
-					htmlLog = (
-							htmlLog + "<span style='color: " + (
-									info ? "green" : warning ? "orange" : severe ? "red" : "black"
-							) + ";'>" + format + "</span><br>"
+					htmlLog = format(
+							"%s<span style='color: %s;'>%s</span><br>",
+							htmlLog,
+							info ? "green" : warning ? "orange" : severe ? "red" : "black",
+							format
 					).replace(lineSeparator(), "<br>"); // 添加新的日志行
 					String[] lines = htmlLog.split("<br>"); // 根据 <br> 计算当前行数
 					if (lines.length > logMaxLines) {
@@ -115,7 +121,7 @@ public class HexSync {
 					}
 					textPane.setText("<span style='font-family: Consolas;'>" + htmlLog + "</span>");
 					JScrollBar vertical = ((JScrollPane) textPane.getParent().getParent()).getVerticalScrollBar();
-					vertical.setValue(vertical.getMaximum()); // 自动滚动到最新内容
+					if (vertical.isVisible()) vertical.setValue(vertical.getMaximum()); // 自动滚动到最新内容
 				});
 			} catch (IOException error) {
 				if (logWriter == null) initLog();
@@ -133,16 +139,33 @@ public class HexSync {
 	// 无头模式UI
 	private static void headlessUI() {
 		out.println("欢迎使用" + HEX_SYNC_NAME + "!");
-		out.println("输入 HELP 以获取帮助.");
+		out.println("输入HELP以获取帮助.");
+		Map<String, Runnable> map = new HashMap<>();
+		map.put("RS", HexSync::startServer);
+		map.put("RC", HexSync::startClient);
+		map.put("SS", HexSync::stopServer);
+		map.put("SC", HexSync::stopClient);
+		map.put("SET", HexSync::headlessSettings);
+		map.put("GITHUB", () -> out.println(GITHUB_URL));
+		map.put(
+				"HELP", () -> printlnStrings(new String[]{
+						"RS     |启动服务端",
+						"RC     |启动客户端",
+						"SS     |停止服务端",
+						"SC     |停止客户端",
+						"SET    |设置",
+						"GITHUB |仓库",
+						"EXIT   |退出",
+						"HELP   |帮助"
+				})
+		);
+		map.put("EXIT", () -> exit(0));
 		Scanner scanner = new Scanner(in);
-		// 命令映射
-		Map<String, Runnable> map = getRunnableMap();
 		while (true) try {
 			out.print(HEX_SYNC_NAME + ">");
-			map.getOrDefault(
-					scanner.nextLine().trim().toUpperCase(),
-					() -> out.println("无效命令,输入 HELP 以获取帮助.")
-			).run();
+			String line = scanner.nextLine().toUpperCase();
+			if (line.isEmpty()) continue;
+			map.getOrDefault(line, () -> err.println("无效命令,输入HELP以获取帮助.")).run();
 		} catch (Exception error) {
 			log(SEVERE, "命令处理时出错: " + error.getMessage());
 			break;
@@ -150,16 +173,34 @@ public class HexSync {
 	}
 	// 有头模式UI
 	private static void normalUI() {
-		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-			SwingUtilities.invokeLater(() -> {
+		SwingUtilities.invokeLater(() -> {
+			try {
+				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 				Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
 				screenLength = max(size.width, size.height);
-				addPanel(newJDialog(screenLength / 4, screenLength / 4, HEX_SYNC_NAME));
-			});
-		} catch (Exception error) {
-			log(SEVERE, "初始化UI时出错:" + error.getMessage());
-		}
+				JDialog dialog = newJDialog(screenLength / 4, screenLength / 4, HEX_SYNC_NAME);
+				// 添加按钮，状态面板和托盘图标
+				JPanel panel = new JPanel();
+				panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+				panel.setLayout(new BorderLayout());
+				textPane = new JTextPane();
+				textPane.setContentType("text/html");
+				textPane.setEditable(false);
+				panel.add(new JScrollPane(textPane), BorderLayout.CENTER);
+				JPanel buttonPanel = new JPanel(new GridLayout(2, 3, 5, 5));
+				newJButton(buttonPanel, "设置", event -> openSettingsDialog());
+				newJButton(buttonPanel, "启动服务端", event -> startServer());
+				newJButton(buttonPanel, "启动客户端", event -> startClient());
+				newJButton(buttonPanel, "停止服务端", event -> stopServer());
+				newJButton(buttonPanel, "停止客户端", event -> stopClient());
+				newJButton(buttonPanel, "退出", event -> exit(0));
+				panel.add(buttonPanel, BorderLayout.SOUTH);
+				dialog.add(panel);
+				setSystemTray(dialog);
+			} catch (Exception error) {
+				log(SEVERE, "初始化UI时出错:" + error.getMessage());
+			}
+		});
 	}
 	// 初始化文件
 	private static void initFiles(boolean isServer) {
@@ -306,8 +347,8 @@ public class HexSync {
 			return false;
 		}
 		// 读取输入流并写入本地文件
-		try (FileOutputStream outputStream = new FileOutputStream(filePath)) {
-			byte[] buffer = new byte[16384]; // 缓冲区
+		try (FileOutputStream outputStream = new FileOutputStream(clientFile)) {
+			byte[] buffer = new byte[16384];
 			int bytesRead;
 			while ((bytesRead = HTTPURLConnection.getInputStream().read(buffer)) != -1)
 				outputStream.write(buffer, 0, bytesRead);
@@ -316,12 +357,12 @@ public class HexSync {
 		}
 		// 进行Hash校验
 		if (requestHash == null) {
-			log(SEVERE, "无法获取请求的校验码: " + filePath);
+			log(SEVERE, "无法获取请求的校验码: " + clientFile);
 			return false;
 		}
 		if (requestHash.equals(calculateHash(clientFile))) return true; // 下载成功且校验通过
-		log(SEVERE, "校验失败,文件可能已损坏: " + filePath);
-		if (!clientFile.delete()) log(SEVERE, "无法删除损坏的文件: " + clientFile.getPath());
+		log(SEVERE, "校验失败,文件可能已损坏: " + clientFile);
+		if (!clientFile.delete()) log(SEVERE, "无法删除损坏的文件: " + clientFile);
 		return false;
 	}
 	// 获取响应码
@@ -364,11 +405,6 @@ public class HexSync {
 			log(SEVERE, "配置保存失败: " + error.getMessage());
 		}
 	}
-	// 检查文件是否已存在并进行校验
-	private static boolean checkNoFile(File file, String fileName, Map<String, String> map) {
-		if (!file.exists()) return true;
-		return !map.get(fileName).equals(calculateHash(file));
-	}
 	// 字符串转端口
 	private static boolean getPort(String portInput, boolean isServer) {
 		String side = isServer ? "服务端" : "客户端";
@@ -403,60 +439,29 @@ public class HexSync {
 	}
 	// 关于按钮
 	private static void aboutButtonAction() {
-		SwingUtilities.invokeLater(() -> newJDialog(screenLength / 3, screenLength / 12, "关于").getContentPane()
-				.add(getJScrollPane("<span style=\"font-weight: bold;font-family: Consolas;\">"
-						+ HEX_SYNC_NAME
-						+ "<br>By: ForgeStove<br>GitHub: <a href=\""
-						+ GITHUB_URL
-						+ "\">"
-						+ GITHUB_URL
-						+ "</a></span>")));
-	}
-	// HTML内容转JScrollPane
-	private static JScrollPane getJScrollPane(String html) {
-		JTextPane textPane = new JTextPane();
-		textPane.setContentType("text/html");
-		textPane.setText(html);
-		textPane.setEditable(false);
-		textPane.addHyperlinkListener(event -> {
-			if (HyperlinkEvent.EventType.ACTIVATED.equals(event.getEventType())) try {
-				Desktop.getDesktop().browse(event.getURL().toURI());
-			} catch (Exception error) {
-				log(WARNING, "无法打开超链接: " + error.getMessage());
-			}
+		SwingUtilities.invokeLater(() -> {
+			JTextPane textPane = new JTextPane();
+			textPane.setContentType("text/html");
+			textPane.setText("<span style=\"font-weight: bold;font-family: Consolas;\">"
+					+ HEX_SYNC_NAME
+					+ "<br>By: ForgeStove<br>GitHub: <a href=\""
+					+ GITHUB_URL
+					+ "\">"
+					+ GITHUB_URL
+					+ "</a></span>");
+			textPane.setEditable(false);
+			textPane.addHyperlinkListener(event -> {
+				if (HyperlinkEvent.EventType.ACTIVATED.equals(event.getEventType())) try {
+					Desktop.getDesktop().browse(event.getURL().toURI());
+				} catch (Exception error) {
+					log(WARNING, "无法打开超链接: " + error.getMessage());
+				}
+			});
+			newJDialog(screenLength / 3, screenLength / 12, "关于").getContentPane().add(new JScrollPane(textPane));
 		});
-		return new JScrollPane(textPane);
-	}
-	// 构建命令映射
-	private static Map<String, Runnable> getRunnableMap() {
-		Map<String, Runnable> map = new HashMap<>();
-		map.put("RS", HexSync::startServer);
-		map.put("RC", HexSync::startClient);
-		map.put("SS", HexSync::stopServer);
-		map.put("SC", HexSync::stopClient);
-		map.put("SET", HexSync::headlessSettings);
-		map.put("GITHUB", () -> out.println(GITHUB_URL));
-		map.put("HELP", HexSync::headlessHelp);
-		map.put("EXIT", () -> exit(0));
-		return map;
 	}
 	// 无头模式设置
 	private static void headlessSettings() {
-		headlessSettingsHelp();
-		// 命令映射
-		Map<String, Consumer<String[]>> map = getConsumerMap();
-		while (true) try {
-			out.print(HEX_SYNC_NAME + "Settings>");
-			String[] parts = new Scanner(in).nextLine().split("\\s+");
-			map.getOrDefault(parts[0].toUpperCase(), args -> err.println("无效命令,输入 HELP 以获取帮助."))
-					.accept(parts);
-			if (parts[0].equalsIgnoreCase("SAVE")) break;
-		} catch (Exception error) {
-			err.println("无效命令,输入 HELP 以获取帮助.");
-		}
-	}
-	// 构建设置命令映射
-	private static Map<String, Consumer<String[]>> getConsumerMap() {
 		Map<String, Consumer<String[]>> map = new HashMap<>();
 		map.put("SP", args -> getPort(args[1], true));
 		map.put("SL", args -> setRate(args[1] + " " + args[2]));
@@ -468,37 +473,33 @@ public class HexSync {
 		map.put("CO", args -> setDirectory(args[1], "仅客户端模组", value -> clientOnlyDirectory = value));
 		map.put("CS", args -> setAutoStart(args[1], false, value -> clientAutoStart = value));
 		map.put("SAVE", args -> saveConfig());
-		map.put("HELP", args -> headlessSettingsHelp());
-		return map;
-	}
-	// 无头模式帮助
-	private static void headlessHelp() {
-		printlnStrings(new String[]{
-				"RS     |启动服务端",
-				"RC     |启动客户端",
-				"SS     |停止服务端",
-				"SC     |停止客户端",
-				"SET    |设置",
-				"GITHUB |仓库",
-				"EXIT   |退出",
-				"HELP   |帮助"
-		});
-	}
-	// 无头模式设置帮助
-	private static void headlessSettingsHelp() {
-		printlnStrings(new String[]{
-				"SP [端口号]                    |设置服务端端口",
-				"SL [速率] [B/s/KB/s/MB/s/GB/s] |设置服务端上传速率",
-				"SD [目录]                      |设置服务端同步目录",
-				"SS [y/Y/n/N]                   |设置服务端自动启动",
-				"CP [端口号]                    |设置客户端端口",
-				"SA [地址]                      |设置服务器地址",
-				"CD [目录]                      |设置客户端同步目录",
-				"CO [目录]                      |设置客户端仅客户端目录",
-				"CS [y/Y/n/N]                   |设置客户端自动启动",
-				"SAVE                           |保存并退出",
-				"HELP                           |帮助"
-		});
+		map.put(
+				"HELP", args -> printlnStrings(new String[]{
+						"SP [端口号]            |设置服务端端口",
+						"SL [速率] [B/KB/MB/GB] |设置服务端上传速率",
+						"SD [目录]              |设置服务端同步目录",
+						"SS [Y/N]               |设置服务端自动启动",
+						"CP [端口号]            |设置客户端端口",
+						"SA [地址]              |设置服务器地址",
+						"CD [目录]              |设置客户端同步目录",
+						"CO [目录]              |设置客户端仅客户端目录",
+						"CS [Y/N]               |设置客户端自动启动",
+						"SAVE                   |保存并退出",
+						"EXIT                   |退出而不保存",
+						"HELP                   |帮助"
+				})
+		);
+		Scanner scanner = new Scanner(in);
+		while (true) try {
+			out.print(HEX_SYNC_NAME + "Settings>");
+			String[] parts = scanner.nextLine().split("\\s+");
+			if (parts.length == 0) continue;
+			if (parts[0].equalsIgnoreCase("EXIT")) break;
+			map.getOrDefault(parts[0].toUpperCase(), args -> err.println("无效命令,输入HELP以获取帮助.")).accept(parts);
+			if (parts[0].equalsIgnoreCase("SAVE")) break;
+		} catch (Exception error) {
+			err.println("无效命令,输入HELP以获取帮助.");
+		}
 	}
 	// 输出帮助信息的通用方法
 	private static void printlnStrings(String[] messages) {
@@ -506,7 +507,7 @@ public class HexSync {
 	}
 	// 设置上传速率
 	private static void setRate(String input) {
-		if (input.matches("\\d+(\\s+B/s|\\s+KB/s|\\s+MB/s|\\s+GB/s)")) {
+		if (input.matches("\\d+(\\s+B|\\s+KB|\\s+MB|\\s+GB)")) {
 			String[] rateParts = input.split("\\s+");
 			if (invalidLong(rateParts[0])) {
 				err.println("无效输入,请输入数字.");
@@ -525,19 +526,19 @@ public class HexSync {
 		} else err.println("无效输入,请输入IP地址.");
 	}
 	// 设置文件夹路径
-	private static void setDirectory(String directory, String log, Consumer<String> setter) {
+	private static void setDirectory(String directory, String log, Consumer<String> consumer) {
 		if (!directory.isEmpty() && !directory.contains(separator)) {
-			setter.accept(directory);
+			consumer.accept(directory);
 			out.println(log + "文件夹路径已设置为: " + directory);
 		} else err.println("路径格式错误,请输入绝对路径或相对路径.");
 	}
 	// 设置自动启动
-	private static void setAutoStart(String input, Boolean isServer, Consumer<Boolean> setter) {
+	private static void setAutoStart(String input, Boolean isServer, Consumer<Boolean> consumer) {
 		if (input.matches("[yYnN]")) {
 			boolean value = input.matches("[yY]");
-			setter.accept(value);
+			consumer.accept(value);
 			out.println(isServer ? "服务端" : "客户端" + "自动启动已设置为: " + value);
-		} else err.println("无效输入,请输入 y/Y 或 n/N.");
+		} else err.println("无效输入,请输入Y/N.");
 	}
 	// 停止服务端
 	private static void stopServer() {
@@ -608,15 +609,12 @@ public class HexSync {
 	}
 	// 复制客户端仅同步文件夹中的文件到客户端同步文件夹
 	private static void copyAllFiles(String source, String target) {
-		File targetDirectory = new File(target);
-		makeDirectory(valueOf(targetDirectory));
+		makeDirectory(target);
 		File[] fileList = new File(source).listFiles();
 		if (fileList != null) for (File file : fileList) {
-			File targetFile = new File(targetDirectory, file.getName());
+			File targetFile = new File(target, file.getName());
 			// 递归复制子目录
-			String fileAbsolutePath = file.getAbsolutePath();
-			String targetFileAbsolutePath = targetFile.getAbsolutePath();
-			if (file.isDirectory()) copyAllFiles(fileAbsolutePath, targetFileAbsolutePath);
+			if (file.isDirectory()) copyAllFiles(valueOf(file), valueOf(targetFile));
 			else {
 				if (targetFile.exists()) continue;
 				try (
@@ -626,9 +624,9 @@ public class HexSync {
 					byte[] buffer = new byte[16384];
 					int length;
 					while ((length = inputStream.read(buffer)) > 0) outputStream.write(buffer, 0, length);
-					log(INFO, "已复制: " + fileAbsolutePath + " 到 " + targetFileAbsolutePath);
+					log(INFO, "复制: " + file);
 				} catch (IOException error) {
-					log(SEVERE, "复制" + fileAbsolutePath + "失败: " + error.getMessage());
+					log(SEVERE, "复制" + file + "失败: " + error.getMessage());
 				}
 			}
 		}
@@ -640,12 +638,8 @@ public class HexSync {
 	) {
 		Map<String, String> toDownloadMap = new HashMap<>();
 		for (Map.Entry<String, String> entry : requestMap.entrySet()) {
-			String fileName = entry.getKey();
 			String hash = entry.getValue();
-			if (fileName.isEmpty() || hash.isEmpty()) continue;
-			if (!clientMap.containsKey(fileName) && !clientMap.containsValue(hash) && checkNoFile(
-					new File(clientSyncDirectory + separator + fileName), fileName, requestMap))
-				toDownloadMap.put(fileName, hash);
+			if (!clientMap.containsValue(hash)) toDownloadMap.put(entry.getKey(), hash);
 		}
 		return toDownloadMap;
 	}
@@ -694,9 +688,19 @@ public class HexSync {
 		dialog.setLocationRelativeTo(null);
 		return dialog;
 	}
-	// 基础选定按钮框架
+	// 基础进度条框架
+	private static JDialog createProgressDialog(int totalFiles) {
+		JDialog dialog = newJDialog(screenLength / 5, screenLength / 25, "下载进度");
+		JProgressBar progressBar = new JProgressBar(0, totalFiles);
+		progressBar.setStringPainted(true);
+		progressBar.setForeground(new Color(0, 160, 0));
+		progressBar.setFont(UIManager.getFont("Label.font").deriveFont(18.0f));
+		dialog.add(progressBar, BorderLayout.CENTER);
+		return dialog;
+	}
+	// 基础复选框框架
 	private static JCheckBox newJCheckBox(JPanel panel, String text, boolean selected) {
-		JCheckBox checkBox = new JCheckBox("<html>" + text);
+		JCheckBox checkBox = new JCheckBox(text);
 		checkBox.setFocusPainted(false);
 		checkBox.setSelected(selected);
 		panel.add(checkBox);
@@ -706,19 +710,18 @@ public class HexSync {
 	private static void newJButton(JPanel panel, String text, ActionListener actionListener) {
 		JButton button = new JButton("<html>" + text);
 		button.setFocusPainted(false);
-		button.setPreferredSize(new Dimension(screenLength / 15, screenLength / 60));
 		button.addActionListener(actionListener);
 		panel.add(button);
 	}
-	// 创建进度条对话框
-	private static JDialog createProgressDialog(int totalFiles) {
-		JDialog dialog = newJDialog(screenLength / 5, screenLength / 25, "下载进度");
-		JProgressBar progressBar = new JProgressBar(0, totalFiles);
-		progressBar.setStringPainted(true);
-		progressBar.setForeground(Color.getColor("#008080"));
-		progressBar.setFont(UIManager.getFont("Label.font").deriveFont(18f));
-		dialog.add(progressBar, BorderLayout.CENTER);
-		return dialog;
+	// 基础菜单项框架
+	private static void newMenuItem(PopupMenu popupMenu, String text, ActionListener actionListener) {
+		MenuItem menuItem = new MenuItem(text);
+		menuItem.addActionListener(actionListener);
+		popupMenu.add(menuItem);
+	}
+	// 获取图标
+	private static Image getImage() {
+		return Toolkit.getDefaultToolkit().getImage(HexSync.class.getResource("icon.png"));
 	}
 	// 设置托盘图标
 	private static void setSystemTray(JDialog dialog) {
@@ -750,123 +753,74 @@ public class HexSync {
 			log(WARNING, "无法添加托盘图标: " + error.getMessage());
 		}
 	}
-	// 获取图标
-	private static Image getImage() {
-		return Toolkit.getDefaultToolkit().getImage(HexSync.class.getResource("icon.png"));
-	}
-	// 添加按钮，状态面板和托盘图标
-	private static void addPanel(JDialog dialog) {
-		JPanel panel = new JPanel();
-		panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		panel.setLayout(new BorderLayout());
-		textPane = new JTextPane();
-		textPane.setContentType("text/html");
-		textPane.setEditable(false);
-		JScrollPane scrollPane = new JScrollPane(textPane);
-		panel.add(scrollPane, BorderLayout.CENTER);
-		JPanel buttonPanel = new JPanel(new GridLayout(2, 3, 5, 0));
-		newJButton(buttonPanel, "设置", event -> openSettingsDialog());
-		newJButton(buttonPanel, "启动服务端", event -> startServer());
-		newJButton(buttonPanel, "启动客户端", event -> startClient());
-		newJButton(buttonPanel, "停止服务端", event -> stopServer());
-		newJButton(buttonPanel, "停止客户端", event -> stopClient());
-		newJButton(buttonPanel, "退出", event -> exit(0));
-		panel.add(buttonPanel, BorderLayout.SOUTH);
-		dialog.add(panel);
-		setSystemTray(dialog);
-	}
-	// 辅助方法创建菜单项
-	private static void newMenuItem(PopupMenu popupMenu, String text, ActionListener actionListener) {
-		MenuItem menuItem = new MenuItem(text);
-		menuItem.addActionListener(actionListener);
-		popupMenu.add(menuItem);
-	}
 	// 打开设置对话框
 	private static void openSettingsDialog() {
 		loadConfig();
 		JDialog settingsDialog = newJDialog(screenLength / 5, screenLength / 8, "设置");
-		JPanel settingsPanel = new JPanel(new BorderLayout(5, 5));
-		settingsPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		// 服务端选项卡
-		JPanel serverPanel = new JPanel(new GridLayout(5, 2));
-		JTextField[] serverTextFields = new JTextField[3];
-		JComboBox<String> serverUploadRateLimitUnitBox = new JComboBox<>(new String[]{"B/s", "KB/s", "MB/s", "GB/s"});
-		serverUploadRateLimitUnitBox.setSelectedItem(serverUploadRateLimitUnit);
-		int index = 0;
-		for (String[] labelAndField : formatHtml(new String[][]{
-				{"端口号:", valueOf(serverPort)},
-				{"上传速率限制(0为无限制):", valueOf(serverUploadRateLimit)},
-				{"服务端同步文件夹路径:", serverSyncDirectory}
-		})) {
-			serverPanel.add(new JLabel(labelAndField[0]));
-			JTextField textField = new JTextField(labelAndField[1]);
-			serverTextFields[index] = textField;
-			if (labelAndField[0].startsWith("上传速率限制(0为无限制):")) {
-				JPanel rateLimitPanel = new JPanel(new GridLayout(1, 2, 5, 0));
-				rateLimitPanel.add(textField);
-				rateLimitPanel.add(serverUploadRateLimitUnitBox);
-				serverPanel.add(rateLimitPanel);
-			} else serverPanel.add(textField);
-			index++;
-		}
-		JTextField serverPortField = serverTextFields[0];
-		JTextField serverUploadRateLimitField = serverTextFields[1];
-		JTextField serverSyncDirectoryPathField = serverTextFields[2];
-		// 客户端选项卡
-		JPanel clientPanel = new JPanel(new GridLayout(5, 2));
-		JTextField[] clientTextFields = new JTextField[4];
-		String[][] clientLabelsAndFields = formatHtml(new String[][]{
-				{"端口号:", valueOf(clientPort)},
-				{"服务器地址:", serverAddress},
-				{"客户端同步文件夹路径:", clientSyncDirectory},
-				{"仅客户端模组文件夹路径:", clientOnlyDirectory}
-		});
-		// 使用普通计数器来填充数组
-		for (int i = 0; i < clientLabelsAndFields.length; i++) {
-			String[] labelAndField = clientLabelsAndFields[i];
-			clientPanel.add(new JLabel(labelAndField[0]));
-			JTextField textField = new JTextField(labelAndField[1]);
-			clientTextFields[i] = textField; // 直接根据索引分配
-			clientPanel.add(textField);
-		}
-		// 获取文本框实例
-		JTextField clientPortField = clientTextFields[0];
-		JTextField serverAddressField = clientTextFields[1];
-		JTextField clientSyncDirectoryPathField = clientTextFields[2];
-		JTextField clientOnlyDirectoryPathField = clientTextFields[3];
-		// 添加选项卡到选项卡面板
-		JCheckBox serverAutoStartBox = newJCheckBox(serverPanel, "自动启动服务端", serverAutoStart);
-		JCheckBox clientAutoStartBox = newJCheckBox(clientPanel, "自动启动客户端", clientAutoStart);
-		// 添加选项卡面板到设置对话框
+		JPanel settingsPanel = new JPanel(new BorderLayout(10, 10));
+		settingsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		// 选项卡面板
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
-		tabbedPane.addTab("<html>服务端设置", serverPanel);
-		tabbedPane.addTab("<html>客户端设置", clientPanel);
 		tabbedPane.setFocusable(false);
 		settingsPanel.add(tabbedPane, BorderLayout.CENTER);
+		// 服务端选项卡
+		JPanel serverPanel = new JPanel(new GridLayout(5, 2));
+		serverPanel.add(new JLabel("端口号:"));
+		JTextField serverPortField = new JTextField(valueOf(serverPort));
+		serverPanel.add(serverPortField);
+		serverPanel.add(new JLabel("上传速率:"));
+		JTextField serverUploadRateLimitField = new JTextField(valueOf(serverUploadRateLimit));
+		serverPanel.add(serverUploadRateLimitField);
+		serverPanel.add(new JLabel("上传速率单位:"));
+		JComboBox<String> serverUploadRateLimitUnitBox = new JComboBox<>(new String[]{"B", "KB", "MB", "GB"});
+		serverUploadRateLimitUnitBox.setFocusable(false);
+		serverUploadRateLimitUnitBox.setSelectedItem(serverUploadRateLimitUnit);
+		serverPanel.add(serverUploadRateLimitUnitBox);
+		serverPanel.add(new JLabel("服务端同步路径:"));
+		JTextField serverSyncDirectoryField = new JTextField(serverSyncDirectory);
+		serverPanel.add(serverSyncDirectoryField);
+		JCheckBox serverAutoStartBox = newJCheckBox(serverPanel, "自动启动服务端", serverAutoStart);
+		tabbedPane.addTab("服务端设置", serverPanel);
+		// 客户端选项卡面板
+		JPanel clientPanel = new JPanel(new GridLayout(5, 2));
+		clientPanel.add(new JLabel("端口号:"));
+		JTextField clientPortField = new JTextField(valueOf(clientPort));
+		clientPanel.add(clientPortField);
+		clientPanel.add(new JLabel("服务器地址:"));
+		JTextField serverAddressField = new JTextField(serverAddress);
+		clientPanel.add(serverAddressField);
+		clientPanel.add(new JLabel("客户端同步路径:"));
+		JTextField clientSyncDirectoryField = new JTextField(clientSyncDirectory);
+		clientPanel.add(clientSyncDirectoryField);
+		clientPanel.add(new JLabel("仅客户端模组路径:"));
+		JTextField clientOnlyDirectoryField = new JTextField(clientOnlyDirectory);
+		clientPanel.add(clientOnlyDirectoryField);
+		JCheckBox clientAutoStartBox = newJCheckBox(clientPanel, "自动启动客户端", clientAutoStart);
+		tabbedPane.addTab("客户端设置", clientPanel);
 		// 按钮面板
 		JPanel buttonPanel = new JPanel(new GridLayout(1, 3, 5, 0));
 		newJButton(
 				buttonPanel, "保存", event -> {
-					// 定义输入框数组及其对应的提示信息和选项卡索引
-					Object[][] inputs = formatHtml(new Object[][]{
+					// 定义输入框数组及其对应的提示信息和选项卡索引，并检查输入框是否为空
+					for (Object[] input : new Object[][]{
 							{"服务端端口", serverPortField, 0},
-							{"上传速率限制", serverUploadRateLimitField, 0},
-							{"服务端同步文件夹路径", serverSyncDirectoryPathField, 0},
+							{"上传速率", serverUploadRateLimitField, 0},
+							{"上传速率单位", serverUploadRateLimitUnitBox, 0},
+							{"服务端同步文件夹路径", serverSyncDirectoryField, 0},
 							{"客户端端口", clientPortField, 1},
 							{"服务器地址", serverAddressField, 1},
-							{"客户端同步文件夹路径", clientSyncDirectoryPathField, 1},
-							{"仅客户端模组文件夹路径", clientOnlyDirectoryPathField, 1}
-					});
-					// 检查输入框是否为空
-					for (Object[] input : inputs) {
-						JTextField textField = (JTextField) input[1];
-						if (textField.getText().trim().isEmpty()) {
-							tabbedPane.setSelectedIndex((int) input[2]); // 跳转到对应的选项卡
-							selectAndFocus(textField);
-							log(WARNING, input[0].toString().substring("<html>".length()) + "不能为空");
-							return;
+							{"客户端同步文件夹路径", clientSyncDirectoryField, 1},
+							{"仅客户端模组文件夹路径", clientOnlyDirectoryField, 1}
+					})
+						if (input[1] instanceof JTextField) {
+							JTextField textField = (JTextField) input[1];
+							if (textField.getText().trim().isEmpty()) {
+								tabbedPane.setSelectedIndex((int) input[2]); // 跳转到对应的选项卡
+								selectAndFocus(textField);
+								log(WARNING, input[0] + "不能为空");
+								return;
+							}
 						}
-					}
 					// 检测输入框是否为数字且在合法范围内并尝试转换
 					if (!getPort(serverPortField.getText().trim(), true)) selectAndFocus(serverPortField);
 					if (!getPort(clientPortField.getText().trim(), false)) selectAndFocus(clientPortField);
@@ -881,11 +835,11 @@ public class HexSync {
 					serverAutoStart = serverAutoStartBox.isSelected();
 					serverUploadRateLimit = parseLong(uploadRateLimitText);
 					serverUploadRateLimitUnit = (String) serverUploadRateLimitUnitBox.getSelectedItem();
-					serverSyncDirectory = serverSyncDirectoryPathField.getText().trim();
+					serverSyncDirectory = serverSyncDirectoryField.getText().trim();
 					clientAutoStart = clientAutoStartBox.isSelected();
 					serverAddress = serverAddressField.getText().trim();
-					clientSyncDirectory = clientSyncDirectoryPathField.getText().trim();
-					clientOnlyDirectory = clientOnlyDirectoryPathField.getText().trim();
+					clientSyncDirectory = clientSyncDirectoryField.getText().trim();
+					clientOnlyDirectory = clientOnlyDirectoryField.getText().trim();
 					saveConfig(); // 保存配置
 					settingsDialog.dispose(); // 关闭对话框
 				}
@@ -894,16 +848,6 @@ public class HexSync {
 		newJButton(buttonPanel, "关于", event -> aboutButtonAction());
 		settingsPanel.add(buttonPanel, BorderLayout.SOUTH);
 		settingsDialog.add(settingsPanel);
-	}
-	private static String[][] formatHtml(String[][] strings) {
-		for (int i = 0; i < strings.length; i++)
-			strings[i][0] = "<html>" + strings[i][0];
-		return strings;
-	}
-	private static Object[][] formatHtml(Object[][] objects) {
-		for (int i = 0; i < objects.length; i++)
-			objects[i][0] = "<html>" + objects[i][0];
-		return objects;
 	}
 	// 聚焦并全选输入框
 	private static void selectAndFocus(JTextField textField) {
@@ -934,10 +878,10 @@ public class HexSync {
 				while ((bytesRead = inputStream.read(buffer)) != -1) byteArrayOutputStream.write(buffer, 0, bytesRead);
 				responseBytes = byteArrayOutputStream.toByteArray();
 			} catch (IOException error) {
-				log(SEVERE, "读取文件时发生错误: " + error.getMessage());
+				log(SEVERE, "读取" + file + "时出错: " + error.getMessage());
 			}
 			responseCode = HTTP_OK;
-			log(INFO, "发送文件: " + filePath);
+			log(INFO, "发送文件: " + file);
 		} else if (requestURI.equals("/list")) {
 			StringBuilder responseBuilder = new StringBuilder();
 			for (Map.Entry<String, String> entry : serverMap.entrySet())
@@ -983,13 +927,13 @@ public class HexSync {
 	private static long convertToBytes(long value, String unit) {
 		try {
 			switch (unit) {
-				case "B/s":
+				case "B":
 					return value;
-				case "KB/s":
+				case "KB":
 					return multiplyExact(value, 1024);
-				case "MB/s":
+				case "MB":
 					return multiplyExact(value, 1048576);
-				case "GB/s":
+				case "GB":
 					return multiplyExact(value, 1073741824);
 				default:
 					log(WARNING, "未知的上传速率单位: " + unit);
