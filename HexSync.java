@@ -42,6 +42,7 @@ public class HexSync {
 	private static final String WARNING = "警告";
 	private static final String SEVERE = "严重";
 	private static final boolean HEADLESS = GraphicsEnvironment.isHeadless(); // 是否处于无头模式
+	private static Image icon;
 	private static ExecutorService logExecutor; // 日志记录线程池
 	private static FileWriter logWriter; // 日志记录器
 	private static String serverSyncDirectory = "mods"; // 服务端同步文件夹路径，默认值mods
@@ -169,18 +170,20 @@ public class HexSync {
 	private static void normalUI() {
 		SwingUtilities.invokeLater(() -> {
 			try {
+				icon = Toolkit.getDefaultToolkit().getImage(HexSync.class.getResource("icon.png"));
 				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 				Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
 				screenLength = max(size.width, size.height);
 				// 添加按钮，状态面板和托盘图标
 				JPanel panel = new JPanel();
 				panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-				panel.setLayout(new BorderLayout());
+				panel.setLayout(new BorderLayout(5, 5));
 				textPane = new JTextPane();
 				textPane.setEditable(false);
+				textPane.setOpaque(false);
 				panel.add(new JScrollPane(textPane), BorderLayout.CENTER);
-				JPanel buttonPanel = new JPanel(new GridLayout(2, 3, 5, 5));
-				newJButton(buttonPanel, "设置", event -> openSettingsJFrame());
+				JPanel buttonPanel = new JPanel(new GridLayout(2, 3));
+				newJButton(buttonPanel, "设置", event -> settingsJFrame());
 				newJButton(buttonPanel, "启动服务端", event -> startServer());
 				newJButton(buttonPanel, "启动客户端", event -> startClient());
 				newJButton(buttonPanel, "停止服务端", event -> stopServer());
@@ -188,10 +191,11 @@ public class HexSync {
 				newJButton(buttonPanel, "退出", event -> exit(0));
 				panel.add(buttonPanel, BorderLayout.SOUTH);
 				// 主窗口
-				JFrame frame = newJFrame(screenLength / 4, screenLength / 4, HEX_SYNC_NAME);
+				JFrame frame = newJFrame(HEX_SYNC_NAME);
 				frame.add(panel);
+				frame.setSize(new Dimension(screenLength / 3, screenLength / 4));
 				setSystemTray(frame);
-				setFont(frame, new Font("Consolas", Font.PLAIN, 16));
+				setJFrame(frame);
 			} catch (Exception error) {
 				log(SEVERE, "初始化UI时出错:" + error.getMessage());
 			}
@@ -418,8 +422,8 @@ public class HexSync {
 			return true;
 		}
 	}
-	// 关于按钮
-	private static void aboutButtonAction() {
+	// 关于
+	private static void aboutJFrame() {
 		JTextPane aboutTextPane = new JTextPane();
 		aboutTextPane.setContentType("text/html");
 		aboutTextPane.setEditable(false);
@@ -437,10 +441,10 @@ public class HexSync {
 				log(WARNING, "无法打开超链接: " + error.getMessage());
 			}
 		});
-		JFrame frame = newJFrame(0, 0, "关于");
+		JFrame frame = newJFrame("关于");
 		frame.getContentPane().add(new JScrollPane(aboutTextPane));
 		frame.pack();
-		frame.setLocationRelativeTo(null);
+		setJFrame(frame);
 	}
 	// 无头模式设置
 	private static void headlessSettings() {
@@ -593,23 +597,19 @@ public class HexSync {
 		if (fileList == null) return;
 		for (File file : fileList) {
 			File targetFile = new File(target, file.getName());
-			// 递归复制子目录
-			if (file.isDirectory()) copyAllFiles(valueOf(file), valueOf(targetFile));
-			else {
-				if (targetFile.exists()) continue;
-				try (
-						InputStream inputStream = newInputStream(file.toPath());
-						OutputStream outputStream = newOutputStream(targetFile.toPath())
-				) {
-					byte[] buffer = new byte[16384];
-					int length;
-					while ((length = inputStream.read(buffer)) > 0) outputStream.write(buffer, 0, length);
-				} catch (IOException error) {
-					log(SEVERE, "复制" + file + "失败: " + error.getMessage());
-				}
+			if (file.isDirectory()) copyAllFiles(valueOf(file), valueOf(targetFile)); // 递归复制子目录
+			else if (!targetFile.exists()) try (
+					InputStream inputStream = newInputStream(file.toPath());
+					OutputStream outputStream = newOutputStream(targetFile.toPath())
+			) {
+				byte[] buffer = new byte[16384];
+				int length;
+				while ((length = inputStream.read(buffer)) > 0) outputStream.write(buffer, 0, length);
+				log(INFO, "已复制仅客户端模组: " + file + " -> " + targetFile);
+			} catch (IOException error) {
+				log(SEVERE, "复制" + file + "失败: " + error.getMessage());
 			}
 		}
-		log(INFO, "已复制 " + fileList.length + " 个仅客户端模组文件到 " + target);
 	}
 	// 构建需要下载的文件列表
 	private static Map<String, String> makeToDownloadMap(
@@ -650,20 +650,17 @@ public class HexSync {
 		log(INFO, (errorDownload ? "下载失败" : "下载完成") + ": [" + count + "/" + toDownloadMapSize + "]");
 		if (clientAutoStart) exit(0); // 自动退出
 	}
-	// 基础对话框框架
-	private static JFrame newJFrame(int width, int height, String title) {
+	// 基础窗口框架
+	private static JFrame newJFrame(String title) {
 		JFrame frame = new JFrame();
 		frame.setTitle(title);
-		frame.setIconImage(getImage());
+		frame.setIconImage(icon);
 		frame.setAlwaysOnTop(true);
-		frame.setSize(width, height);
-		frame.setLocationRelativeTo(null);
-		frame.setVisible(true);
 		return frame;
 	}
 	// 基础进度条框架
 	private static JFrame newJFrameProgress(int totalFiles) {
-		JFrame frame = newJFrame(screenLength / 5, screenLength / 25, "下载进度");
+		JFrame frame = newJFrame("下载进度");
 		JProgressBar progressBar = new JProgressBar(0, totalFiles);
 		progressBar.setStringPainted(true);
 		progressBar.setForeground(new Color(0, 128, 0));
@@ -683,6 +680,7 @@ public class HexSync {
 	private static void newJButton(JPanel panel, String text, ActionListener actionListener) {
 		JButton button = new JButton("<html>" + text);
 		button.setFocusPainted(false);
+		button.setPreferredSize(new Dimension(0, screenLength / 55));
 		button.addActionListener(actionListener);
 		panel.add(button);
 	}
@@ -692,14 +690,16 @@ public class HexSync {
 		menuItem.addActionListener(actionListener);
 		popupMenu.add(menuItem);
 	}
-	// 获取图标
-	private static Image getImage() {
-		return Toolkit.getDefaultToolkit().getImage(HexSync.class.getResource("icon.png"));
+	// 设置窗口属性
+	private static void setJFrame(JFrame frame) {
+		setFont(frame, new Font("Arial", Font.PLAIN, 16));
+		frame.setLocationRelativeTo(null);
+		frame.setVisible(true);
 	}
 	// 设置托盘图标
 	private static void setSystemTray(JFrame frame) {
 		if (!SystemTray.isSupported()) return;
-		TrayIcon trayIcon = new TrayIcon(getImage(), HEX_SYNC_NAME);
+		TrayIcon trayIcon = new TrayIcon(icon, HEX_SYNC_NAME);
 		trayIcon.setImageAutoSize(true); // 自动调整图标大小
 		trayIcon.setToolTip(HEX_SYNC_NAME);
 		PopupMenu popupMenu = new PopupMenu();
@@ -707,9 +707,9 @@ public class HexSync {
 		popupMenu.addSeparator();
 		newMenuItem(popupMenu, "Hide", event -> frame.setVisible(false));
 		popupMenu.addSeparator();
-		newMenuItem(popupMenu, "Settings", event -> openSettingsJFrame());
+		newMenuItem(popupMenu, "Settings", event -> settingsJFrame());
 		popupMenu.addSeparator();
-		newMenuItem(popupMenu, "About", event -> aboutButtonAction());
+		newMenuItem(popupMenu, "About", event -> aboutJFrame());
 		popupMenu.addSeparator();
 		newMenuItem(popupMenu, "Exit", event -> exit(0));
 		trayIcon.addActionListener(event -> frame.setVisible(true));
@@ -722,10 +722,10 @@ public class HexSync {
 		trayIcon.setPopupMenu(popupMenu);
 	}
 	// 打开设置对话框
-	private static void openSettingsJFrame() {
+	private static void settingsJFrame() {
 		loadConfig();
-		JFrame settingsJFrame = newJFrame(screenLength / 5, screenLength / 8, "设置");
-		JPanel settingsPanel = new JPanel(new BorderLayout(10, 10));
+		JFrame settingsJFrame = newJFrame("设置");
+		JPanel settingsPanel = new JPanel(new BorderLayout());
 		settingsPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		// 选项卡面板
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -813,10 +813,11 @@ public class HexSync {
 				}
 		);
 		newJButton(buttonPanel, "取消", event -> settingsJFrame.dispose());
-		newJButton(buttonPanel, "关于", event -> aboutButtonAction());
+		newJButton(buttonPanel, "关于", event -> aboutJFrame());
 		settingsPanel.add(buttonPanel, BorderLayout.SOUTH);
 		settingsJFrame.add(settingsPanel);
-		setFont(settingsJFrame, new Font("Consolas", Font.PLAIN, 14));
+		settingsJFrame.setSize(screenLength / 5, screenLength / 8);
+		setJFrame(settingsJFrame);
 	}
 	// 聚焦并全选输入框
 	private static void selectAndFocus(JTextField textField) {
