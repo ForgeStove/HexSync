@@ -41,7 +41,7 @@ public class HexSync {
 	private static final String WARNING = "警告";
 	private static final String SEVERE = "严重";
 	private static final boolean HEADLESS = GraphicsEnvironment.isHeadless(); // 是否处于无头模式
-	private static ExecutorService logExecutor; // 创建日志记录线程池
+	private static ExecutorService logExecutor; // 日志记录线程池
 	private static int logMaxLines; // 日志面板最大行数
 	private static FileWriter logWriter; // 日志记录器
 	private static String htmlLog; // 日志面板内容
@@ -76,10 +76,7 @@ public class HexSync {
 		} catch (IOException error) {
 			err.println("日志初始化失败: " + error.getMessage());
 		}
-		if (getProperty("log", "true").equalsIgnoreCase("true")) {
-			logExecutor = Executors.newSingleThreadExecutor();
-			htmlLog = "";
-		}
+		if (getProperty("log", "true").equalsIgnoreCase("true")) logExecutor = Executors.newSingleThreadExecutor();
 		if ((logMaxLines = parseInt(getProperty("logMaxLines", "50"))) >= 0) return;
 		logMaxLines = 50;
 		log(WARNING, "日志面板最大行数设置过小，已设置为50");
@@ -105,10 +102,10 @@ public class HexSync {
 						info ? "\u001B[32m" : warning ? "\u001B[33m" : severe ? "\u001B[31m" : "\u001B[0m",
 						format
 				);
-				if (textPane != null) SwingUtilities.invokeLater(() -> {
+				if (!HEADLESS) SwingUtilities.invokeLater(() -> {
 					htmlLog = format(
 							"%s<span style='color: %s;'>%s</span><br>",
-							htmlLog,
+							htmlLog == null ? "" : htmlLog,
 							info ? "green" : warning ? "orange" : severe ? "red" : "black",
 							format
 					).replace(lineSeparator(), "<br>"); // 添加新的日志行
@@ -119,6 +116,7 @@ public class HexSync {
 							newHtmlLog.append(lines[i]).append("<br>"); // 只保留最新的 MAX_LINES 行
 						htmlLog = newHtmlLog.toString(); // 更新 HTML 日志
 					}
+					if (textPane == null) return;
 					textPane.setText("<span style='font-family: Consolas;'>" + htmlLog + "</span>");
 					JScrollBar vertical = ((JScrollPane) textPane.getParent().getParent()).getVerticalScrollBar();
 					if (vertical.isVisible()) vertical.setValue(vertical.getMaximum()); // 自动滚动到最新内容
@@ -181,7 +179,7 @@ public class HexSync {
 				JDialog dialog = newJDialog(screenLength / 4, screenLength / 4, HEX_SYNC_NAME);
 				// 添加按钮，状态面板和托盘图标
 				JPanel panel = new JPanel();
-				panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+				panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 				panel.setLayout(new BorderLayout());
 				textPane = new JTextPane();
 				textPane.setContentType("text/html");
@@ -197,6 +195,7 @@ public class HexSync {
 				panel.add(buttonPanel, BorderLayout.SOUTH);
 				dialog.add(panel);
 				setSystemTray(dialog);
+				setFont(dialog, new Font("微软雅黑", Font.PLAIN, 14));
 			} catch (Exception error) {
 				log(SEVERE, "初始化UI时出错:" + error.getMessage());
 			}
@@ -233,10 +232,19 @@ public class HexSync {
 			return;
 		}
 		try (BufferedReader bufferedReader = new BufferedReader(new FileReader(configFile))) {
+			Map<String, Consumer<String>> configMap = new HashMap<>();
+			configMap.put(SERVER_PORT, input -> serverPort = parseInt(input));
+			configMap.put(SERVER_UPLOAD_RATE_LIMIT, HexSync::setRate);
+			configMap.put(SERVER_SYNC_DIRECTORY, input -> serverSyncDirectory = input);
+			configMap.put(SERVER_AUTO_START, input -> serverAutoStart = parseBoolean(input));
+			configMap.put(CLIENT_PORT, input -> clientPort = parseInt(input));
+			configMap.put(SERVER_ADDRESS, input -> serverAddress = input);
+			configMap.put(CLIENT_SYNC_DIRECTORY, input -> clientSyncDirectory = input);
+			configMap.put(CLIENT_ONLY_DIRECTORY, input -> clientOnlyDirectory = input);
+			configMap.put(CLIENT_AUTO_START, input -> clientAutoStart = parseBoolean(input));
 			String line;
-			Map<String, Consumer<String>> configMap = getConfigMap();
 			while ((line = bufferedReader.readLine()) != null) {
-				if (line.startsWith("#")) continue;
+				if (!line.isEmpty() && !Character.isLetter(line.charAt(0))) continue; // 仅当首字符不是字母时跳过
 				String[] parts = line.split("=");
 				if (parts.length != 2) {
 					log(WARNING, "配置格式错误: " + line);
@@ -249,29 +257,6 @@ public class HexSync {
 		} catch (IOException error) {
 			log(SEVERE, "配置读取失败: " + error.getMessage());
 		}
-	}
-	// 构建配置映射
-	private static Map<String, Consumer<String>> getConfigMap() {
-		Map<String, Consumer<String>> configMap = new HashMap<>();
-		configMap.put(SERVER_PORT, input -> serverPort = parseInt(input));
-		configMap.put(
-				SERVER_UPLOAD_RATE_LIMIT, input -> {
-					String[] limitParts = input.split(" ");
-					if (limitParts.length != 2) log(WARNING, "上传速率限制格式错误");
-					else {
-						serverUploadRateLimit = parseLong(limitParts[0]);
-						serverUploadRateLimitUnit = limitParts[1];
-					}
-				}
-		);
-		configMap.put(SERVER_SYNC_DIRECTORY, input -> serverSyncDirectory = input);
-		configMap.put(SERVER_AUTO_START, input -> serverAutoStart = parseBoolean(input));
-		configMap.put(CLIENT_PORT, input -> clientPort = parseInt(input));
-		configMap.put(SERVER_ADDRESS, input -> serverAddress = input);
-		configMap.put(CLIENT_SYNC_DIRECTORY, input -> clientSyncDirectory = input);
-		configMap.put(CLIENT_ONLY_DIRECTORY, input -> clientOnlyDirectory = input);
-		configMap.put(CLIENT_AUTO_START, input -> clientAutoStart = parseBoolean(input));
-		return configMap;
 	}
 	// 地址格式化,转换为HTTP协议
 	private static String formatHTTP(String address) {
@@ -439,26 +424,27 @@ public class HexSync {
 	}
 	// 关于按钮
 	private static void aboutButtonAction() {
-		SwingUtilities.invokeLater(() -> {
-			JTextPane textPane = new JTextPane();
-			textPane.setContentType("text/html");
-			textPane.setText("<span style=\"font-weight: bold;font-family: Consolas;\">"
-					+ HEX_SYNC_NAME
-					+ "<br>By: ForgeStove<br>GitHub: <a href=\""
-					+ GITHUB_URL
-					+ "\">"
-					+ GITHUB_URL
-					+ "</a></span>");
-			textPane.setEditable(false);
-			textPane.addHyperlinkListener(event -> {
-				if (HyperlinkEvent.EventType.ACTIVATED.equals(event.getEventType())) try {
-					Desktop.getDesktop().browse(event.getURL().toURI());
-				} catch (Exception error) {
-					log(WARNING, "无法打开超链接: " + error.getMessage());
-				}
-			});
-			newJDialog(screenLength / 3, screenLength / 12, "关于").getContentPane().add(new JScrollPane(textPane));
+		JTextPane aboutTextPane = new JTextPane();
+		aboutTextPane.setContentType("text/html");
+		aboutTextPane.setEditable(false);
+		aboutTextPane.setText("<span style=\"font-weight: bold;font-family: Consolas;\">"
+				+ HEX_SYNC_NAME
+				+ "<br>By: ForgeStove<br>GitHub: <a href=\""
+				+ GITHUB_URL
+				+ "\">"
+				+ GITHUB_URL
+				+ "</a><br>开源许可: GNU General Public License v3.0</span>");
+		aboutTextPane.addHyperlinkListener(event -> {
+			if (HyperlinkEvent.EventType.ACTIVATED.equals(event.getEventType())) try {
+				Desktop.getDesktop().browse(event.getURL().toURI());
+			} catch (Exception error) {
+				log(WARNING, "无法打开超链接: " + error.getMessage());
+			}
 		});
+		JDialog dialog = newJDialog(screenLength / 3, screenLength / 12, "关于");
+		dialog.getContentPane().add(new JScrollPane(aboutTextPane));
+		dialog.pack();
+		dialog.setLocationRelativeTo(null);
 	}
 	// 无头模式设置
 	private static void headlessSettings() {
@@ -476,7 +462,7 @@ public class HexSync {
 		map.put(
 				"HELP", args -> printlnStrings(new String[]{
 						"SP [端口号]            |设置服务端端口",
-						"SL [速率] [B/KB/MB/GB] |设置服务端上传速率",
+						"SL [速率] [B/KB/MB/GB] |设置服务端最大上传速率",
 						"SD [目录]              |设置服务端同步目录",
 						"SS [Y/N]               |设置服务端自动启动",
 						"CP [端口号]            |设置客户端端口",
@@ -505,18 +491,15 @@ public class HexSync {
 	private static void printlnStrings(String[] messages) {
 		for (String message : messages) out.println(message);
 	}
-	// 设置上传速率
+	// 设置最大上传速率
 	private static void setRate(String input) {
-		if (input.matches("\\d+(\\s+B|\\s+KB|\\s+MB|\\s+GB)")) {
-			String[] rateParts = input.split("\\s+");
-			if (invalidLong(rateParts[0])) {
-				err.println("无效输入,请输入数字.");
-				return;
-			}
-			serverUploadRateLimit = parseLong(rateParts[0]);
-			serverUploadRateLimitUnit = rateParts[1];
-			out.println("服务端上传速率已设置为: " + serverUploadRateLimit + " " + serverUploadRateLimitUnit);
-		} else err.println("无效输入,请输入数字及单位.");
+		String[] parts = input.split("\\s+");
+		if (input.matches("\\d+(\\s+B|\\s+KB|\\s+MB|\\s+GB)") && !invalidLong(parts[0])) {
+			serverUploadRateLimit = parseLong(parts[0]);
+			serverUploadRateLimitUnit = parts[1];
+			if (HEADLESS)
+				out.println("服务端最大上传速率已设置为: " + serverUploadRateLimit + " " + serverUploadRateLimitUnit);
+		} else if (HEADLESS) err.println("无效输入,请输入数字及单位.");
 	}
 	// 设置服务端地址
 	private static void setAddress(String addressInput) {
@@ -683,9 +666,10 @@ public class HexSync {
 		dialog.setTitle(title);
 		dialog.setIconImage(getImage());
 		dialog.setAlwaysOnTop(true);
-		dialog.setVisible(true);
 		dialog.setSize(width, height);
 		dialog.setLocationRelativeTo(null);
+		dialog.setVisible(true);
+		dialog.setBackground(new Color(30, 30, 30));
 		return dialog;
 	}
 	// 基础进度条框架
@@ -758,7 +742,7 @@ public class HexSync {
 		loadConfig();
 		JDialog settingsDialog = newJDialog(screenLength / 5, screenLength / 8, "设置");
 		JPanel settingsPanel = new JPanel(new BorderLayout(10, 10));
-		settingsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		settingsPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		// 选项卡面板
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
 		tabbedPane.setFocusable(false);
@@ -768,7 +752,7 @@ public class HexSync {
 		serverPanel.add(new JLabel("端口号:"));
 		JTextField serverPortField = new JTextField(valueOf(serverPort));
 		serverPanel.add(serverPortField);
-		serverPanel.add(new JLabel("上传速率:"));
+		serverPanel.add(new JLabel("最大上传速率:"));
 		JTextField serverUploadRateLimitField = new JTextField(valueOf(serverUploadRateLimit));
 		serverPanel.add(serverUploadRateLimitField);
 		serverPanel.add(new JLabel("上传速率单位:"));
@@ -804,7 +788,7 @@ public class HexSync {
 					// 定义输入框数组及其对应的提示信息和选项卡索引，并检查输入框是否为空
 					for (Object[] input : new Object[][]{
 							{"服务端端口", serverPortField, 0},
-							{"上传速率", serverUploadRateLimitField, 0},
+							{"最大上传速率", serverUploadRateLimitField, 0},
 							{"上传速率单位", serverUploadRateLimitUnitBox, 0},
 							{"服务端同步文件夹路径", serverSyncDirectoryField, 0},
 							{"客户端端口", clientPortField, 1},
@@ -824,10 +808,10 @@ public class HexSync {
 					// 检测输入框是否为数字且在合法范围内并尝试转换
 					if (!getPort(serverPortField.getText().trim(), true)) selectAndFocus(serverPortField);
 					if (!getPort(clientPortField.getText().trim(), false)) selectAndFocus(clientPortField);
-					// 检测上传速率上限
+					// 检测最大上传速率
 					String uploadRateLimitText = serverUploadRateLimitField.getText().trim();
 					if (invalidLong(uploadRateLimitText) || parseLong(uploadRateLimitText) < 0) {
-						log(WARNING, "上传速率上限不正确: " + uploadRateLimitText);
+						log(WARNING, "最大上传速率格式错误: " + uploadRateLimitText);
 						tabbedPane.setSelectedIndex(0);
 						selectAndFocus(serverUploadRateLimitField);
 						return;
@@ -848,11 +832,19 @@ public class HexSync {
 		newJButton(buttonPanel, "关于", event -> aboutButtonAction());
 		settingsPanel.add(buttonPanel, BorderLayout.SOUTH);
 		settingsDialog.add(settingsPanel);
+		setFont(settingsDialog, new Font("微软雅黑", Font.PLAIN, 14));
 	}
 	// 聚焦并全选输入框
 	private static void selectAndFocus(JTextField textField) {
 		textField.requestFocus(); // 聚焦输入框
 		textField.selectAll(); // 选中输入框
+	}
+	// 设置字体的通用方法
+	private static void setFont(Container container, Font font) {
+		for (Component component : container.getComponents()) {
+			if (component instanceof Container) setFont((Container) component, font); // 递归设置子组件的字体
+			component.setFont(font); // 设置字体
+		}
 	}
 	// 处理请求
 	private static void processRequest(HttpExchange exchange) {
@@ -936,11 +928,11 @@ public class HexSync {
 				case "GB":
 					return multiplyExact(value, 1073741824);
 				default:
-					log(WARNING, "未知的上传速率单位: " + unit);
+					log(WARNING, "未知的最大上传速率单位: " + unit);
 					return 0;
 			}
 		} catch (ArithmeticException error) {
-			log(WARNING, "上传速率溢出，自动转化为无限制: " + error.getMessage());
+			log(WARNING, "最大上传速率溢出，自动转化为无限制: " + error.getMessage());
 			return 0; // 溢出
 		}
 	}
