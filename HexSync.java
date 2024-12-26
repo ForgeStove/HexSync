@@ -191,9 +191,9 @@ public class HexSync {
 				panel.add(buttonPanel, BorderLayout.SOUTH);
 				// 主窗口
 				JFrame frame = newJFrame(HEX_SYNC_NAME);
+				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				frame.add(panel);
 				frame.setSize(new Dimension(screenLength / 3, screenLength / 4));
-				setSystemTray(frame);
 				setJFrame(frame);
 			} catch (Exception error) {
 				log(SEVERE, "初始化UI时出错:" + error.getMessage());
@@ -683,42 +683,11 @@ public class HexSync {
 		button.addActionListener(actionListener);
 		panel.add(button);
 	}
-	// 基础菜单项框架
-	private static void newMenuItem(PopupMenu popupMenu, String text, ActionListener actionListener) {
-		MenuItem menuItem = new MenuItem(text);
-		menuItem.addActionListener(actionListener);
-		popupMenu.add(menuItem);
-	}
 	// 设置窗口属性
 	private static void setJFrame(JFrame frame) {
 		setFont(frame, new Font("Arial", Font.PLAIN, 16));
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
-	}
-	// 设置托盘图标
-	private static void setSystemTray(JFrame frame) {
-		if (!SystemTray.isSupported()) return;
-		TrayIcon trayIcon = new TrayIcon(icon, HEX_SYNC_NAME);
-		trayIcon.setImageAutoSize(true); // 自动调整图标大小
-		trayIcon.setToolTip(HEX_SYNC_NAME);
-		PopupMenu popupMenu = new PopupMenu();
-		newMenuItem(popupMenu, "Open", event -> frame.setVisible(true));
-		popupMenu.addSeparator();
-		newMenuItem(popupMenu, "Hide", event -> frame.setVisible(false));
-		popupMenu.addSeparator();
-		newMenuItem(popupMenu, "Settings", event -> settingsJFrame());
-		popupMenu.addSeparator();
-		newMenuItem(popupMenu, "About", event -> aboutJFrame());
-		popupMenu.addSeparator();
-		newMenuItem(popupMenu, "Exit", event -> exit(0));
-		trayIcon.addActionListener(event -> frame.setVisible(true));
-		try {
-			SystemTray systemTray = SystemTray.getSystemTray();
-			if (systemTray.getTrayIcons().length == 0) systemTray.add(trayIcon);
-		} catch (AWTException error) {
-			log(WARNING, "无法添加托盘图标: " + error.getMessage());
-		}
-		trayIcon.setPopupMenu(popupMenu);
 	}
 	// 打开设置对话框
 	private static void settingsJFrame() {
