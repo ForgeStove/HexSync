@@ -7,19 +7,16 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.*;
-import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import java.util.zip.CRC32;
 
 import static java.io.File.separator;
-import static java.lang.Boolean.parseBoolean;
-import static java.lang.Integer.parseInt;
-import static java.lang.Long.parseLong;
 import static java.lang.Math.*;
-import static java.lang.String.*;
+import static java.lang.String.format;
 import static java.lang.System.*;
 import static java.net.HttpURLConnection.*;
 import static java.nio.file.Files.*;
@@ -51,7 +48,7 @@ public class HexSync {
 	private static String clientOnlyDirectory = "clientOnlyMods"; // 仅客户端文件夹路径，默认值clientOnlyMods
 	private static String serverUploadRateLimitUnit = "MB"; // 上传速率限制单位，默认MB
 	private static String serverAddress = "localhost"; // 服务器地址，默认值localhost
-	private static Map<String, String> serverMap; // 存储服务端文件名和对应的校验码数据
+	private static Map<String, Long> serverMap; // 存储服务端文件名和对应的校验码数据
 	private static HttpServer HTTPServer; // 存储服务器实例
 	private static HttpURLConnection HTTPURLConnection; // 存储客户端连接实例
 	private static Thread serverThread; // 服务器线程
@@ -83,22 +80,22 @@ public class HexSync {
 	private static void log(String level, String message) {
 		if (getProperty("log", "true").equalsIgnoreCase("true")) logExecutor.submit(() -> {
 			try {
-				String formatted = format(
+				String formattedLog = format(
 						"%s [%s] %s%n",
 						new SimpleDateFormat("[HH:mm:ss]").format(new Date()),
 						level,
 						message
 				);
-				logWriter.write(formatted);
+				logWriter.write(formattedLog);
 				logWriter.flush();
 				boolean info = level.equals(INFO);
 				boolean warning = level.equals(WARNING);
 				boolean severe = level.equals(SEVERE);
-				if (getProperty("ansi", "true").equalsIgnoreCase("false")) out.print(formatted);
+				if (getProperty("ansi", "true").equalsIgnoreCase("false")) out.print(formattedLog);
 				else out.printf(
 						"%s%s\u001B[0m",
 						info ? "\u001B[32m" : warning ? "\u001B[33m" : severe ? "\u001B[31m" : "\u001B[0m",
-						formatted
+						formattedLog
 				);
 				if (!HEADLESS) SwingUtilities.invokeLater(() -> {
 					try {
@@ -111,12 +108,15 @@ public class HexSync {
 												Color.BLACK
 						);
 						Document document = textPane.getDocument();
-						document.insertString(document.getLength(), formatted, attributeSet);
+						int documentLength = document.getLength();
+						document.insertString(
+								documentLength,
+								documentLength == 0 ? formattedLog.trim() : lineSeparator() + formattedLog.trim(),
+								attributeSet
+						);
 					} catch (BadLocationException error) {
 						throw new RuntimeException(error);
 					}
-					JScrollBar vertical = ((JScrollPane) textPane.getParent().getParent()).getVerticalScrollBar();
-					if (vertical.isVisible()) vertical.setValue(vertical.getMaximum()); // 自动滚动到最新内容
 				});
 			} catch (IOException error) {
 				if (logWriter == null) initLog();
@@ -206,15 +206,15 @@ public class HexSync {
 		makeDirectory(isServer ? serverSyncDirectory : clientSyncDirectory);
 		makeDirectory(HEX_SYNC_NAME);
 		loadConfig();
-		if (isServer) serverMap = initFileHashMap(serverSyncDirectory);
+		if (isServer) serverMap = initFileCrcMap(serverSyncDirectory);
 		else makeDirectory(clientOnlyDirectory);
 	}
 	// 初始化文件名校验码键值对表
-	private static Map<String, String> initFileHashMap(String directory) {
-		Map<String, String> map = new HashMap<>();
+	private static Map<String, Long> initFileCrcMap(String directory) {
+		Map<String, Long> map = new HashMap<>();
 		File[] fileList = new File(directory).listFiles(); // 获取文件夹下的所有文件
 		if (fileList == null) return null;
-		for (File file : fileList) if (file.isFile()) map.put(file.getName(), calculateHash(file));
+		for (File file : fileList) if (file.isFile()) map.put(file.getName(), calculateCrc(file));
 		return map;
 	}
 	// 创建文件夹
@@ -233,15 +233,15 @@ public class HexSync {
 		}
 		try (BufferedReader bufferedReader = new BufferedReader(new FileReader(configFile))) {
 			Map<String, Consumer<String>> configMap = new HashMap<>();
-			configMap.put(SERVER_PORT, input -> serverPort = parseInt(input));
+			configMap.put(SERVER_PORT, input -> serverPort = Integer.parseInt(input));
 			configMap.put(SERVER_UPLOAD_RATE_LIMIT, HexSync::setRate);
 			configMap.put(SERVER_SYNC_DIRECTORY, input -> serverSyncDirectory = input);
-			configMap.put(SERVER_AUTO_START, input -> serverAutoStart = parseBoolean(input));
-			configMap.put(CLIENT_PORT, input -> clientPort = parseInt(input));
+			configMap.put(SERVER_AUTO_START, input -> serverAutoStart = Boolean.parseBoolean(input));
+			configMap.put(CLIENT_PORT, input -> clientPort = Integer.parseInt(input));
 			configMap.put(SERVER_ADDRESS, input -> serverAddress = input);
 			configMap.put(CLIENT_SYNC_DIRECTORY, input -> clientSyncDirectory = input);
 			configMap.put(CLIENT_ONLY_DIRECTORY, input -> clientOnlyDirectory = input);
-			configMap.put(CLIENT_AUTO_START, input -> clientAutoStart = parseBoolean(input));
+			configMap.put(CLIENT_AUTO_START, input -> clientAutoStart = Boolean.parseBoolean(input));
 			String line;
 			while ((line = bufferedReader.readLine()) != null) {
 				if (!line.matches("^[a-zA-Z].*")) continue; // 仅当首字符不是字母时跳过
@@ -264,25 +264,22 @@ public class HexSync {
 		return address.startsWith("http://") ? address : "http://" + address; // 添加HTTP协议头
 	}
 	// 计算文件校验码
-	private static String calculateHash(File file) {
+	private static long calculateCrc(File file) {
+		CRC32 crc = new CRC32();
 		try (FileInputStream fileInputStream = new FileInputStream(file)) {
-			byte[] byteBuffer = new byte[16384];
+			byte[] byteBuffer = new byte[4096];
 			int bytesRead;
-			MessageDigest hash = MessageDigest.getInstance("MD5");
-			while ((bytesRead = fileInputStream.read(byteBuffer)) != -1) hash.update(byteBuffer, 0, bytesRead);
-			StringBuilder stringBuilder = new StringBuilder();
-			for (byte singleByte : hash.digest()) stringBuilder.append(format("%02x", singleByte));
-			return stringBuilder.toString();
-		} catch (Exception error) {
-			log(SEVERE, "计算校验码时出错: " + error.getMessage());
-			return null;
+			while ((bytesRead = fileInputStream.read(byteBuffer)) != -1) crc.update(byteBuffer, 0, bytesRead);
+		} catch (IOException error) {
+			log(SEVERE, "计算CRC时出错: " + error.getMessage());
 		}
+		return crc.getValue();
 	}
 	// 从服务器请求文件名和校验码列表
-	private static Map<String, String> requestFileHashList() {
+	private static Map<String, Long> requestFileCrcList() {
 		String URL = formatHTTP(serverAddress) + ":" + clientPort + "/list"; // 服务器地址
 		log(INFO, "正在连接到: " + URL); // 记录请求开始日志
-		Map<String, String> requestMap = new HashMap<>(); // 复制请求列表
+		Map<String, Long> requestMap = new HashMap<>(); // 复制请求列表
 		try {
 			int responseCode = getResponseCode(new URL(URL));
 			if (responseCode != HTTP_OK) {
@@ -301,8 +298,7 @@ public class HexSync {
 		) {
 			String fileName;
 			while ((fileName = bufferedReader.readLine()) != null) { // 读取文件名
-				String hash = bufferedReader.readLine(); // 读取对应的校验码
-				if (hash != null) requestMap.put(fileName, hash); // 将文件名与校验码放入Map
+				requestMap.put(fileName, Long.valueOf(bufferedReader.readLine())); // 将文件名与校验码放入Map
 			}
 		} catch (IOException error) {
 			log(SEVERE, "读取响应时出错: " + error.getMessage());
@@ -312,16 +308,16 @@ public class HexSync {
 		return requestMap;
 	}
 	// 从服务器下载文件
-	private static boolean successDownloadFile(String filePath, Map<String, String> toDownloadMap) {
+	private static boolean successDownloadFile(String filePath, Map<String, Long> toDownloadMap) {
 		if (clientThread == null) return false; // 客户端线程已关闭
 		File clientFile = new File(filePath); // 目标本地文件
-		String requestHash = toDownloadMap.get(filePath.substring(clientSyncDirectory.length() + 1));
+		Long requestCrc = toDownloadMap.get(filePath.substring(clientSyncDirectory.length() + 1));
 		try {
 			int responseCode = getResponseCode(new URL(format(
 					"%s:%d/downloadMissingFiles/%s",
 					formatHTTP(serverAddress),
 					clientPort,
-					requestHash
+					requestCrc
 			)));
 			if (responseCode != HTTP_OK) {
 				log(SEVERE, "下载失败,错误代码: " + responseCode);
@@ -340,12 +336,12 @@ public class HexSync {
 		} catch (IOException error) {
 			log(SEVERE, "读取响应时出错: " + error.getMessage());
 		}
-		// 进行Hash校验
-		if (requestHash == null) {
+		// 进行校验
+		if (requestCrc == null) {
 			log(SEVERE, "无法获取请求的校验码: " + clientFile);
 			return false;
 		}
-		if (requestHash.equals(calculateHash(clientFile))) return true; // 下载成功且校验通过
+		if (requestCrc.equals(calculateCrc(clientFile))) return true; // 下载成功且校验通过
 		log(SEVERE, "校验失败,文件可能已损坏: " + clientFile);
 		if (!clientFile.delete()) log(SEVERE, "无法删除损坏的文件: " + clientFile);
 		return false;
@@ -362,16 +358,16 @@ public class HexSync {
 	private static void saveConfig() {
 		String[][] configEntries = {
 				{"# 服务端配置"},
-				{SERVER_PORT, valueOf(serverPort)},
+				{SERVER_PORT, String.valueOf(serverPort)},
 				{SERVER_UPLOAD_RATE_LIMIT, serverUploadRateLimit + " " + serverUploadRateLimitUnit},
 				{SERVER_SYNC_DIRECTORY, serverSyncDirectory},
-				{SERVER_AUTO_START, valueOf(serverAutoStart)},
+				{SERVER_AUTO_START, String.valueOf(serverAutoStart)},
 				{"# 客户端配置"},
-				{CLIENT_PORT, valueOf(clientPort)},
+				{CLIENT_PORT, String.valueOf(clientPort)},
 				{SERVER_ADDRESS, serverAddress},
 				{CLIENT_SYNC_DIRECTORY, clientSyncDirectory},
 				{CLIENT_ONLY_DIRECTORY, clientOnlyDirectory},
-				{CLIENT_AUTO_START, valueOf(clientAutoStart)}
+				{CLIENT_AUTO_START, String.valueOf(clientAutoStart)}
 		};
 		StringBuilder configContent = new StringBuilder();
 		for (String[] entry : configEntries) {
@@ -394,7 +390,7 @@ public class HexSync {
 	private static boolean getPort(String portInput, boolean isServer) {
 		String side = isServer ? "服务端" : "客户端";
 		try {
-			int port = parseInt(portInput);
+			int port = Integer.parseInt(portInput);
 			if (port > 0 && port < 65536) {
 				// 设置端口并记录日志
 				if (isServer) serverPort = port;
@@ -415,7 +411,7 @@ public class HexSync {
 		String trimmedInput = numberInput.trim();
 		if (trimmedInput.isEmpty()) return true;
 		try {
-			parseLong(trimmedInput);
+			Long.parseLong(trimmedInput);
 			return false;
 		} catch (NumberFormatException error) {
 			log(WARNING, "错误的数字格式或超出范围: " + numberInput);
@@ -454,7 +450,7 @@ public class HexSync {
 						JTextArea licenseTextArea = new JTextArea(licenseContent.toString());
 						licenseTextArea.setEditable(false);
 						JDialog licenseJDialog = new JDialog(aboutDialog, "许可证");
-						licenseJDialog.getContentPane().add(new JScrollPane(licenseTextArea));
+						licenseJDialog.add(new JScrollPane(licenseTextArea));
 						licenseJDialog.setSize(new Dimension(screenLength / 4, screenLength / 3));
 						setWindow(licenseJDialog);
 					}
@@ -463,7 +459,7 @@ public class HexSync {
 				log(WARNING, "无法打开超链接: " + error.getMessage());
 			}
 		});
-		aboutDialog.getContentPane().add(new JScrollPane(aboutTextPane));
+		aboutDialog.add(new JScrollPane(aboutTextPane));
 		aboutDialog.pack();
 		setWindow(aboutDialog);
 	}
@@ -527,7 +523,7 @@ public class HexSync {
 	private static void setRate(String input) {
 		String[] parts = input.split("\\s+");
 		if (input.matches("\\d+(\\s+B|\\s+KB|\\s+MB|\\s+GB)") && !invalidLong(parts[0])) {
-			serverUploadRateLimit = parseLong(parts[0]);
+			serverUploadRateLimit = Long.parseLong(parts[0]);
 			serverUploadRateLimitUnit = parts[1];
 			if (HEADLESS)
 				out.println("服务端最大上传速率已设置为: " + serverUploadRateLimit + " " + serverUploadRateLimitUnit);
@@ -602,10 +598,10 @@ public class HexSync {
 		clientThread = new Thread(() -> {
 			log(INFO, HEX_SYNC_NAME + "Client正在启动...");
 			initFiles(false);
-			Map<String, String> requestMap = requestFileHashList();
+			Map<String, Long> requestMap = requestFileCrcList();
 			if (!requestMap.isEmpty()) {
-				deleteFilesNotInMaps(requestMap, initFileHashMap(clientOnlyDirectory)); // 删除多余文件
-				downloadMissingFiles(makeToDownloadMap(requestMap, initFileHashMap(clientSyncDirectory)));// 下载文件
+				deleteFilesNotInMaps(requestMap, initFileCrcMap(clientOnlyDirectory)); // 删除多余文件
+				downloadMissingFiles(makeToDownloadMap(requestMap, initFileCrcMap(clientSyncDirectory)));// 下载文件
 				copyAllFiles(clientOnlyDirectory, clientSyncDirectory);// 复制仅客户端模组文件夹中的文件到客户端同步文件夹
 			}
 			stopClient();
@@ -613,7 +609,7 @@ public class HexSync {
 		clientThread.start();
 	}
 	// 删除同时不存在于服务端同步文件夹和仅客户端模组文件夹的文件
-	private static void deleteFilesNotInMaps(Map<String, String> requestMap, Map<String, String> clientOnlyMap) {
+	private static void deleteFilesNotInMaps(Map<String, Long> requestMap, Map<String, Long> clientOnlyMap) {
 		File[] fileList = new File(clientSyncDirectory).listFiles();
 		if (fileList != null) for (File file : fileList) {
 			String fileName = file.getName();
@@ -629,12 +625,12 @@ public class HexSync {
 		if (fileList == null) return;
 		for (File file : fileList) {
 			File targetFile = new File(target, file.getName());
-			if (file.isDirectory()) copyAllFiles(valueOf(file), valueOf(targetFile)); // 递归复制子目录
+			if (file.isDirectory()) copyAllFiles(String.valueOf(file), String.valueOf(targetFile)); // 递归复制子目录
 			else if (!targetFile.exists()) try (
 					InputStream inputStream = newInputStream(file.toPath());
 					OutputStream outputStream = newOutputStream(targetFile.toPath())
 			) {
-				byte[] buffer = new byte[16384];
+				byte[] buffer = new byte[4096];
 				int length;
 				while ((length = inputStream.read(buffer)) > 0) outputStream.write(buffer, 0, length);
 				log(INFO, "已复制仅客户端模组: " + file + " -> " + targetFile);
@@ -644,19 +640,16 @@ public class HexSync {
 		}
 	}
 	// 构建需要下载的文件列表
-	private static Map<String, String> makeToDownloadMap(
-			Map<String, String> requestMap,
-			Map<String, String> clientMap
-	) {
-		Map<String, String> toDownloadMap = new HashMap<>();
-		for (Map.Entry<String, String> entry : requestMap.entrySet()) {
-			String hash = entry.getValue();
-			if (!clientMap.containsValue(hash)) toDownloadMap.put(entry.getKey(), hash);
+	private static Map<String, Long> makeToDownloadMap(Map<String, Long> requestMap, Map<String, Long> clientMap) {
+		Map<String, Long> toDownloadMap = new HashMap<>();
+		for (Map.Entry<String, Long> entry : requestMap.entrySet()) {
+			Long crc = entry.getValue();
+			if (!clientMap.containsValue(crc)) toDownloadMap.put(entry.getKey(), crc);
 		}
 		return toDownloadMap;
 	}
 	// 从服务端同步文件夹下载客户端缺少的文件
-	private static void downloadMissingFiles(Map<String, String> toDownloadMap) {
+	private static void downloadMissingFiles(Map<String, Long> toDownloadMap) {
 		if (toDownloadMap.isEmpty()) {
 			log(INFO, "模组已经是最新版本");
 			return;
@@ -666,7 +659,7 @@ public class HexSync {
 		int toDownloadMapSize = toDownloadMap.size();
 		JDialog progressBar = null;
 		if (!HEADLESS) progressBar = newJDialogProgress(toDownloadMapSize);
-		for (Map.Entry<String, String> entry : toDownloadMap.entrySet()) {
+		for (Map.Entry<String, Long> entry : toDownloadMap.entrySet()) {
 			String filePath = clientSyncDirectory + separator + entry.getKey(); // 设置下载路径
 			if (successDownloadFile(filePath, toDownloadMap)) {
 				count++; // 成功下载时增加计数
@@ -729,10 +722,10 @@ public class HexSync {
 		// 服务端选项卡
 		JPanel serverPanel = new JPanel(new GridLayout(5, 2));
 		serverPanel.add(new JLabel("<html>端口号:"));
-		JTextField serverPortField = new JTextField(valueOf(serverPort));
+		JTextField serverPortField = new JTextField(String.valueOf(serverPort));
 		serverPanel.add(serverPortField);
 		serverPanel.add(new JLabel("<html>最大上传速率:"));
-		JTextField serverUploadRateLimitField = new JTextField(valueOf(serverUploadRateLimit));
+		JTextField serverUploadRateLimitField = new JTextField(String.valueOf(serverUploadRateLimit));
 		serverPanel.add(serverUploadRateLimitField);
 		serverPanel.add(new JLabel("<html>上传速率单位(每秒):"));
 		JComboBox<String> serverUploadRateLimitUnitBox = new JComboBox<>(new String[]{"B", "KB", "MB", "GB"});
@@ -747,7 +740,7 @@ public class HexSync {
 		// 客户端选项卡面板
 		JPanel clientPanel = new JPanel(new GridLayout(5, 2));
 		clientPanel.add(new JLabel("<html>端口号:"));
-		JTextField clientPortField = new JTextField(valueOf(clientPort));
+		JTextField clientPortField = new JTextField(String.valueOf(clientPort));
 		clientPanel.add(clientPortField);
 		clientPanel.add(new JLabel("<html>服务器地址:"));
 		JTextField serverAddressField = new JTextField(serverAddress);
@@ -789,14 +782,14 @@ public class HexSync {
 					if (!getPort(clientPortField.getText().trim(), false)) selectAndFocus(clientPortField);
 					// 检测最大上传速率
 					String uploadRateLimitText = serverUploadRateLimitField.getText().trim();
-					if (invalidLong(uploadRateLimitText) || parseLong(uploadRateLimitText) < 0) {
+					if (invalidLong(uploadRateLimitText) || Long.parseLong(uploadRateLimitText) < 0) {
 						log(WARNING, "最大上传速率格式错误: " + uploadRateLimitText);
 						tabbedPane.setSelectedIndex(0);
 						selectAndFocus(serverUploadRateLimitField);
 						return;
 					}
 					serverAutoStart = serverAutoStartBox.isSelected();
-					serverUploadRateLimit = parseLong(uploadRateLimitText);
+					serverUploadRateLimit = Long.parseLong(uploadRateLimitText);
 					serverUploadRateLimitUnit = (String) serverUploadRateLimitUnitBox.getSelectedItem();
 					serverSyncDirectory = serverSyncDirectoryField.getText().trim();
 					clientAutoStart = clientAutoStartBox.isSelected();
@@ -833,19 +826,19 @@ public class HexSync {
 		byte[] responseBytes = "".getBytes();
 		int responseCode = HTTP_NOT_FOUND;
 		if (requestURI.startsWith("/downloadMissingFiles/")) {
-			String requestHash = requestURI.substring(requestURI.lastIndexOf("/") + 1);
+			Long requestCrc = Long.valueOf(requestURI.substring(requestURI.lastIndexOf("/") + 1));
 			String filePath = null;
-			for (Map.Entry<String, String> entry : serverMap.entrySet())
-				if (requestHash.equals(entry.getValue())) {
+			for (Map.Entry<String, Long> entry : serverMap.entrySet())
+				if (requestCrc.equals(entry.getValue())) {
 					filePath = serverSyncDirectory + separator + entry.getKey();
 					break;
 				}
 			if (filePath == null) return;
 			File file = new File(filePath);
-			if (!serverMap.containsValue(requestHash) || !file.isFile()) return;
+			if (!serverMap.containsValue(requestCrc) || !file.isFile()) return;
 			try (InputStream inputStream = newInputStream(file.toPath())) {
 				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-				byte[] buffer = new byte[16384];
+				byte[] buffer = new byte[4096];
 				int bytesRead;
 				while ((bytesRead = inputStream.read(buffer)) != -1) byteArrayOutputStream.write(buffer, 0, bytesRead);
 				responseBytes = byteArrayOutputStream.toByteArray();
@@ -856,7 +849,7 @@ public class HexSync {
 			log(INFO, "发送文件: " + file);
 		} else if (requestURI.equals("/list")) {
 			StringBuilder responseBuilder = new StringBuilder();
-			for (Map.Entry<String, String> entry : serverMap.entrySet())
+			for (Map.Entry<String, Long> entry : serverMap.entrySet())
 				responseBuilder.append(entry.getKey())
 						.append(lineSeparator())
 						.append(entry.getValue())
@@ -883,7 +876,7 @@ public class HexSync {
 					long currentTime = currentTimeMillis();
 					AVAILABLE_TOKENS.addAndGet((currentTime - lastFillTime) * maxUploadRateInBytes / 1000);
 					lastFillTime = currentTime; // 更新时间
-					int bytesToSend = min(16384, responseBytesLength - totalBytesSent);
+					int bytesToSend = min(4096, responseBytesLength - totalBytesSent);
 					if (AVAILABLE_TOKENS.get() >= bytesToSend) {
 						outputStream.write(responseBytes, totalBytesSent, bytesToSend); // 写入数据
 						totalBytesSent += bytesToSend; // 更新已发送字节数
