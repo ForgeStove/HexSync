@@ -657,33 +657,18 @@ public class HexSync {
 		log(INFO, "开始下载 " + toDownloadMap.size() + " 个文件");
 		int count = 0;
 		int toDownloadMapSize = toDownloadMap.size();
-		JDialog progressBar = null;
-		if (!HEADLESS) progressBar = newJDialogProgress(toDownloadMapSize);
 		for (Map.Entry<String, Long> entry : toDownloadMap.entrySet()) {
 			String filePath = clientSyncDirectory + separator + entry.getKey(); // 设置下载路径
 			if (successDownloadFile(filePath, toDownloadMap)) {
 				count++; // 成功下载时增加计数
 				log(INFO, "已下载: [" + count + "/" + toDownloadMapSize + "] " + filePath);
-				if (HEADLESS) continue;
-				((JProgressBar) progressBar.getContentPane().getComponent(0)).setValue(count);
 			} else {
 				log(SEVERE, "下载失败: " + filePath);
 				errorDownload = true; // 记录下载失败
 			}
 		}
-		if (progressBar != null) progressBar.dispose();
 		log(INFO, (errorDownload ? "下载失败" : "下载完成") + ": [" + count + "/" + toDownloadMapSize + "]");
 		if (clientAutoStart) exit(0); // 自动退出
-	}
-	// 基础进度条框架
-	private static JDialog newJDialogProgress(int totalFiles) {
-		JDialog dialog = new JDialog(frame, "下载进度");
-		JProgressBar progressBar = new JProgressBar(0, totalFiles);
-		progressBar.setStringPainted(true);
-		progressBar.setForeground(new Color(0, 128, 0));
-		progressBar.setFont(new Font("Arial", Font.BOLD, 20));
-		dialog.add(progressBar, BorderLayout.CENTER);
-		return dialog;
 	}
 	// 基础复选框框架
 	private static JCheckBox newJCheckBox(JPanel panel, String text, boolean selected) {
