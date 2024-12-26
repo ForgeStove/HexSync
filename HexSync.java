@@ -42,9 +42,9 @@ public class HexSync {
 	private static final String WARNING = "警告";
 	private static final String SEVERE = "严重";
 	private static final boolean HEADLESS = GraphicsEnvironment.isHeadless(); // 是否处于无头模式
-	private static Image icon;
 	private static ExecutorService logExecutor; // 日志记录线程池
 	private static FileWriter logWriter; // 日志记录器
+	private static Image icon; // 程序图标
 	private static String serverSyncDirectory = "mods"; // 服务端同步文件夹路径，默认值mods
 	private static String clientSyncDirectory = "mods"; // 客户端同步文件夹路径，默认值mods
 	private static String clientOnlyDirectory = "clientOnlyMods"; // 仅客户端文件夹路径，默认值clientOnlyMods
@@ -82,25 +82,24 @@ public class HexSync {
 	private static void log(String level, String message) {
 		if (getProperty("log", "true").equalsIgnoreCase("true")) logExecutor.submit(() -> {
 			try {
-				String format = format(
-						"%s [%s] %s",
+				String formatted = format(
+						"%s [%s] %s%n",
 						new SimpleDateFormat("[HH:mm:ss]").format(new Date()),
 						level,
 						message
 				);
-				logWriter.write(format + lineSeparator());
+				logWriter.write(formatted);
 				logWriter.flush();
 				boolean info = level.equals(INFO);
 				boolean warning = level.equals(WARNING);
 				boolean severe = level.equals(SEVERE);
-				if (getProperty("ansi", "true").equalsIgnoreCase("false")) out.println(format);
+				if (getProperty("ansi", "true").equalsIgnoreCase("false")) out.print(formatted);
 				else out.printf(
-						"%s%s\u001B[0m%n",
+						"%s%s\u001B[0m",
 						info ? "\u001B[32m" : warning ? "\u001B[33m" : severe ? "\u001B[31m" : "\u001B[0m",
-						format
+						formatted
 				);
 				if (!HEADLESS) SwingUtilities.invokeLater(() -> {
-					if (!textPane.isShowing()) return;
 					try {
 						SimpleAttributeSet attributeSet = new SimpleAttributeSet();
 						StyleConstants.setForeground(
@@ -110,10 +109,10 @@ public class HexSync {
 										: warning ? new Color(255, 165, 0) : severe ? new Color(255, 0, 0) :
 												Color.BLACK
 						);
-						Document doc = textPane.getDocument();
-						doc.insertString(doc.getLength(), format + lineSeparator(), attributeSet);
-					} catch (BadLocationException e) {
-						throw new RuntimeException(e);
+						Document document = textPane.getDocument();
+						document.insertString(document.getLength(), formatted, attributeSet);
+					} catch (BadLocationException error) {
+						throw new RuntimeException(error);
 					}
 					JScrollBar vertical = ((JScrollPane) textPane.getParent().getParent()).getVerticalScrollBar();
 					if (vertical.isVisible()) vertical.setValue(vertical.getMaximum()); // 自动滚动到最新内容
@@ -773,7 +772,7 @@ public class HexSync {
 					for (Object[] input : new Object[][]{
 							{"服务端端口", serverPortField, 0},
 							{"最大上传速率", serverUploadRateLimitField, 0},
-							{"上传速率单位", serverUploadRateLimitUnitBox, 0},
+							{"上传速率单位(每秒)", serverUploadRateLimitUnitBox, 0},
 							{"服务端同步文件夹路径", serverSyncDirectoryField, 0},
 							{"客户端端口", clientPortField, 1},
 							{"服务器地址", serverAddressField, 1},
