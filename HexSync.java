@@ -45,6 +45,7 @@ public class HexSync {
 	private static ExecutorService logExecutor; // 日志记录线程池
 	private static FileWriter logWriter; // 日志记录器
 	private static Image icon; // 程序图标
+	private static JFrame frame; // 主窗口
 	private static String serverSyncDirectory = "mods"; // 服务端同步文件夹路径，默认值mods
 	private static String clientSyncDirectory = "mods"; // 客户端同步文件夹路径，默认值mods
 	private static String clientOnlyDirectory = "clientOnlyMods"; // 仅客户端文件夹路径，默认值clientOnlyMods
@@ -181,20 +182,19 @@ public class HexSync {
 				textPane.setEditable(false);
 				textPane.setOpaque(false);
 				panel.add(new JScrollPane(textPane), BorderLayout.CENTER);
+				frame = new JFrame(HEX_SYNC_NAME); // 主窗口
 				JPanel buttonPanel = new JPanel(new GridLayout(2, 3));
-				newJButton(buttonPanel, "设置", event -> settingsJFrame());
+				newJButton(buttonPanel, "设置", event -> settingsJDialog(frame));
 				newJButton(buttonPanel, "启动服务端", event -> startServer());
 				newJButton(buttonPanel, "启动客户端", event -> startClient());
 				newJButton(buttonPanel, "停止服务端", event -> stopServer());
 				newJButton(buttonPanel, "停止客户端", event -> stopClient());
 				newJButton(buttonPanel, "退出", event -> exit(0));
 				panel.add(buttonPanel, BorderLayout.SOUTH);
-				// 主窗口
-				JFrame frame = newJFrame(HEX_SYNC_NAME);
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				frame.add(panel);
 				frame.setSize(new Dimension(screenLength / 3, screenLength / 4));
-				setJFrame(frame);
+				setWindow(frame);
 			} catch (Exception error) {
 				log(SEVERE, "初始化UI时出错:" + error.getMessage());
 			}
@@ -243,7 +243,7 @@ public class HexSync {
 			configMap.put(CLIENT_AUTO_START, input -> clientAutoStart = parseBoolean(input));
 			String line;
 			while ((line = bufferedReader.readLine()) != null) {
-				if (!line.isEmpty() && !Character.isLetter(line.charAt(0))) continue; // 仅当首字符不是字母时跳过
+				if (!line.matches("^[a-zA-Z].*")) continue; // 仅当首字符不是字母时跳过
 				String[] parts = line.split("=");
 				if (parts.length != 2) {
 					log(WARNING, "配置格式错误: " + line);
@@ -422,28 +422,59 @@ public class HexSync {
 		}
 	}
 	// 关于
-	private static void aboutJFrame() {
+	private static void aboutJDialog(Window parent) {
+		if (checkJDialog("关于")) return;
+		JDialog aboutDialog = new JDialog(parent, "关于");
 		JTextPane aboutTextPane = new JTextPane();
 		aboutTextPane.setContentType("text/html");
 		aboutTextPane.setEditable(false);
-		aboutTextPane.setText("<span style=\"font-weight: bold;font-family: Consolas;\">"
+		aboutTextPane.setText("<span style=\"font-weight: bold;font-family: Arial;\">"
 				+ HEX_SYNC_NAME
 				+ "<br>By: ForgeStove<br>GitHub: <a href=\""
 				+ GITHUB_URL
 				+ "\">"
 				+ GITHUB_URL
-				+ "</a><br>开源许可: GNU General Public License v3.0</span>");
+				+ "</a><br>开源许可: <a href=\"file:LICENSE\">GNU General Public License v3.0</a></span>");
 		aboutTextPane.addHyperlinkListener(event -> {
 			if (HyperlinkEvent.EventType.ACTIVATED.equals(event.getEventType())) try {
-				Desktop.getDesktop().browse(event.getURL().toURI());
+				String url = event.getURL().toString();
+				if (url.equals(GITHUB_URL)) {
+					Desktop.getDesktop().browse(event.getURL().toURI());
+				} else if (url.equals("file:LICENSE")) {
+					if (checkJDialog("许可证")) return;
+					try (
+							BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(
+									HexSync.class.getResourceAsStream("LICENSE"))))
+					) {
+						StringBuilder licenseContent = new StringBuilder();
+						String line;
+						while ((line = reader.readLine()) != null) licenseContent.append(line).append(lineSeparator());
+						JTextArea licenseTextArea = new JTextArea(licenseContent.toString());
+						licenseTextArea.setEditable(false);
+						JDialog licenseJDialog = new JDialog(aboutDialog, "许可证");
+						licenseJDialog.getContentPane().add(new JScrollPane(licenseTextArea));
+						licenseJDialog.setSize(new Dimension(screenLength / 4, screenLength / 3));
+						setWindow(licenseJDialog);
+					}
+				}
 			} catch (Exception error) {
 				log(WARNING, "无法打开超链接: " + error.getMessage());
 			}
 		});
-		JFrame frame = newJFrame("关于");
-		frame.getContentPane().add(new JScrollPane(aboutTextPane));
-		frame.pack();
-		setJFrame(frame);
+		aboutDialog.getContentPane().add(new JScrollPane(aboutTextPane));
+		aboutDialog.pack();
+		setWindow(aboutDialog);
+	}
+	private static boolean checkJDialog(String title) {
+		for (Window window : Window.getWindows()) {
+			if (!(window instanceof JDialog)) continue;
+			JDialog dialog = (JDialog) window;
+			if (!dialog.getTitle().equals(title)) continue;
+			dialog.setVisible(true);
+			dialog.toFront();
+			return true;
+		}
+		return false;
 	}
 	// 无头模式设置
 	private static void headlessSettings() {
@@ -631,8 +662,8 @@ public class HexSync {
 		log(INFO, "开始下载 " + toDownloadMap.size() + " 个文件");
 		int count = 0;
 		int toDownloadMapSize = toDownloadMap.size();
-		JFrame progressBar = null;
-		if (!HEADLESS) progressBar = newJFrameProgress(toDownloadMapSize);
+		JDialog progressBar = null;
+		if (!HEADLESS) progressBar = newJDialogProgress(toDownloadMapSize);
 		for (Map.Entry<String, String> entry : toDownloadMap.entrySet()) {
 			String filePath = clientSyncDirectory + separator + entry.getKey(); // 设置下载路径
 			if (successDownloadFile(filePath, toDownloadMap)) {
@@ -649,23 +680,15 @@ public class HexSync {
 		log(INFO, (errorDownload ? "下载失败" : "下载完成") + ": [" + count + "/" + toDownloadMapSize + "]");
 		if (clientAutoStart) exit(0); // 自动退出
 	}
-	// 基础窗口框架
-	private static JFrame newJFrame(String title) {
-		JFrame frame = new JFrame();
-		frame.setTitle(title);
-		frame.setIconImage(icon);
-		frame.setAlwaysOnTop(true);
-		return frame;
-	}
 	// 基础进度条框架
-	private static JFrame newJFrameProgress(int totalFiles) {
-		JFrame frame = newJFrame("下载进度");
+	private static JDialog newJDialogProgress(int totalFiles) {
+		JDialog dialog = new JDialog(frame, "下载进度");
 		JProgressBar progressBar = new JProgressBar(0, totalFiles);
 		progressBar.setStringPainted(true);
 		progressBar.setForeground(new Color(0, 128, 0));
-		progressBar.setFont(new Font("Consolas", Font.BOLD, 20));
-		frame.add(progressBar, BorderLayout.CENTER);
-		return frame;
+		progressBar.setFont(new Font("Arial", Font.BOLD, 20));
+		dialog.add(progressBar, BorderLayout.CENTER);
+		return dialog;
 	}
 	// 基础复选框框架
 	private static JCheckBox newJCheckBox(JPanel panel, String text, boolean selected) {
@@ -684,15 +707,17 @@ public class HexSync {
 		panel.add(button);
 	}
 	// 设置窗口属性
-	private static void setJFrame(JFrame frame) {
-		setFont(frame, new Font("Arial", Font.PLAIN, 16));
-		frame.setLocationRelativeTo(null);
-		frame.setVisible(true);
+	private static void setWindow(Window window) {
+		setFont(window, new Font("Arial", Font.PLAIN, 16));
+		window.setIconImage(icon);
+		window.setLocationRelativeTo(null);
+		window.setVisible(true);
 	}
 	// 打开设置对话框
-	private static void settingsJFrame() {
+	private static void settingsJDialog(Window parent) {
+		if (checkJDialog("设置")) return;
 		loadConfig();
-		JFrame settingsJFrame = newJFrame("设置");
+		JDialog settingsJDialog = new JDialog(parent, "设置");
 		JPanel settingsPanel = new JPanel(new BorderLayout());
 		settingsPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		// 选项卡面板
@@ -707,7 +732,7 @@ public class HexSync {
 		serverPanel.add(new JLabel("<html>最大上传速率:"));
 		JTextField serverUploadRateLimitField = new JTextField(valueOf(serverUploadRateLimit));
 		serverPanel.add(serverUploadRateLimitField);
-		serverPanel.add(new JLabel("<html>上传速率单位:"));
+		serverPanel.add(new JLabel("<html>上传速率单位(每秒):"));
 		JComboBox<String> serverUploadRateLimitUnitBox = new JComboBox<>(new String[]{"B", "KB", "MB", "GB"});
 		serverUploadRateLimitUnitBox.setFocusable(false);
 		serverUploadRateLimitUnitBox.setSelectedItem(serverUploadRateLimitUnit);
@@ -777,15 +802,15 @@ public class HexSync {
 					clientSyncDirectory = clientSyncDirectoryField.getText().trim();
 					clientOnlyDirectory = clientOnlyDirectoryField.getText().trim();
 					saveConfig(); // 保存配置
-					settingsJFrame.dispose(); // 关闭对话框
+					settingsJDialog.dispose(); // 关闭对话框
 				}
 		);
-		newJButton(buttonPanel, "取消", event -> settingsJFrame.dispose());
-		newJButton(buttonPanel, "关于", event -> aboutJFrame());
+		newJButton(buttonPanel, "取消", event -> settingsJDialog.dispose());
+		newJButton(buttonPanel, "关于", event -> aboutJDialog(settingsJDialog));
 		settingsPanel.add(buttonPanel, BorderLayout.SOUTH);
-		settingsJFrame.add(settingsPanel);
-		settingsJFrame.setSize(screenLength / 5, screenLength / 8);
-		setJFrame(settingsJFrame);
+		settingsJDialog.add(settingsPanel);
+		settingsJDialog.setSize(screenLength / 5, screenLength / 8);
+		setWindow(settingsJDialog);
 	}
 	// 聚焦并全选输入框
 	private static void selectAndFocus(JTextField textField) {
