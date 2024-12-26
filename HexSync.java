@@ -183,6 +183,7 @@ public class HexSync {
 				textPane.setOpaque(false);
 				panel.add(new JScrollPane(textPane), BorderLayout.CENTER);
 				frame = new JFrame(HEX_SYNC_NAME); // 主窗口
+				frame.setAlwaysOnTop(true);
 				JPanel buttonPanel = new JPanel(new GridLayout(2, 3));
 				newJButton(buttonPanel, "设置", event -> settingsJDialog(frame));
 				newJButton(buttonPanel, "启动服务端", event -> startServer());
@@ -426,6 +427,7 @@ public class HexSync {
 		if (checkJDialog("关于")) return;
 		JDialog aboutDialog = new JDialog(parent, "关于");
 		JTextPane aboutTextPane = new JTextPane();
+		aboutTextPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		aboutTextPane.setContentType("text/html");
 		aboutTextPane.setEditable(false);
 		aboutTextPane.setText("<span style=\"font-weight: bold;font-family: Arial;\">"
