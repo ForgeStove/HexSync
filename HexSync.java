@@ -16,7 +16,6 @@ import java.util.zip.CRC32;
 
 import static java.io.File.separator;
 import static java.lang.Math.*;
-import static java.lang.String.format;
 import static java.lang.System.*;
 import static java.net.HttpURLConnection.*;
 import static java.nio.file.Files.*;
@@ -61,6 +60,7 @@ public class HexSync {
 	private static int serverPort = 65535; // 服务端端口，默认值65535
 	private static int clientPort = 65535; // 客户端端口，默认值65535
 	private static long serverUploadRateLimit = 1; // 上传速率限制值，默认限速1MB
+	private static long maxUploadRateInBytes;
 	public static void main(String[] args) {
 		initLog();
 		loadConfig();
@@ -80,7 +80,7 @@ public class HexSync {
 	private static void log(String level, String message) {
 		if (getProperty("log", "true").equalsIgnoreCase("true")) logExecutor.submit(() -> {
 			try {
-				String formattedLog = format(
+				String formattedLog = String.format(
 						"%s [%s] %s%n",
 						new SimpleDateFormat("[HH:mm:ss]").format(new Date()),
 						level,
@@ -185,7 +185,7 @@ public class HexSync {
 				frame = new JFrame(HEX_SYNC_NAME); // 主窗口
 				frame.setAlwaysOnTop(true);
 				JPanel buttonPanel = new JPanel(new GridLayout(2, 3));
-				newJButton(buttonPanel, "设置", event -> settingsJDialog(frame));
+				newJButton(buttonPanel, "设置", event -> settingsJDialog());
 				newJButton(buttonPanel, "启动服务端", event -> startServer());
 				newJButton(buttonPanel, "启动客户端", event -> startClient());
 				newJButton(buttonPanel, "停止服务端", event -> stopServer());
@@ -313,7 +313,7 @@ public class HexSync {
 		File clientFile = new File(filePath); // 目标本地文件
 		Long requestCrc = toDownloadMap.get(filePath.substring(clientSyncDirectory.length() + 1));
 		try {
-			int responseCode = getResponseCode(new URL(format(
+			int responseCode = getResponseCode(new URL(String.format(
 					"%s:%d/downloadMissingFiles/%s",
 					formatHTTP(serverAddress),
 					clientPort,
@@ -329,7 +329,7 @@ public class HexSync {
 		}
 		// 读取输入流并写入本地文件
 		try (FileOutputStream outputStream = new FileOutputStream(clientFile)) {
-			byte[] buffer = new byte[16384];
+			byte[] buffer = new byte[4096];
 			int bytesRead;
 			while ((bytesRead = HTTPURLConnection.getInputStream().read(buffer)) != -1)
 				outputStream.write(buffer, 0, bytesRead);
@@ -482,7 +482,12 @@ public class HexSync {
 		map.put("SD", args -> setDirectory(args[1], "服务端同步", value -> serverSyncDirectory = value));
 		map.put("SS", args -> setAutoStart(args[1], true, value -> serverAutoStart = value));
 		map.put("CP", args -> getPort(args[1], false));
-		map.put("SA", args -> setAddress(args[1]));
+		map.put(
+				"SA", args -> {
+					serverAddress = args[1];
+					out.println("服务器地址已设置为: " + serverAddress);
+				}
+		);
 		map.put("CD", args -> setDirectory(args[1], "客户端同步", value -> clientSyncDirectory = value));
 		map.put("CO", args -> setDirectory(args[1], "仅客户端模组", value -> clientOnlyDirectory = value));
 		map.put("CS", args -> setAutoStart(args[1], false, value -> clientAutoStart = value));
@@ -498,13 +503,14 @@ public class HexSync {
 						"CD [目录]              |设置客户端同步目录",
 						"CO [目录]              |设置客户端仅客户端目录",
 						"CS [Y/N]               |设置客户端自动启动",
-						"SAVE                   |保存并退出",
-						"EXIT                   |退出而不保存",
+						"SAVE                   |保存并退出设置",
+						"EXIT                   |退出设置而不保存",
 						"HELP                   |帮助"
 				})
 		);
 		Scanner scanner = new Scanner(in);
 		while (true) try {
+			out.println("进入设置模式,输入命令或输入HELP以获取帮助.");
 			out.print(HEX_SYNC_NAME + "Settings>");
 			String[] parts = scanner.nextLine().split("\\s+");
 			if (parts.length == 0) continue;
@@ -528,13 +534,6 @@ public class HexSync {
 			if (HEADLESS)
 				out.println("服务端最大上传速率已设置为: " + serverUploadRateLimit + " " + serverUploadRateLimitUnit);
 		} else if (HEADLESS) err.println("无效输入,请输入数字及单位.");
-	}
-	// 设置服务端地址
-	private static void setAddress(String addressInput) {
-		if (addressInput.matches("\\d+\\.\\d+")) {
-			serverAddress = addressInput;
-			out.println("服务端地址已设置为: " + serverAddress);
-		} else err.println("无效输入,请输入IP地址.");
 	}
 	// 设置文件夹路径
 	private static void setDirectory(String directory, String log, Consumer<String> consumer) {
@@ -572,6 +571,7 @@ public class HexSync {
 				return;
 			}
 			try {
+				maxUploadRateInBytes = convertToBytes(serverUploadRateLimit, serverUploadRateLimitUnit);
 				HTTPServer = HttpServer.create(new InetSocketAddress(serverPort), 0);
 				HTTPServer.createContext("/", HexSync::processRequest);
 				HTTPServer.setExecutor(null);
@@ -688,16 +688,17 @@ public class HexSync {
 	}
 	// 设置窗口属性
 	private static void setWindow(Window window) {
-		setFont(window, new Font("Arial", Font.PLAIN, 16));
+		setFont(window, new Font("Arial", Font.BOLD, 14));
 		window.setIconImage(icon);
 		window.setLocationRelativeTo(null);
 		window.setVisible(true);
 	}
 	// 打开设置对话框
-	private static void settingsJDialog(Window parent) {
+	private static void settingsJDialog() {
 		if (checkJDialog("设置")) return;
 		loadConfig();
-		JDialog settingsJDialog = new JDialog(parent, "设置");
+		// 设置对话框
+		JDialog settingsJDialog = new JDialog(frame, "设置");
 		JPanel settingsPanel = new JPanel(new BorderLayout());
 		settingsPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		// 选项卡面板
@@ -722,7 +723,7 @@ public class HexSync {
 		serverPanel.add(serverSyncDirectoryField);
 		JCheckBox serverAutoStartBox = newJCheckBox(serverPanel, "<html>自动启动服务端", serverAutoStart);
 		tabbedPane.addTab("<html>服务端设置", serverPanel);
-		// 客户端选项卡面板
+		// 客户端选项卡
 		JPanel clientPanel = new JPanel(new GridLayout(5, 2));
 		clientPanel.add(new JLabel("<html>端口号:"));
 		JTextField clientPortField = new JTextField(String.valueOf(clientPort));
@@ -811,7 +812,7 @@ public class HexSync {
 		byte[] responseBytes = "".getBytes();
 		int responseCode = HTTP_NOT_FOUND;
 		if (requestURI.startsWith("/downloadMissingFiles/")) {
-			Long requestCrc = Long.valueOf(requestURI.substring(requestURI.lastIndexOf("/") + 1));
+			Long requestCrc = Long.parseLong(requestURI.substring(requestURI.lastIndexOf("/") + 1));
 			String filePath = null;
 			for (Map.Entry<String, Long> entry : serverMap.entrySet())
 				if (requestCrc.equals(entry.getValue())) {
@@ -820,18 +821,14 @@ public class HexSync {
 				}
 			if (filePath == null) return;
 			File file = new File(filePath);
-			if (!serverMap.containsValue(requestCrc) || !file.isFile()) return;
-			try (InputStream inputStream = newInputStream(file.toPath())) {
-				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-				byte[] buffer = new byte[4096];
-				int bytesRead;
-				while ((bytesRead = inputStream.read(buffer)) != -1) byteArrayOutputStream.write(buffer, 0, bytesRead);
-				responseBytes = byteArrayOutputStream.toByteArray();
+			if (!serverMap.containsValue(requestCrc)) return;
+			try {
+				sendData(exchange, newInputStream(file.toPath()), file.length(), HTTP_OK);
 			} catch (IOException error) {
-				log(SEVERE, "读取" + file + "时出错: " + error.getMessage());
+				log(SEVERE, "发送文件时出错: " + error.getMessage());
 			}
-			responseCode = HTTP_OK;
 			log(INFO, "发送文件: " + file);
+			return;
 		} else if (requestURI.equals("/list")) {
 			StringBuilder responseBuilder = new StringBuilder();
 			for (Map.Entry<String, Long> entry : serverMap.entrySet())
@@ -841,32 +838,41 @@ public class HexSync {
 						.append(lineSeparator());
 			responseBytes = responseBuilder.toString().getBytes();
 			responseCode = HTTP_OK;
+			log(INFO, "发送文件列表");
 		}
-		sendResponse(exchange, responseBytes, responseCode);
+		sendData(exchange, new ByteArrayInputStream(responseBytes), responseBytes.length, responseCode);
 	}
 	// 发送数据
-	private static void sendResponse(HttpExchange exchange, byte[] responseBytes, int responseCode) {
+	private static void sendData(
+			HttpExchange exchange,
+			InputStream inputStream,
+			long responseBytesLength,
+			int responseCode
+	) {
 		new Thread(() -> {
-			if (responseBytes != null) try (OutputStream outputStream = exchange.getResponseBody()) {
-				int responseBytesLength = responseBytes.length;
+			if (inputStream == null) return;
+			try (OutputStream outputStream = exchange.getResponseBody()) {
 				exchange.sendResponseHeaders(responseCode, responseBytesLength); // 设置响应头
-				if (serverUploadRateLimit == 0) {
-					outputStream.write(responseBytes); // 无限制发送数据
-					return;
-				}
-				int totalBytesSent = 0; // 记录已发送字节数
-				long maxUploadRateInBytes = convertToBytes(serverUploadRateLimit, serverUploadRateLimitUnit);
+				byte[] buffer = new byte[4096];
+				long totalBytesSent = 0; // 记录已发送字节数
 				long lastFillTime = currentTimeMillis(); // 最近一次填充时间
 				while (totalBytesSent < responseBytesLength) {
+					if (serverUploadRateLimit == 0) { // 无限制
+						int bytesRead = inputStream.read(buffer);
+						if (bytesRead == -1) break;
+						outputStream.write(buffer, 0, bytesRead); // 写入数据
+						continue;
+					}
 					long currentTime = currentTimeMillis();
 					AVAILABLE_TOKENS.addAndGet((currentTime - lastFillTime) * maxUploadRateInBytes / 1000);
 					lastFillTime = currentTime; // 更新时间
-					int bytesToSend = min(4096, responseBytesLength - totalBytesSent);
+					long bytesToSend = Math.min(4096, responseBytesLength - totalBytesSent);
 					if (AVAILABLE_TOKENS.get() >= bytesToSend) {
-						outputStream.write(responseBytes, totalBytesSent, bytesToSend); // 写入数据
-						totalBytesSent += bytesToSend; // 更新已发送字节数
-						AVAILABLE_TOKENS.addAndGet(-bytesToSend); // 减少可用令牌
-					} else Thread.sleep((bytesToSend - AVAILABLE_TOKENS.get()) / maxUploadRateInBytes * 1000);
+						int bytesRead = inputStream.read(buffer, 0, (int) bytesToSend);
+						outputStream.write(buffer, 0, bytesRead); // 写入数据
+						totalBytesSent += bytesRead; // 更新已发送字节数
+						AVAILABLE_TOKENS.addAndGet(-bytesRead); // 减少可用令牌
+					} else Thread.sleep((bytesToSend - AVAILABLE_TOKENS.get()) * 1000 / maxUploadRateInBytes);
 				}
 			} catch (Exception error) {
 				log(SEVERE, "发送响应时出错: " + error.getMessage());
