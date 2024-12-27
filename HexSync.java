@@ -448,6 +448,7 @@ public class HexSync {
 						while ((line = reader.readLine()) != null) licenseContent.append(line).append(lineSeparator());
 						JTextArea licenseTextArea = new JTextArea(licenseContent.toString());
 						licenseTextArea.setEditable(false);
+						licenseTextArea.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 						JDialog licenseJDialog = new JDialog(aboutDialog, "许可证");
 						licenseJDialog.add(new JScrollPane(licenseTextArea));
 						licenseJDialog.setSize(new Dimension(screenLength / 4, screenLength / 3));
