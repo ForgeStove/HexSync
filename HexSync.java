@@ -37,6 +37,8 @@ public class HexSync {
 	private static final String WARNING = "警告";
 	private static final String SEVERE = "严重";
 	private static final boolean HEADLESS = GraphicsEnvironment.isHeadless(); // 是否处于无头模式
+	private static final boolean ANSI = getProperty("ansi", "true").equalsIgnoreCase("false"); // 是否启用ANSI控制台输出
+	private static final boolean LOG = getProperty("log", "true").equalsIgnoreCase("true"); // 是否记录日志
 	private static ExecutorService logExecutor; // 日志记录线程池
 	private static FileWriter logWriter; // 日志记录器
 	private static Image icon; // 程序图标
@@ -73,11 +75,52 @@ public class HexSync {
 		} catch (IOException error) {
 			err.println("日志初始化失败: " + error.getMessage());
 		}
-		if (getProperty("log", "true").equalsIgnoreCase("true")) logExecutor = Executors.newSingleThreadExecutor();
+		if (LOG) logExecutor = Executors.newSingleThreadExecutor();
+	}
+	// 加载配置文件
+	private static void loadConfig() {
+		File configFile = new File(CONFIG_PATH);
+		if (!configFile.isFile()) {
+			saveConfig();
+			return;
+		}
+		try (BufferedReader bufferedReader = new BufferedReader(new FileReader(configFile))) {
+			Map<String, Consumer<String>> configMap = new HashMap<>();
+			configMap.put(SERVER_PORT, input -> serverPort = Integer.parseInt(input));
+			configMap.put(SERVER_UPLOAD_RATE_LIMIT, HexSync::setRate);
+			configMap.put(SERVER_SYNC_DIRECTORY, input -> serverSyncDirectory = input);
+			configMap.put(SERVER_AUTO_START, input -> serverAutoStart = Boolean.parseBoolean(input));
+			configMap.put(CLIENT_PORT, input -> clientPort = Integer.parseInt(input));
+			configMap.put(SERVER_ADDRESS, input -> serverAddress = input);
+			configMap.put(CLIENT_SYNC_DIRECTORY, input -> clientSyncDirectory = input);
+			configMap.put(CLIENT_ONLY_DIRECTORY, input -> clientOnlyDirectory = input);
+			configMap.put(CLIENT_AUTO_START, input -> clientAutoStart = Boolean.parseBoolean(input));
+			String line;
+			while ((line = bufferedReader.readLine()) != null) {
+				if (!line.matches("^[a-zA-Z].*")) continue; // 仅当首字符不是字母时跳过
+				String[] parts = line.split("=");
+				if (parts.length != 2) {
+					log(WARNING, "配置格式错误: " + line);
+					continue;
+				}
+				Consumer<String> action = configMap.get(parts[0].trim());
+				if (action != null) action.accept(parts[1].trim());
+				else log(WARNING, "配置项错误: " + line);
+			}
+		} catch (IOException error) {
+			log(SEVERE, "配置读取失败: " + error.getMessage());
+		}
+	}
+	// 初始化UI
+	private static void initUI() {
+		if (serverAutoStart) startServer();
+		if (clientAutoStart) startClient();
+		if (HEADLESS) headlessUI(); // 无头模式
+		else normalUI(); // 有头模式
 	}
 	// 日志记录
 	private static void log(String level, String message) {
-		if (getProperty("log", "true").equalsIgnoreCase("true")) logExecutor.submit(() -> {
+		if (LOG) logExecutor.submit(() -> {
 			try {
 				String formattedLog = String.format(
 						"%s [%s] %s%n",
@@ -90,7 +133,7 @@ public class HexSync {
 				boolean info = level.equals(INFO);
 				boolean warning = level.equals(WARNING);
 				boolean severe = level.equals(SEVERE);
-				if (getProperty("ansi", "true").equalsIgnoreCase("false")) out.print(formattedLog);
+				if (ANSI) out.print(formattedLog);
 				else out.printf(
 						"%s%s\u001B[0m",
 						info ? "\u001B[32m" : warning ? "\u001B[33m" : severe ? "\u001B[31m" : "\u001B[0m",
@@ -122,13 +165,6 @@ public class HexSync {
 				else err.println("无法写入日志: " + error.getMessage());
 			}
 		});
-	}
-	// 初始化UI
-	private static void initUI() {
-		if (serverAutoStart) startServer();
-		if (clientAutoStart) startClient();
-		if (HEADLESS) headlessUI(); // 无头模式
-		else normalUI(); // 有头模式
 	}
 	// 无头模式UI
 	private static void headlessUI() {
@@ -222,40 +258,6 @@ public class HexSync {
 		if (directory.isDirectory()) return;
 		if (directory.mkdirs()) log(INFO, "文件夹已创建: " + directoryPath);
 		else log(SEVERE, "无法创建文件夹: " + directoryPath);
-	}
-	// 加载配置文件
-	private static void loadConfig() {
-		File configFile = new File(CONFIG_PATH);
-		if (!configFile.isFile()) {
-			saveConfig();
-			return;
-		}
-		try (BufferedReader bufferedReader = new BufferedReader(new FileReader(configFile))) {
-			Map<String, Consumer<String>> configMap = new HashMap<>();
-			configMap.put(SERVER_PORT, input -> serverPort = Integer.parseInt(input));
-			configMap.put(SERVER_UPLOAD_RATE_LIMIT, HexSync::setRate);
-			configMap.put(SERVER_SYNC_DIRECTORY, input -> serverSyncDirectory = input);
-			configMap.put(SERVER_AUTO_START, input -> serverAutoStart = Boolean.parseBoolean(input));
-			configMap.put(CLIENT_PORT, input -> clientPort = Integer.parseInt(input));
-			configMap.put(SERVER_ADDRESS, input -> serverAddress = input);
-			configMap.put(CLIENT_SYNC_DIRECTORY, input -> clientSyncDirectory = input);
-			configMap.put(CLIENT_ONLY_DIRECTORY, input -> clientOnlyDirectory = input);
-			configMap.put(CLIENT_AUTO_START, input -> clientAutoStart = Boolean.parseBoolean(input));
-			String line;
-			while ((line = bufferedReader.readLine()) != null) {
-				if (!line.matches("^[a-zA-Z].*")) continue; // 仅当首字符不是字母时跳过
-				String[] parts = line.split("=");
-				if (parts.length != 2) {
-					log(WARNING, "配置格式错误: " + line);
-					continue;
-				}
-				Consumer<String> action = configMap.get(parts[0].trim());
-				if (action != null) action.accept(parts[1].trim());
-				else log(WARNING, "配置项错误: " + line);
-			}
-		} catch (IOException error) {
-			log(SEVERE, "配置读取失败: " + error.getMessage());
-		}
 	}
 	// 地址格式化,转换为HTTP协议
 	private static String formatHTTP(String address) {
