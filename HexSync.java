@@ -150,8 +150,7 @@ public class HexSync {
 												Color.BLACK
 						);
 						Document document = textPane.getDocument();
-						int documentLength = document.getLength();
-						document.insertString(documentLength, formattedLog, attributeSet);
+						document.insertString(document.getLength(), formattedLog, attributeSet);
 					} catch (BadLocationException error) {
 						throw new RuntimeException(error);
 					}
@@ -668,7 +667,11 @@ public class HexSync {
 				errorDownload = true; // 记录下载失败
 			}
 		}
-		log(INFO, (errorDownload ? "下载失败" : "下载完成") + ": [" + count + "/" + toDownloadMapSize + "]");
+		log(
+				INFO, (
+						errorDownload ? "下载失败" : "下载完成"
+				) + ": [" + count + "/" + toDownloadMapSize + "]"
+		);
 		if (clientAutoStart) exit(0); // 自动退出
 	}
 	// 基础复选框框架
