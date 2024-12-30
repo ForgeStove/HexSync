@@ -814,41 +814,39 @@ public class HexSync {
 	}
 	// 处理请求
 	private static void processRequest(HttpExchange exchange) {
-		new Thread(() -> {
-			if (!exchange.getRequestMethod().equalsIgnoreCase("GET")) return;
-			String requestURI = exchange.getRequestURI().getPath();
-			if (requestURI.startsWith("/download/")) {
-				Long requestCRC = Long.parseLong(requestURI.substring(requestURI.lastIndexOf("/") + 1));
-				String filePath = null;
-				for (Map.Entry<String, Long> entry : serverMap.entrySet())
-					if (requestCRC.equals(entry.getValue())) {
-						filePath = serverSyncDirectory + separator + entry.getKey();
-						break;
-					}
-				if (filePath == null) return;
-				File file = new File(filePath);
-				try (InputStream inputStream = newInputStream(file.toPath())) {
-					sendData(exchange, inputStream, file.length());
-				} catch (IOException error) {
-					log(SEVERE, "发送文件时出错: " + error.getMessage());
+		if (!exchange.getRequestMethod().equalsIgnoreCase("GET")) return;
+		String requestURI = exchange.getRequestURI().getPath();
+		if (requestURI.startsWith("/download/")) {
+			Long requestCRC = Long.parseLong(requestURI.substring(requestURI.lastIndexOf("/") + 1));
+			String filePath = null;
+			for (Map.Entry<String, Long> entry : serverMap.entrySet())
+				if (requestCRC.equals(entry.getValue())) {
+					filePath = serverSyncDirectory + separator + entry.getKey();
+					break;
 				}
-				log(INFO, "发送文件: " + file);
-			} else if (requestURI.startsWith("/list")) {
-				StringBuilder responseBuilder = new StringBuilder();
-				for (Map.Entry<String, Long> entry : serverMap.entrySet())
-					responseBuilder.append(entry.getKey())
-							.append(lineSeparator())
-							.append(entry.getValue())
-							.append(lineSeparator());
-				byte[] bytes = responseBuilder.toString().getBytes();
-				try (InputStream inputStream = new ByteArrayInputStream(bytes)) {
-					sendData(exchange, inputStream, bytes.length);
-					log(INFO, "发送文件列表");
-				} catch (IOException error) {
-					log(SEVERE, "发送文件列表时出错: " + error.getMessage());
-				}
+			if (filePath == null) return;
+			File file = new File(filePath);
+			try (InputStream inputStream = newInputStream(file.toPath())) {
+				sendData(exchange, inputStream, file.length());
+			} catch (IOException error) {
+				log(SEVERE, "发送文件时出错: " + error.getMessage());
 			}
-		}).start();
+			log(INFO, "发送文件: " + file);
+		} else if (requestURI.startsWith("/list")) {
+			StringBuilder responseBuilder = new StringBuilder();
+			for (Map.Entry<String, Long> entry : serverMap.entrySet())
+				responseBuilder.append(entry.getKey())
+						.append(lineSeparator())
+						.append(entry.getValue())
+						.append(lineSeparator());
+			byte[] bytes = responseBuilder.toString().getBytes();
+			try (InputStream inputStream = new ByteArrayInputStream(bytes)) {
+				sendData(exchange, inputStream, bytes.length);
+				log(INFO, "发送文件列表");
+			} catch (IOException error) {
+				log(SEVERE, "发送文件列表时出错: " + error.getMessage());
+			}
+		}
 	}
 	// 发送数据
 	private static void sendData(HttpExchange exchange, InputStream inputStream, long responseBytesLength) {
