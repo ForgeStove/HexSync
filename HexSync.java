@@ -237,15 +237,18 @@ public class HexSync {
 		makeDirectory(isServer ? serverSyncDirectory : clientSyncDirectory);
 		makeDirectory(HEX_SYNC_NAME);
 		loadConfig();
-		if (isServer) serverMap = initFileCRCMap(serverSyncDirectory);
-		else makeDirectory(clientOnlyDirectory);
+		if (isServer) serverMap = initMap(serverSyncDirectory);
+		else {
+			makeDirectory(clientOnlyDirectory);
+			errorDownload = false;
+		}
 	}
 	// 初始化文件名校验码键值对表
-	private static Map<String, Long> initFileCRCMap(String directory) {
+	private static Map<String, Long> initMap(String directory) {
 		Map<String, Long> map = new HashMap<>();
 		File[] fileList = new File(directory).listFiles(); // 获取文件夹下的所有文件
-		if (fileList == null) return null;
-		for (File file : fileList) if (file.isFile()) map.put(file.getName(), calculateCRC(file));
+		if (fileList != null) for (File file : fileList)
+			if (file.isFile()) map.put(file.getName(), calculateCRC(file));
 		return map;
 	}
 	// 创建文件夹
@@ -454,7 +457,7 @@ public class HexSync {
 						licenseTextArea.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 						JDialog licenseJDialog = new JDialog(aboutDialog, "许可证");
 						licenseJDialog.add(new JScrollPane(licenseTextArea));
-						licenseJDialog.setSize(new Dimension(screenLength / 4, screenLength / 3));
+						licenseJDialog.pack();
 						setWindow(licenseJDialog);
 					}
 				}
@@ -567,7 +570,6 @@ public class HexSync {
 		serverThread = new Thread(() -> {
 			log(INFO, HEX_SYNC_NAME + "Server正在启动...");
 			initFiles(true);
-			errorDownload = false; // 重置下载错误状态
 			if (serverMap.isEmpty()) {
 				log(WARNING, serverSyncDirectory + "没有文件,无法启动服务器");
 				stopServer();
@@ -607,8 +609,9 @@ public class HexSync {
 			initFiles(false);
 			Map<String, Long> requestMap = requestFileCRCList();
 			if (!requestMap.isEmpty()) {
-				deleteFilesNotInMaps(requestMap, initFileCRCMap(clientOnlyDirectory)); // 删除多余文件
-				downloadMissingFiles(makeToDownloadMap(requestMap, initFileCRCMap(clientSyncDirectory)));// 下载文件
+				deleteFilesNotInMaps(requestMap, initMap(clientOnlyDirectory)); // 删除多余文件
+				requestMap.entrySet().removeIf(entry -> initMap(clientSyncDirectory).containsValue(entry.getValue()));
+				downloadMissingFiles(requestMap);// 下载文件
 				copyAllFiles(clientOnlyDirectory, clientSyncDirectory);// 复制仅客户端模组文件夹中的文件到客户端同步文件夹
 			}
 			stopClient();
@@ -640,20 +643,11 @@ public class HexSync {
 				byte[] buffer = new byte[16384];
 				int length;
 				while ((length = inputStream.read(buffer)) > 0) outputStream.write(buffer, 0, length);
-				log(INFO, "已复制仅客户端模组: " + file + " -> " + targetFile);
+				log(INFO, "已复制: " + file + " -> " + targetFile);
 			} catch (IOException error) {
 				log(SEVERE, "复制" + file + "失败: " + error.getMessage());
 			}
 		}
-	}
-	// 构建需要下载的文件列表
-	private static Map<String, Long> makeToDownloadMap(Map<String, Long> requestMap, Map<String, Long> clientMap) {
-		Map<String, Long> toDownloadMap = new HashMap<>();
-		for (Map.Entry<String, Long> entry : requestMap.entrySet()) {
-			Long crc = entry.getValue();
-			if (!clientMap.containsValue(crc)) toDownloadMap.put(entry.getKey(), crc);
-		}
-		return toDownloadMap;
 	}
 	// 从服务端同步文件夹下载客户端缺少的文件
 	private static void downloadMissingFiles(Map<String, Long> toDownloadMap) {
@@ -695,7 +689,7 @@ public class HexSync {
 	}
 	// 设置窗口属性
 	private static void setWindow(Window window) {
-		setFont(window, new Font("Arial", Font.BOLD, 14));
+		setFont(window, new Font("Arial", Font.PLAIN, 14));
 		window.setIconImage(icon);
 		window.setLocationRelativeTo(null);
 		window.setVisible(true);
