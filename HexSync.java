@@ -39,7 +39,6 @@ public class HexSync {
 	private static final boolean HEADLESS = GraphicsEnvironment.isHeadless(); // 是否处于无头模式
 	private static final boolean ANSI = getProperty("ansi", "true").equalsIgnoreCase("false"); // 是否启用ANSI控制台输出
 	private static final boolean LOG = getProperty("log", "true").equalsIgnoreCase("true"); // 是否记录日志
-	private static final int LOG_MAX_LINES = Integer.parseInt(getProperty("logMaxLines", "128")); // 日志最大行数
 	private static ExecutorService logExecutor; // 日志记录线程池
 	private static FileWriter logWriter; // 日志记录器
 	private static Image icon; // 程序图标
@@ -150,7 +149,7 @@ public class HexSync {
 					);
 					Document document = textPane.getDocument();
 					try {
-						while (document.getDefaultRootElement().getElementCount() > LOG_MAX_LINES) {
+						while (document.getDefaultRootElement().getElementCount() > 128) {
 							Element element = document.getDefaultRootElement().getElement(0);
 							int lineStart = element.getStartOffset();
 							document.remove(lineStart, element.getEndOffset() - lineStart); // 删除第一行
