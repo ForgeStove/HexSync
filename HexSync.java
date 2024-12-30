@@ -140,16 +140,20 @@ public class HexSync {
 						formattedLog
 				);
 				if (!HEADLESS) SwingUtilities.invokeLater(() -> {
+					SimpleAttributeSet attributeSet = new SimpleAttributeSet();
+					StyleConstants.setForeground(
+							attributeSet,
+							info
+									? new Color(0, 128, 0)
+									: warning ? new Color(255, 165, 0) : severe ? new Color(255, 0, 0) : Color.BLACK
+					);
+					Document document = textPane.getDocument();
 					try {
-						SimpleAttributeSet attributeSet = new SimpleAttributeSet();
-						StyleConstants.setForeground(
-								attributeSet,
-								info
-										? new Color(0, 128, 0)
-										: warning ? new Color(255, 165, 0) : severe ? new Color(255, 0, 0) :
-												Color.BLACK
-						);
-						Document document = textPane.getDocument();
+						while (document.getDefaultRootElement().getElementCount() > 128) {
+							Element element = document.getDefaultRootElement().getElement(0);
+							int lineStart = element.getStartOffset();
+							document.remove(lineStart, element.getEndOffset() - lineStart); // 删除第一行
+						}
 						document.insertString(document.getLength(), formattedLog, attributeSet);
 					} catch (BadLocationException error) {
 						throw new RuntimeException(error);
@@ -468,6 +472,7 @@ public class HexSync {
 		aboutDialog.pack();
 		setWindow(aboutDialog);
 	}
+	// 检测是否有同名窗口并显示
 	private static boolean checkJDialog(String title) {
 		for (Window window : Window.getWindows()) {
 			if (!(window instanceof JDialog)) continue;
@@ -579,10 +584,7 @@ public class HexSync {
 				maxUploadRateInBytes = convertToBytes(serverUploadRateLimit, serverUploadRateLimitUnit);
 				HTTPServer = HttpServer.create(new InetSocketAddress(serverPort), 0);
 				HTTPServer.setExecutor(executorService);
-				HTTPServer.createContext(
-						"/",
-						exchange -> executorService.submit(() -> HexSync.processRequest(exchange))
-				);
+				HTTPServer.createContext("/", exchange -> executorService.submit(() -> processRequest(exchange)));
 				HTTPServer.start();
 			} catch (IOException error) {
 				log(SEVERE, HEX_SYNC_NAME + "Server无法启动: " + error.getMessage());
@@ -825,10 +827,10 @@ public class HexSync {
 			File file = new File(filePath);
 			try (InputStream inputStream = newInputStream(file.toPath())) {
 				sendData(exchange, inputStream, file.length());
+				log(INFO, "发送文件: " + file);
 			} catch (IOException error) {
 				log(SEVERE, "发送文件时出错: " + error.getMessage());
 			}
-			log(INFO, "发送文件: " + file);
 		} else if (requestURI.startsWith("/list")) {
 			StringBuilder responseBuilder = new StringBuilder();
 			for (Map.Entry<String, Long> entry : serverMap.entrySet())
@@ -839,9 +841,9 @@ public class HexSync {
 			byte[] bytes = responseBuilder.toString().getBytes();
 			try (InputStream inputStream = new ByteArrayInputStream(bytes)) {
 				sendData(exchange, inputStream, bytes.length);
-				log(INFO, "发送文件列表");
+				log(INFO, "发送列表");
 			} catch (IOException error) {
-				log(SEVERE, "发送文件列表时出错: " + error.getMessage());
+				log(SEVERE, "发送列表时出错: " + error.getMessage());
 			}
 		}
 	}
