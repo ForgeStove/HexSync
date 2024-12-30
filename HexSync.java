@@ -61,7 +61,7 @@ public class HexSync {
 	private static int serverPort = 65535; // 服务端端口，默认值65535
 	private static int clientPort = 65535; // 客户端端口，默认值65535
 	private static long serverUploadRateLimit = 1; // 上传速率限制值，默认限速1MB
-	private static long maxUploadRateInBytes;
+	private static long maxUploadRateInBytes; // 上传速率限制值对应的字节数
 	public static void main(String[] args) {
 		initLog();
 		loadConfig();
@@ -151,11 +151,7 @@ public class HexSync {
 						);
 						Document document = textPane.getDocument();
 						int documentLength = document.getLength();
-						document.insertString(
-								documentLength,
-								formattedLog,
-								attributeSet
-						);
+						document.insertString(documentLength, formattedLog, attributeSet);
 					} catch (BadLocationException error) {
 						throw new RuntimeException(error);
 					}
@@ -241,15 +237,15 @@ public class HexSync {
 		makeDirectory(isServer ? serverSyncDirectory : clientSyncDirectory);
 		makeDirectory(HEX_SYNC_NAME);
 		loadConfig();
-		if (isServer) serverMap = initFileCrcMap(serverSyncDirectory);
+		if (isServer) serverMap = initFileCRCMap(serverSyncDirectory);
 		else makeDirectory(clientOnlyDirectory);
 	}
 	// 初始化文件名校验码键值对表
-	private static Map<String, Long> initFileCrcMap(String directory) {
+	private static Map<String, Long> initFileCRCMap(String directory) {
 		Map<String, Long> map = new HashMap<>();
 		File[] fileList = new File(directory).listFiles(); // 获取文件夹下的所有文件
 		if (fileList == null) return null;
-		for (File file : fileList) if (file.isFile()) map.put(file.getName(), calculateCrc(file));
+		for (File file : fileList) if (file.isFile()) map.put(file.getName(), calculateCRC(file));
 		return map;
 	}
 	// 创建文件夹
@@ -265,7 +261,7 @@ public class HexSync {
 		return address.startsWith("http://") ? address : "http://" + address; // 添加HTTP协议头
 	}
 	// 计算文件校验码
-	private static long calculateCrc(File file) {
+	private static long calculateCRC(File file) {
 		CRC32 crc = new CRC32();
 		try (FileInputStream fileInputStream = new FileInputStream(file)) {
 			byte[] buffer = new byte[16384];
@@ -277,7 +273,7 @@ public class HexSync {
 		return crc.getValue();
 	}
 	// 从服务器请求文件名和校验码列表
-	private static Map<String, Long> requestFileCrcList() {
+	private static Map<String, Long> requestFileCRCList() {
 		String URL = formatHTTP(serverAddress) + ":" + clientPort + "/list"; // 服务器地址
 		log(INFO, "正在连接到: " + URL); // 记录请求开始日志
 		Map<String, Long> requestMap = new HashMap<>(); // 复制请求列表
@@ -312,13 +308,17 @@ public class HexSync {
 	private static boolean successDownloadFile(String filePath, Map<String, Long> toDownloadMap) {
 		if (clientThread == null) return false; // 客户端线程已关闭
 		File clientFile = new File(filePath); // 目标本地文件
-		Long requestCrc = toDownloadMap.get(filePath.substring(clientSyncDirectory.length() + 1));
+		Long requestCRC = toDownloadMap.get(filePath.substring(clientSyncDirectory.length() + 1));
+		if (requestCRC == null) {
+			log(SEVERE, "无法获取请求的校验码: " + clientFile);
+			return false;
+		}
 		try {
 			int responseCode = getResponseCode(new URL(String.format(
-					"%s:%d/downloadMissingFiles/%s",
+					"%s:%d/download/%s",
 					formatHTTP(serverAddress),
 					clientPort,
-					requestCrc
+					requestCRC
 			)));
 			if (responseCode != HttpURLConnection.HTTP_OK) {
 				log(SEVERE, "下载失败,错误代码: " + responseCode);
@@ -329,23 +329,24 @@ public class HexSync {
 			return false;
 		}
 		// 读取输入流并写入本地文件
-		try (FileOutputStream outputStream = new FileOutputStream(clientFile)) {
+		try (
+				InputStream inputStream = HTTPURLConnection.getInputStream();
+				FileOutputStream outputStream = new FileOutputStream(clientFile)
+		) {
 			byte[] buffer = new byte[16384];
 			int bytesRead;
-			while ((bytesRead = HTTPURLConnection.getInputStream().read(buffer)) != -1)
-				outputStream.write(buffer, 0, bytesRead);
+			while ((bytesRead = inputStream.read(buffer)) != -1) outputStream.write(buffer, 0, bytesRead);
 		} catch (IOException error) {
 			log(SEVERE, "读取响应时出错: " + error.getMessage());
-		}
-		// 进行校验
-		if (requestCrc == null) {
-			log(SEVERE, "无法获取请求的校验码: " + clientFile);
 			return false;
 		}
-		if (requestCrc.equals(calculateCrc(clientFile))) return true; // 下载成功且校验通过
-		log(SEVERE, "校验失败,文件可能已损坏: " + clientFile);
-		if (!clientFile.delete()) log(SEVERE, "无法删除损坏的文件: " + clientFile);
-		return false;
+		// 校验下载的文件
+		if (!requestCRC.equals(calculateCRC(clientFile))) {
+			log(SEVERE, "校验失败,文件可能已损坏: " + clientFile);
+			if (!clientFile.delete()) log(SEVERE, "无法删除损坏的文件: " + clientFile);
+			return false;
+		}
+		return true; // 下载成功且校验通过
 	}
 	// 获取响应码
 	private static int getResponseCode(URL requestURL) throws IOException {
@@ -573,10 +574,14 @@ public class HexSync {
 				return;
 			}
 			try {
+				ExecutorService executorService = Executors.newFixedThreadPool(8);
 				maxUploadRateInBytes = convertToBytes(serverUploadRateLimit, serverUploadRateLimitUnit);
 				HTTPServer = HttpServer.create(new InetSocketAddress(serverPort), 0);
-				HTTPServer.createContext("/", HexSync::processRequest);
-				HTTPServer.setExecutor(null);
+				HTTPServer.setExecutor(executorService);
+				HTTPServer.createContext(
+						"/",
+						exchange -> executorService.submit(() -> HexSync.processRequest(exchange))
+				);
 				HTTPServer.start();
 			} catch (IOException error) {
 				log(SEVERE, HEX_SYNC_NAME + "Server无法启动: " + error.getMessage());
@@ -600,10 +605,10 @@ public class HexSync {
 		clientThread = new Thread(() -> {
 			log(INFO, HEX_SYNC_NAME + "Client正在启动...");
 			initFiles(false);
-			Map<String, Long> requestMap = requestFileCrcList();
+			Map<String, Long> requestMap = requestFileCRCList();
 			if (!requestMap.isEmpty()) {
-				deleteFilesNotInMaps(requestMap, initFileCrcMap(clientOnlyDirectory)); // 删除多余文件
-				downloadMissingFiles(makeToDownloadMap(requestMap, initFileCrcMap(clientSyncDirectory)));// 下载文件
+				deleteFilesNotInMaps(requestMap, initFileCRCMap(clientOnlyDirectory)); // 删除多余文件
+				downloadMissingFiles(makeToDownloadMap(requestMap, initFileCRCMap(clientSyncDirectory)));// 下载文件
 				copyAllFiles(clientOnlyDirectory, clientSyncDirectory);// 复制仅客户端模组文件夹中的文件到客户端同步文件夹
 			}
 			stopClient();
@@ -614,10 +619,10 @@ public class HexSync {
 	private static void deleteFilesNotInMaps(Map<String, Long> requestMap, Map<String, Long> clientOnlyMap) {
 		File[] fileList = new File(clientSyncDirectory).listFiles();
 		if (fileList != null) for (File file : fileList) {
-			String fileName = file.getName();
-			if (!file.isFile() || requestMap.containsKey(fileName) || clientOnlyMap.containsKey(fileName)) continue;
-			if (file.delete()) log(INFO, "已删除文件: " + fileName);
-			else log(SEVERE, "删除文件失败: " + fileName);
+			long crc = calculateCRC(file);
+			if (!file.isFile() || requestMap.containsValue(crc) || clientOnlyMap.containsValue(crc)) continue;
+			if (file.delete()) log(INFO, "已删除文件: " + file);
+			else log(SEVERE, "删除文件失败: " + file);
 		}
 	}
 	// 复制仅客户端模组文件夹中的文件到客户端同步文件夹
@@ -809,82 +814,77 @@ public class HexSync {
 	}
 	// 处理请求
 	private static void processRequest(HttpExchange exchange) {
-		if (!exchange.getRequestMethod().equalsIgnoreCase("GET")) return;
-		String requestURI = exchange.getRequestURI().getPath();
-		if (requestURI.startsWith("/downloadMissingFiles/")) {
-			Long requestCrc = Long.parseLong(requestURI.substring(requestURI.lastIndexOf("/") + 1));
-			String filePath = null;
-			for (Map.Entry<String, Long> entry : serverMap.entrySet())
-				if (requestCrc.equals(entry.getValue())) {
-					filePath = serverSyncDirectory + separator + entry.getKey();
-					break;
-				}
-			if (filePath == null) return;
-			File file = new File(filePath);
-			if (!serverMap.containsValue(requestCrc)) return;
-			try {
-				sendData(exchange, newInputStream(file.toPath()), file.length());
-			} catch (IOException error) {
-				log(SEVERE, "发送文件时出错: " + error.getMessage());
-			}
-			log(INFO, "发送文件: " + file);
-		} else if (requestURI.startsWith("/list")) {
-			StringBuilder responseBuilder = new StringBuilder();
-			for (Map.Entry<String, Long> entry : serverMap.entrySet())
-				responseBuilder.append(entry.getKey())
-						.append(lineSeparator())
-						.append(entry.getValue())
-						.append(lineSeparator());
-			byte[] bytes = responseBuilder.toString().getBytes();
-			sendData(
-					exchange,
-					new ByteArrayInputStream(bytes),
-					bytes.length
-			);
-			log(INFO, "发送文件列表");
-		}
-	}
-	// 发送数据
-	private static void sendData(
-			HttpExchange exchange,
-			InputStream inputStream,
-			long responseBytesLength
-	) {
 		new Thread(() -> {
-			if (inputStream == null) return;
-			try (OutputStream outputStream = exchange.getResponseBody()) {
-				exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytesLength); // 设置响应头
-				byte[] buffer = new byte[16384];
-				long totalBytesSent = 0; // 记录已发送字节数
-				long lastFillTime = currentTimeMillis(); // 最近一次填充时间
-				while (totalBytesSent < responseBytesLength) {
-					if (serverUploadRateLimit == 0) { // 无限制
-						int bytesRead = inputStream.read(buffer);
-						if (bytesRead == -1) break;
-						outputStream.write(buffer, 0, bytesRead); // 写入数据
-						continue;
+			if (!exchange.getRequestMethod().equalsIgnoreCase("GET")) return;
+			String requestURI = exchange.getRequestURI().getPath();
+			if (requestURI.startsWith("/download/")) {
+				Long requestCRC = Long.parseLong(requestURI.substring(requestURI.lastIndexOf("/") + 1));
+				String filePath = null;
+				for (Map.Entry<String, Long> entry : serverMap.entrySet())
+					if (requestCRC.equals(entry.getValue())) {
+						filePath = serverSyncDirectory + separator + entry.getKey();
+						break;
 					}
-					long currentTime = currentTimeMillis();
-					AVAILABLE_TOKENS.addAndGet((currentTime - lastFillTime) * maxUploadRateInBytes / 1000);
-					lastFillTime = currentTime; // 更新时间
-					long bytesToSend = Math.min(16384, responseBytesLength - totalBytesSent);
-					if (AVAILABLE_TOKENS.get() >= bytesToSend) {
-						int bytesRead = inputStream.read(buffer, 0, (int) bytesToSend);
-						outputStream.write(buffer, 0, bytesRead); // 写入数据
-						totalBytesSent += bytesRead; // 更新已发送字节数
-						AVAILABLE_TOKENS.addAndGet(-bytesRead); // 减少可用令牌
-					} else Thread.sleep((bytesToSend - AVAILABLE_TOKENS.get()) * 1000 / maxUploadRateInBytes);
-				}
-			} catch (Exception error) {
-				log(SEVERE, "发送响应时出错: " + error.getMessage());
-			} finally {
-				try {
-					inputStream.close();
+				if (filePath == null) return;
+				File file = new File(filePath);
+				try (InputStream inputStream = newInputStream(file.toPath())) {
+					sendData(exchange, inputStream, file.length());
 				} catch (IOException error) {
-					log(WARNING, "关闭输入流时出错: " + error.getMessage());
+					log(SEVERE, "发送文件时出错: " + error.getMessage());
+				}
+				log(INFO, "发送文件: " + file);
+			} else if (requestURI.startsWith("/list")) {
+				StringBuilder responseBuilder = new StringBuilder();
+				for (Map.Entry<String, Long> entry : serverMap.entrySet())
+					responseBuilder.append(entry.getKey())
+							.append(lineSeparator())
+							.append(entry.getValue())
+							.append(lineSeparator());
+				byte[] bytes = responseBuilder.toString().getBytes();
+				try (InputStream inputStream = new ByteArrayInputStream(bytes)) {
+					sendData(exchange, inputStream, bytes.length);
+					log(INFO, "发送文件列表");
+				} catch (IOException error) {
+					log(SEVERE, "发送文件列表时出错: " + error.getMessage());
 				}
 			}
 		}).start();
+	}
+	// 发送数据
+	private static void sendData(HttpExchange exchange, InputStream inputStream, long responseBytesLength) {
+		if (inputStream == null) return;
+		try (OutputStream outputStream = exchange.getResponseBody()) {
+			exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytesLength); // 设置响应头
+			byte[] buffer = new byte[16384];
+			long totalBytesSent = 0; // 记录已发送字节数
+			long lastFillTime = currentTimeMillis(); // 最近一次填充时间
+			while (totalBytesSent < responseBytesLength) {
+				if (serverUploadRateLimit == 0) { // 无限制
+					int bytesRead = inputStream.read(buffer);
+					if (bytesRead == -1) break;
+					outputStream.write(buffer, 0, bytesRead); // 写入数据
+					continue;
+				}
+				long currentTime = currentTimeMillis();
+				AVAILABLE_TOKENS.addAndGet((currentTime - lastFillTime) * maxUploadRateInBytes / 1000);
+				lastFillTime = currentTime; // 更新时间
+				long bytesToSend = Math.min(16384, responseBytesLength - totalBytesSent);
+				if (AVAILABLE_TOKENS.get() >= bytesToSend) {
+					int bytesRead = inputStream.read(buffer, 0, (int) bytesToSend);
+					outputStream.write(buffer, 0, bytesRead); // 写入数据
+					totalBytesSent += bytesRead; // 更新已发送字节数
+					AVAILABLE_TOKENS.addAndGet(-bytesRead); // 减少可用令牌
+				} else Thread.sleep((bytesToSend - AVAILABLE_TOKENS.get()) * 1000 / maxUploadRateInBytes);
+			}
+		} catch (Exception error) {
+			log(SEVERE, "发送响应时出错: " + error.getMessage());
+		} finally {
+			try {
+				inputStream.close();
+			} catch (IOException error) {
+				log(WARNING, "关闭输入流时出错: " + error.getMessage());
+			}
+		}
 	}
 	// 单位转换方法
 	private static long convertToBytes(long value, String unit) {
