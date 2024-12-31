@@ -101,7 +101,7 @@ public class HexSync {
 			String line;
 			while ((line = bufferedReader.readLine()) != null) {
 				if (!line.matches("^[a-zA-Z].*")) continue; // 仅当首字符不是字母时跳过
-				String[] parts = line.split("=");
+				String[] parts = line.split("=", 2);
 				if (parts.length != 2) {
 					log(WARNING, "配置格式错误: " + line);
 					continue;
@@ -375,13 +375,16 @@ public class HexSync {
 		};
 		StringBuilder configContent = new StringBuilder();
 		for (String[] entry : configEntries) {
-			configContent.append(entry[0]).append(lineSeparator());
-			if (!entry[0].startsWith("#"))
-				configContent.append("=").append(entry.length > 1 ? entry[1] : "").append(lineSeparator());
+			if (entry[0].startsWith("#")) configContent.append(entry[0]).append(lineSeparator());
+			else configContent.append(entry[0])
+					.append("=")
+					.append(entry.length > 1 ? entry[1] : "")
+					.append(lineSeparator());
 		}
-		configContent.setLength(configContent.length() - lineSeparator().length()); // 去除末尾换行符
-		try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(CONFIG_PATH))) {
-			bufferedWriter.write(configContent.toString()); // 写入配置文件
+		configContent.deleteCharAt(configContent.length() - 1);// 去除末尾的换行符
+		File configFile = new File(CONFIG_PATH);
+		try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(configFile))) {
+			bufferedWriter.write(configContent.toString());// 写入配置文件
 			log(INFO, "配置已保存: " + lineSeparator() + configContent);
 		} catch (IOException error) {
 			log(SEVERE, "配置保存失败: " + error.getMessage());
@@ -515,7 +518,7 @@ public class HexSync {
 		while (true) try {
 			out.println("进入设置模式,输入命令或输入HELP以获取帮助.");
 			out.print(HEX_SYNC_NAME + "Settings>");
-			String[] parts = scanner.nextLine().split("\\s+");
+			String[] parts = scanner.nextLine().split("\\s+", 2);
 			if (parts.length == 0) continue;
 			if (parts[0].equalsIgnoreCase("EXIT")) break;
 			map.getOrDefault(parts[0].toUpperCase(), args -> err.println("无效命令,输入HELP以获取帮助.")).accept(parts);
@@ -530,7 +533,7 @@ public class HexSync {
 	}
 	// 设置最大上传速率
 	private static void setRate(String input) {
-		String[] parts = input.split("\\s+");
+		String[] parts = input.split("\\s+", 2);
 		if (input.matches("\\d+(\\s+B|\\s+KB|\\s+MB|\\s+GB)") && !invalidLong(parts[0])) {
 			serverUploadRateLimit = Long.parseLong(parts[0]);
 			serverUploadRateLimitUnit = parts[1];
