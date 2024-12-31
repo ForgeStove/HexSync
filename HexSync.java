@@ -101,7 +101,7 @@ public class HexSync {
 			String line;
 			while ((line = bufferedReader.readLine()) != null) {
 				if (!line.matches("^[a-zA-Z].*")) continue; // 仅当首字符不是字母时跳过
-				String[] parts = line.split("=", 2);
+				String[] parts = line.split("=");
 				if (parts.length != 2) {
 					log(WARNING, "配置格式错误: " + line);
 					continue;
@@ -515,7 +515,7 @@ public class HexSync {
 		while (true) try {
 			out.println("进入设置模式,输入命令或输入HELP以获取帮助.");
 			out.print(HEX_SYNC_NAME + "Settings>");
-			String[] parts = scanner.nextLine().split("\\s+", 2);
+			String[] parts = scanner.nextLine().split("\\s+");
 			if (parts.length == 0) continue;
 			if (parts[0].equalsIgnoreCase("EXIT")) break;
 			map.getOrDefault(parts[0].toUpperCase(), args -> err.println("无效命令,输入HELP以获取帮助.")).accept(parts);
@@ -530,7 +530,7 @@ public class HexSync {
 	}
 	// 设置最大上传速率
 	private static void setRate(String input) {
-		String[] parts = input.split("\\s+", 2);
+		String[] parts = input.split("\\s+");
 		if (input.matches("\\d+(\\s+B|\\s+KB|\\s+MB|\\s+GB)") && !invalidLong(parts[0])) {
 			serverUploadRateLimit = Long.parseLong(parts[0]);
 			serverUploadRateLimitUnit = parts[1];
