@@ -514,11 +514,11 @@ public class HexSync {
 						"HELP                   |帮助"
 				})
 		);
+		out.println("进入设置模式,输入命令或输入HELP以获取帮助.");
 		Scanner scanner = new Scanner(in);
 		while (true) try {
-			out.println("进入设置模式,输入命令或输入HELP以获取帮助.");
 			out.print(HEX_SYNC_NAME + "Settings>");
-			String[] parts = scanner.nextLine().split("\\s+", 2);
+			String[] parts = scanner.nextLine().split("\\s+");
 			if (parts.length == 0) continue;
 			if (parts[0].equalsIgnoreCase("EXIT")) break;
 			map.getOrDefault(parts[0].toUpperCase(), args -> err.println("无效命令,输入HELP以获取帮助.")).accept(parts);
@@ -533,13 +533,11 @@ public class HexSync {
 	}
 	// 设置最大上传速率
 	private static void setRate(String input) {
-		String[] parts = input.split("\\s+", 2);
+		String[] parts = input.split("\\s+");
 		if (input.matches("\\d+(\\s+B|\\s+KB|\\s+MB|\\s+GB)") && !invalidLong(parts[0])) {
 			serverUploadRateLimit = Long.parseLong(parts[0]);
 			serverUploadRateLimitUnit = parts[1];
-			if (HEADLESS)
-				out.println("服务端最大上传速率已设置为: " + serverUploadRateLimit + " " + serverUploadRateLimitUnit);
-		} else if (HEADLESS) err.println("无效输入,请输入数字及单位.");
+		} else if (HEADLESS) err.println("速率格式错误");
 	}
 	// 设置文件夹路径
 	private static void setDirectory(String directory, String log, Consumer<String> consumer) {
