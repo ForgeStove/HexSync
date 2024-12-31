@@ -7,6 +7,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.*;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
@@ -17,7 +18,6 @@ import java.util.zip.CRC32;
 import static java.io.File.separator;
 import static java.lang.Math.*;
 import static java.lang.System.*;
-import static java.nio.file.Files.*;
 public class HexSync {
 	private static final String HEX_SYNC_NAME = HexSync.class.getName(); // 程序名称
 	private static final AtomicLong AVAILABLE_TOKENS = new AtomicLong(0); // 当前可用令牌数量
@@ -65,7 +65,10 @@ public class HexSync {
 	public static void main(String[] args) {
 		initLog();
 		loadConfig();
-		initUI();
+		if (serverAutoStart) startServer();
+		if (clientAutoStart) startClient();
+		if (HEADLESS) headlessUI();
+		else normalUI();
 	}
 	// 初始化日志
 	private static void initLog() {
@@ -98,7 +101,7 @@ public class HexSync {
 			String line;
 			while ((line = bufferedReader.readLine()) != null) {
 				if (!line.matches("^[a-zA-Z].*")) continue; // 仅当首字符不是字母时跳过
-				String[] parts = line.split("=");
+				String[] parts = line.split("=", 2);
 				if (parts.length != 2) {
 					log(WARNING, "配置格式错误: " + line);
 					continue;
@@ -110,13 +113,6 @@ public class HexSync {
 		} catch (IOException error) {
 			log(SEVERE, "配置读取失败: " + error.getMessage());
 		}
-	}
-	// 初始化UI
-	private static void initUI() {
-		if (serverAutoStart) startServer();
-		if (clientAutoStart) startClient();
-		if (HEADLESS) headlessUI(); // 无头模式
-		else normalUI(); // 有头模式
 	}
 	// 日志记录
 	private static void log(String level, String message) {
@@ -379,16 +375,13 @@ public class HexSync {
 		};
 		StringBuilder configContent = new StringBuilder();
 		for (String[] entry : configEntries) {
-			if (entry[0].startsWith("#")) configContent.append(entry[0]).append(lineSeparator());
-			else configContent.append(entry[0])
-					.append("=")
-					.append(entry.length > 1 ? entry[1] : "")
-					.append(lineSeparator());
+			configContent.append(entry[0]).append(lineSeparator());
+			if (!entry[0].startsWith("#"))
+				configContent.append("=").append(entry.length > 1 ? entry[1] : "").append(lineSeparator());
 		}
-		configContent.deleteCharAt(configContent.length() - 1);// 去除末尾的换行符
-		File configFile = new File(CONFIG_PATH);
-		try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(configFile))) {
-			bufferedWriter.write(configContent.toString());// 写入配置文件
+		configContent.setLength(configContent.length() - lineSeparator().length()); // 去除末尾换行符
+		try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(CONFIG_PATH))) {
+			bufferedWriter.write(configContent.toString()); // 写入配置文件
 			log(INFO, "配置已保存: " + lineSeparator() + configContent);
 		} catch (IOException error) {
 			log(SEVERE, "配置保存失败: " + error.getMessage());
@@ -522,7 +515,7 @@ public class HexSync {
 		while (true) try {
 			out.println("进入设置模式,输入命令或输入HELP以获取帮助.");
 			out.print(HEX_SYNC_NAME + "Settings>");
-			String[] parts = scanner.nextLine().split("\\s+");
+			String[] parts = scanner.nextLine().split("\\s+", 2);
 			if (parts.length == 0) continue;
 			if (parts[0].equalsIgnoreCase("EXIT")) break;
 			map.getOrDefault(parts[0].toUpperCase(), args -> err.println("无效命令,输入HELP以获取帮助.")).accept(parts);
@@ -537,7 +530,7 @@ public class HexSync {
 	}
 	// 设置最大上传速率
 	private static void setRate(String input) {
-		String[] parts = input.split("\\s+");
+		String[] parts = input.split("\\s+", 2);
 		if (input.matches("\\d+(\\s+B|\\s+KB|\\s+MB|\\s+GB)") && !invalidLong(parts[0])) {
 			serverUploadRateLimit = Long.parseLong(parts[0]);
 			serverUploadRateLimitUnit = parts[1];
@@ -611,43 +604,44 @@ public class HexSync {
 			Map<String, Long> requestMap = requestFileCRCList();
 			if (!requestMap.isEmpty()) {
 				deleteFilesNotInMaps(requestMap, initMap(clientOnlyDirectory)); // 删除多余文件
-				requestMap.entrySet().removeIf(entry -> initMap(clientSyncDirectory).containsValue(entry.getValue()));
+				Map<String, Long> clientMap = initMap(clientSyncDirectory); // 初始化客户端文件列表
+				requestMap.entrySet().removeIf(entry -> clientMap.containsValue(entry.getValue()));
 				downloadMissingFiles(requestMap);// 下载文件
-				copyAllFiles(clientOnlyDirectory, clientSyncDirectory);// 复制仅客户端模组文件夹中的文件到客户端同步文件夹
+				copyDirectory(clientOnlyDirectory, clientSyncDirectory);// 复制仅客户端模组文件夹中的文件到客户端同步文件夹
 			}
 			stopClient();
 		});
 		clientThread.start();
 	}
-	// 删除同时不存在于服务端同步文件夹和仅客户端模组文件夹的文件
+	// 删除指定路径下的文件
 	private static void deleteFilesNotInMaps(Map<String, Long> requestMap, Map<String, Long> clientOnlyMap) {
 		File[] fileList = new File(clientSyncDirectory).listFiles();
-		if (fileList != null) for (File file : fileList) {
-			long crc = calculateCRC(file);
-			if (!file.isFile() || requestMap.containsValue(crc) || clientOnlyMap.containsValue(crc)) continue;
-			if (file.delete()) log(INFO, "已删除文件: " + file);
-			else log(SEVERE, "删除文件失败: " + file);
-		}
+		if (fileList != null) for (File file : fileList)
+			if (file.isFile()) {
+				long CRC = calculateCRC(file);
+				if (requestMap.containsValue(CRC) || clientOnlyMap.containsValue(CRC)) continue;
+				if (file.delete()) log(INFO, "已删除文件: " + file);
+				else log(SEVERE, "删除文件失败: " + file);
+			}
 	}
-	// 复制仅客户端模组文件夹中的文件到客户端同步文件夹
-	private static void copyAllFiles(String source, String target) {
+	private static void copyDirectory(String source, String target) {
 		makeDirectory(target);
 		File[] fileList = new File(source).listFiles();
 		if (fileList == null) return;
-		for (File file : fileList) {
-			File targetFile = new File(target, file.getName());
-			if (file.isDirectory()) copyAllFiles(String.valueOf(file), String.valueOf(targetFile)); // 递归复制子目录
-			else if (!targetFile.exists()) try (
-					InputStream inputStream = newInputStream(file.toPath());
-					OutputStream outputStream = newOutputStream(targetFile.toPath())
-			) {
-				byte[] buffer = new byte[16384];
-				int length;
-				while ((length = inputStream.read(buffer)) > 0) outputStream.write(buffer, 0, length);
-				log(INFO, "已复制: " + file + " -> " + targetFile);
-			} catch (IOException error) {
-				log(SEVERE, "复制" + file + "失败: " + error.getMessage());
+		try {
+			for (File file : fileList) {
+				String targetFileName = file.getName();
+				File targetFile = new File(target, targetFileName);
+				if (new File(target, targetFileName + ".disable").exists()) continue; // 跳过此文件
+				if (file.isDirectory()) {
+					copyDirectory(String.valueOf(file), String.valueOf(targetFile));
+				} else if (!targetFile.exists()) {
+					Files.copy(file.toPath(), targetFile.toPath());
+					log(INFO, "已复制: " + file + " -> " + targetFile);
+				}
 			}
+		} catch (IOException error) {
+			log(SEVERE, "复制失败: " + error.getMessage());
 		}
 	}
 	// 从服务端同步文件夹下载客户端缺少的文件
@@ -816,16 +810,16 @@ public class HexSync {
 		if (!exchange.getRequestMethod().equalsIgnoreCase("GET")) return;
 		String requestURI = exchange.getRequestURI().getPath();
 		if (requestURI.startsWith("/download/")) {
-			Long requestCRC = Long.parseLong(requestURI.substring(requestURI.lastIndexOf("/") + 1));
+			long requestCRC = Long.parseLong(requestURI.substring(requestURI.lastIndexOf("/") + 1));
 			String filePath = null;
 			for (Map.Entry<String, Long> entry : serverMap.entrySet())
-				if (requestCRC.equals(entry.getValue())) {
+				if (entry.getValue() == requestCRC) {
 					filePath = serverSyncDirectory + separator + entry.getKey();
 					break;
 				}
 			if (filePath == null) return;
 			File file = new File(filePath);
-			try (InputStream inputStream = newInputStream(file.toPath())) {
+			try (InputStream inputStream = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
 				sendData(exchange, inputStream, file.length());
 				log(INFO, "发送文件: " + file);
 			} catch (IOException error) {
