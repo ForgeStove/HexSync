@@ -10,19 +10,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a142c8f4-7ccb-4bd9-ae6e-b78de2e6fbbe" name="更改" comment="Updated">
-      <change afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/Client.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/Config.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HeadlessUI.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/Log.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/NormalUI.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/Server.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/Utils.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HexSync.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/META-INF/MANIFEST.MF" beforeDir="false" afterPath="$PROJECT_DIR$/META-INF/MANIFEST.MF" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icon.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/icon.png" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,7 +68,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "工件",
+    "project.structure.last.edited": "模块",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
     "settings.editor.selected.configurable": "preferences.lookFeel",
@@ -121,7 +109,7 @@
       <updated>1736059120285</updated>
       <workItem from="1736059121659" duration="136000" />
       <workItem from="1736059306457" duration="18000" />
-      <workItem from="1736059328846" duration="8074000" />
+      <workItem from="1736059328846" duration="8635000" />
     </task>
     <task id="LOCAL-00001" summary="Updated">
       <option name="closed" value="true" />
@@ -139,7 +127,15 @@
       <option name="project" value="LOCAL" />
       <updated>1736060320158</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Updated">
+      <option name="closed" value="true" />
+      <created>1736067770737</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1736067770737</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

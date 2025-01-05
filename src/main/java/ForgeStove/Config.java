@@ -1,14 +1,14 @@
-package src.main.java.ForgeStove;
+package ForgeStove;
 import java.io.*;
 import java.util.*;
 import java.util.function.Consumer;
 
+import static ForgeStove.Client.*;
+import static ForgeStove.HexSync.HEX_SYNC_NAME;
+import static ForgeStove.Log.*;
+import static ForgeStove.Server.*;
 import static java.io.File.separator;
 import static java.lang.System.lineSeparator;
-import static src.main.java.ForgeStove.Client.*;
-import static src.main.java.ForgeStove.HexSync.HEX_SYNC_NAME;
-import static src.main.java.ForgeStove.Log.*;
-import static src.main.java.ForgeStove.Server.*;
 public class Config {
 	public static final String CONFIG_PATH = HEX_SYNC_NAME + separator + "config.properties"; // 配置文件路径
 	public static final String SERVER_PORT = "serverPort"; // 服务端端口配置项

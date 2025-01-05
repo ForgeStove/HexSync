@@ -1,16 +1,16 @@
-package src.main.java.ForgeStove;
+package ForgeStove;
 import java.io.*;
 import java.util.*;
 import java.util.zip.CRC32;
 
+import static ForgeStove.Client.*;
+import static ForgeStove.Config.*;
+import static ForgeStove.HexSync.HEX_SYNC_NAME;
+import static ForgeStove.Log.*;
+import static ForgeStove.NormalUI.HEADLESS;
+import static ForgeStove.Server.*;
 import static java.lang.Math.multiplyExact;
 import static java.lang.System.*;
-import static src.main.java.ForgeStove.Client.*;
-import static src.main.java.ForgeStove.Config.*;
-import static src.main.java.ForgeStove.HexSync.HEX_SYNC_NAME;
-import static src.main.java.ForgeStove.Log.*;
-import static src.main.java.ForgeStove.NormalUI.HEADLESS;
-import static src.main.java.ForgeStove.Server.*;
 public class Utils {
 	// 初始化文件
 	public static void initFiles(boolean isServer) {

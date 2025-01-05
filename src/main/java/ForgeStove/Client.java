@@ -1,15 +1,15 @@
-package src.main.java.ForgeStove;
+package ForgeStove;
 import java.io.*;
 import java.net.*;
 import java.nio.file.Files;
 import java.util.*;
 
+import static ForgeStove.Config.*;
+import static ForgeStove.HexSync.HEX_SYNC_NAME;
+import static ForgeStove.Log.*;
+import static ForgeStove.Utils.*;
 import static java.io.File.separator;
 import static java.lang.System.exit;
-import static src.main.java.ForgeStove.Config.*;
-import static src.main.java.ForgeStove.HexSync.HEX_SYNC_NAME;
-import static src.main.java.ForgeStove.Log.*;
-import static src.main.java.ForgeStove.Utils.*;
 public class Client {
 	public static Thread clientThread; // 客户端线程
 	public static HttpURLConnection HTTPURLConnection; // 存储客户端连接实例

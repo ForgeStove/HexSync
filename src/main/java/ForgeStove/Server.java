@@ -1,4 +1,4 @@
-package src.main.java.ForgeStove;
+package ForgeStove;
 import com.sun.net.httpserver.*;
 
 import java.io.*;
@@ -8,12 +8,12 @@ import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static ForgeStove.Config.*;
+import static ForgeStove.HexSync.HEX_SYNC_NAME;
+import static ForgeStove.Log.*;
+import static ForgeStove.Utils.*;
 import static java.io.File.separator;
 import static java.lang.System.*;
-import static src.main.java.ForgeStove.Config.*;
-import static src.main.java.ForgeStove.HexSync.HEX_SYNC_NAME;
-import static src.main.java.ForgeStove.Log.*;
-import static src.main.java.ForgeStove.Utils.*;
 public class Server {
 	public static final AtomicLong AVAILABLE_TOKENS = new AtomicLong(0); // 当前可用令牌数量
 	public static Thread serverThread; // 服务器线程

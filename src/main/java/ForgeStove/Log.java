@@ -1,4 +1,4 @@
-package src.main.java.ForgeStove;
+package ForgeStove;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
 import java.awt.Color;
@@ -7,11 +7,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.*;
 
+import static ForgeStove.HexSync.HEX_SYNC_NAME;
+import static ForgeStove.NormalUI.HEADLESS;
+import static ForgeStove.Utils.makeDirectory;
 import static java.io.File.separator;
 import static java.lang.System.*;
-import static src.main.java.ForgeStove.HexSync.HEX_SYNC_NAME;
-import static src.main.java.ForgeStove.NormalUI.HEADLESS;
-import static src.main.java.ForgeStove.Utils.makeDirectory;
 public class Log {
 	public static final String LOG_PATH = HEX_SYNC_NAME + separator + "latest.log"; // 日志文件路径
 	public static final boolean ANSI = getProperty("ansi", "true").equalsIgnoreCase("false"); // 是否启用ANSI控制台输出

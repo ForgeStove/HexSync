@@ -1,4 +1,4 @@
-package src.main.java.ForgeStove;
+package ForgeStove;
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
@@ -6,14 +6,14 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.Objects;
 
+import static ForgeStove.Client.*;
+import static ForgeStove.Config.*;
+import static ForgeStove.HexSync.*;
+import static ForgeStove.Log.*;
+import static ForgeStove.Server.*;
+import static ForgeStove.Utils.*;
 import static java.lang.Math.max;
 import static java.lang.System.*;
-import static src.main.java.ForgeStove.Client.*;
-import static src.main.java.ForgeStove.Config.*;
-import static src.main.java.ForgeStove.HexSync.*;
-import static src.main.java.ForgeStove.Log.*;
-import static src.main.java.ForgeStove.Server.*;
-import static src.main.java.ForgeStove.Utils.*;
 public class NormalUI {
 	public static final boolean HEADLESS = GraphicsEnvironment.isHeadless(); // 是否处于无头模式
 	public static Image icon; // 程序图标

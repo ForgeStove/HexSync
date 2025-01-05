@@ -1,15 +1,15 @@
-package src.main.java.ForgeStove;
+package ForgeStove;
 import java.util.*;
 import java.util.function.Consumer;
 
+import static ForgeStove.Client.clientAutoStart;
+import static ForgeStove.Config.*;
+import static ForgeStove.HexSync.*;
+import static ForgeStove.Log.*;
+import static ForgeStove.Server.serverAutoStart;
+import static ForgeStove.Utils.*;
 import static java.io.File.separator;
 import static java.lang.System.*;
-import static src.main.java.ForgeStove.Client.clientAutoStart;
-import static src.main.java.ForgeStove.Config.*;
-import static src.main.java.ForgeStove.HexSync.*;
-import static src.main.java.ForgeStove.Log.*;
-import static src.main.java.ForgeStove.Server.serverAutoStart;
-import static src.main.java.ForgeStove.Utils.*;
 public class HeadlessUI {
 	public static void headlessUI() {
 		out.println("欢迎使用" + HEX_SYNC_NAME + "!");
