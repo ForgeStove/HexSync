@@ -34,7 +34,7 @@ public class Config {
 		try (BufferedReader bufferedReader = new BufferedReader(new FileReader(configFile))) {
 			Map<String, Consumer<String>> configMap = new HashMap<>();
 			configMap.put(SERVER_PORT, input -> serverPort = Integer.parseInt(input));
-			configMap.put(SERVER_UPLOAD_RATE_LIMIT, Utils::setRate);
+			configMap.put(SERVER_UPLOAD_RATE_LIMIT, Util::setRate);
 			configMap.put(SERVER_SYNC_DIRECTORY, input -> serverSyncDirectory = input);
 			configMap.put(SERVER_AUTO_START, input -> serverAutoStart = Boolean.parseBoolean(input));
 			configMap.put(CLIENT_PORT, input -> clientPort = Integer.parseInt(input));

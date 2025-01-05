@@ -9,7 +9,7 @@ import java.util.concurrent.*;
 
 import static ForgeStove.HexSync.HEX_SYNC_NAME;
 import static ForgeStove.NormalUI.HEADLESS;
-import static ForgeStove.Utils.makeDirectory;
+import static ForgeStove.Util.makeDirectory;
 import static java.io.File.separator;
 import static java.lang.System.*;
 public class Log {

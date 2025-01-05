@@ -11,7 +11,7 @@ import static ForgeStove.NormalUI.HEADLESS;
 import static ForgeStove.Server.*;
 import static java.lang.Math.multiplyExact;
 import static java.lang.System.*;
-public class Utils {
+public class Util {
 	// 初始化文件
 	public static void initFiles(boolean isServer) {
 		makeDirectory(isServer ? serverSyncDirectory : clientSyncDirectory);

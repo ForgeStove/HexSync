@@ -11,7 +11,7 @@ import static ForgeStove.Config.*;
 import static ForgeStove.HexSync.*;
 import static ForgeStove.Log.*;
 import static ForgeStove.Server.*;
-import static ForgeStove.Utils.*;
+import static ForgeStove.Util.*;
 import static java.lang.Math.max;
 import static java.lang.System.*;
 public class NormalUI {

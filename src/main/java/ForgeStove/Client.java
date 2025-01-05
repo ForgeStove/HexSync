@@ -7,7 +7,7 @@ import java.util.*;
 import static ForgeStove.Config.*;
 import static ForgeStove.HexSync.HEX_SYNC_NAME;
 import static ForgeStove.Log.*;
-import static ForgeStove.Utils.*;
+import static ForgeStove.Util.*;
 import static java.io.File.separator;
 import static java.lang.System.exit;
 public class Client {
