@@ -24,8 +24,7 @@ public class NormalUI {
 	public static void normalUI() {
 		SwingUtilities.invokeLater(() -> {
 			try {
-				icon = Toolkit.getDefaultToolkit()
-						.getImage(HexSync.class.getClassLoader().getResource("src/main/resources/icon.png"));
+				icon = Toolkit.getDefaultToolkit().getImage(HexSync.class.getClassLoader().getResource("icon.png"));
 				javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
 				Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
 				screenLength = max(size.width, size.height);
