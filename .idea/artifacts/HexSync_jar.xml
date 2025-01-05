@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact name="HexSync:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/HexSync_jar</output-path>
+    <root id="root">
+      <element id="archive" name="HexSync.jar">
+        <element id="module-output" name="HexSync" />
+      </element>
+    </root>
+  </artifact>
+</component>
