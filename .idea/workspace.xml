@@ -10,7 +10,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a142c8f4-7ccb-4bd9-ae6e-b78de2e6fbbe" name="更改" comment="Updated">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HeadlessUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HeadlessUI.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,7 +63,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Utils/Source/Java/HexSync/out/artifacts/HexSync_jar/HexSync.jar",
+    "last_opened_file_path": "C:/Utils/Source/Java/HexSync/out/artifacts",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -81,15 +82,27 @@
       <recent name="C:\Utils\Source\Java\HexSync" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Utils\Source\Java\HexSync\src\main\resources" />
       <recent name="C:\Utils\Source\Java\HexSync\src\main\java\ForgeStove" />
       <recent name="C:\Utils\Source\Java\HexSync\src\ForgeStove\resources" />
       <recent name="C:\Utils\Source\Java\HexSync\src\ForgeStove" />
       <recent name="C:\Utils\Source\Java\HexSync" />
-      <recent name="C:\Utils\Source\Java\HexSync\.idea" />
     </key>
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
       <recent name="src.main" />
     </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="HexSync" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="ForgeStove.HexSync" />
+      <module name="HexSync" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/out/artifacts" />
+      <method v="2">
+        <option name="BuildArtifacts" enabled="true">
+          <artifact name="HexSync:jar" />
+        </option>
+      </method>
+    </configuration>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -109,7 +122,7 @@
       <updated>1736059120285</updated>
       <workItem from="1736059121659" duration="136000" />
       <workItem from="1736059306457" duration="18000" />
-      <workItem from="1736059328846" duration="8635000" />
+      <workItem from="1736059328846" duration="9543000" />
     </task>
     <task id="LOCAL-00001" summary="Updated">
       <option name="closed" value="true" />
@@ -135,7 +148,23 @@
       <option name="project" value="LOCAL" />
       <updated>1736067770737</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Updated">
+      <option name="closed" value="true" />
+      <created>1736068123782</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1736068123782</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Updated">
+      <option name="closed" value="true" />
+      <created>1736068378755</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1736068378755</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
