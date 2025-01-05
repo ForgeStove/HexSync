@@ -280,13 +280,13 @@ public class HexSync {
 		log(INFO, "正在连接到: " + URL); // 记录请求开始日志
 		Map<String, Long> requestMap = new HashMap<>(); // 复制请求列表
 		try {
-			int responseCode = getResponseCode(new URL(URL));
+			int responseCode = getResponseCode(new URI(URL).toURL());
 			if (responseCode != HttpURLConnection.HTTP_OK) {
 				if (clientThread != null) log(SEVERE, "请求列表失败,错误代码: " + responseCode);
 				errorDownload = true;
 				return requestMap;
 			}
-		} catch (IOException error) {
+		} catch (Exception error) {
 			if (clientThread != null) log(SEVERE, "无法连接至服务器: " + error.getMessage());
 			errorDownload = true;
 			return requestMap;
@@ -316,17 +316,17 @@ public class HexSync {
 			return false;
 		}
 		try {
-			int responseCode = getResponseCode(new URL(String.format(
+			int responseCode = getResponseCode(new URI(String.format(
 					"%s:%d/download/%s",
 					formatHTTP(serverAddress),
 					clientPort,
 					requestCRC
-			)));
+			)).toURL());
 			if (responseCode != HttpURLConnection.HTTP_OK) {
 				log(SEVERE, "下载失败,错误代码: " + responseCode);
 				return false;
 			}
-		} catch (IOException error) {
+		} catch (Exception error) {
 			log(SEVERE, "无法连接至服务器: " + error.getMessage());
 			return false;
 		}
