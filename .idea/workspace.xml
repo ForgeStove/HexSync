@@ -10,13 +10,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a142c8f4-7ccb-4bd9-ae6e-b78de2e6fbbe" name="更改" comment="Updated">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/LICENSE" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/Client.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/Config.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/Config.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HeadlessUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HeadlessUI.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/Log.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/Log.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/NormalUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/NormalUI.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/Server.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/Util.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/Util.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/Util.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,9 +36,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {}
-}]]></component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {}
+}</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;https://github.com/ForgeStove/HexSync.git&quot;,
@@ -68,16 +71,16 @@
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Utils/Source/Java/HexSync/.idea",
+    "last_opened_file_path": "C:/Utils/Source/Java/ShipInBottle/.idea/copyright/AGPL_3_0.xml",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "模块",
+    "project.structure.last.edited": "问题",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "preferences.lookFeel",
+    "settings.editor.selected.configurable": "copyright",
     "vue.rearranger.settings.migration": "true",
     "应用程序.HexSync.executor": "Debug"
   }
@@ -128,7 +131,9 @@
       <updated>1736059120285</updated>
       <workItem from="1736059121659" duration="136000" />
       <workItem from="1736059306457" duration="18000" />
-      <workItem from="1736059328846" duration="12026000" />
+      <workItem from="1736059328846" duration="12711000" />
+      <workItem from="1736081503542" duration="801000" />
+      <workItem from="1736084347503" duration="211000" />
     </task>
     <task id="LOCAL-00001" summary="Updated">
       <option name="closed" value="true" />
@@ -186,7 +191,15 @@
       <option name="project" value="LOCAL" />
       <updated>1736069434278</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Updated">
+      <option name="closed" value="true" />
+      <created>1736079784141</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1736079784141</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -199,5 +212,9 @@
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>
