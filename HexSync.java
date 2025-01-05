@@ -1,4 +1,5 @@
 import com.sun.net.httpserver.*;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
@@ -243,7 +244,7 @@ public class HexSync {
 		}
 	}
 	// 初始化文件名校验码键值对表
-	private static Map<String, Long> initMap(String directory) {
+	private static @NotNull Map<String, Long> initMap(String directory) {
 		Map<String, Long> map = new HashMap<>();
 		File[] fileList = new File(directory).listFiles(); // 获取文件夹下的所有文件
 		if (fileList != null) for (File file : fileList)
@@ -258,7 +259,7 @@ public class HexSync {
 		else log(SEVERE, "无法创建文件夹: " + directoryPath);
 	}
 	// 地址格式化,转换为HTTP协议
-	private static String formatHTTP(String address) {
+	private static @NotNull String formatHTTP(@NotNull String address) {
 		if (address.endsWith("/")) address = address.substring(0, address.length() - 1); // 去除末尾的分隔符
 		return address.startsWith("http://") ? address : "http://" + address; // 添加HTTP协议头
 	}
@@ -351,7 +352,7 @@ public class HexSync {
 		return true; // 下载成功且校验通过
 	}
 	// 获取响应码
-	private static int getResponseCode(URL requestURL) throws IOException {
+	private static int getResponseCode(@NotNull URL requestURL) throws IOException {
 		HTTPURLConnection = (HttpURLConnection) requestURL.openConnection(); // 打开连接
 		HTTPURLConnection.setRequestMethod("GET"); // 设置请求方式为GET
 		HTTPURLConnection.setConnectTimeout(5000); // 设置连接超时为5秒
@@ -410,17 +411,9 @@ public class HexSync {
 			return false;
 		}
 	}
-	// 检测数字输入是否不在Long范围内
-	private static boolean invalidLong(String numberInput) {
-		String trimmedInput = numberInput.trim();
-		if (trimmedInput.isEmpty()) return true;
-		try {
-			Long.parseLong(trimmedInput);
-			return false;
-		} catch (NumberFormatException error) {
-			log(WARNING, "错误的数字格式或超出范围: " + numberInput);
-			return true;
-		}
+	// 输出帮助信息的通用方法
+	private static void printlnStrings(String @NotNull [] messages) {
+		for (String message : messages) out.println(message);
 	}
 	// 关于
 	private static void aboutJDialog(Window parent) {
@@ -527,27 +520,35 @@ public class HexSync {
 			err.println("无效命令,输入HELP以获取帮助.");
 		}
 	}
-	// 输出帮助信息的通用方法
-	private static void printlnStrings(String[] messages) {
-		for (String message : messages) out.println(message);
-	}
 	// 设置最大上传速率
-	private static void setRate(String input) {
+	private static void setRate(@NotNull String input) {
 		String[] parts = input.split("\\s+");
 		if (input.matches("\\d+(\\s+B|\\s+KB|\\s+MB|\\s+GB)") && !invalidLong(parts[0])) {
 			serverUploadRateLimit = Long.parseLong(parts[0]);
 			serverUploadRateLimitUnit = parts[1];
 		} else if (HEADLESS) err.println("速率格式错误");
 	}
+	// 检测数字输入是否不在Long范围内
+	private static boolean invalidLong(@NotNull String numberInput) {
+		String trimmedInput = numberInput.trim();
+		if (trimmedInput.isEmpty()) return true;
+		try {
+			Long.parseLong(trimmedInput);
+			return false;
+		} catch (NumberFormatException error) {
+			log(WARNING, "错误的数字格式或超出范围: " + numberInput);
+			return true;
+		}
+	}
 	// 设置文件夹路径
-	private static void setDirectory(String directory, String log, Consumer<String> consumer) {
+	private static void setDirectory(@NotNull String directory, String log, Consumer<String> consumer) {
 		if (!directory.isEmpty() && !directory.contains(separator)) {
 			consumer.accept(directory);
 			out.println(log + "文件夹路径已设置为: " + directory);
 		} else err.println("路径格式错误,请输入绝对路径或相对路径.");
 	}
 	// 设置自动启动
-	private static void setAutoStart(String input, Boolean isServer, Consumer<Boolean> consumer) {
+	private static void setAutoStart(@NotNull String input, Boolean isServer, Consumer<Boolean> consumer) {
 		if (input.matches("[yYnN]")) {
 			boolean value = input.matches("[yY]");
 			consumer.accept(value);
@@ -646,7 +647,7 @@ public class HexSync {
 		}
 	}
 	// 从服务端同步文件夹下载客户端缺少的文件
-	private static void downloadMissingFiles(Map<String, Long> toDownloadMap) {
+	private static void downloadMissingFiles(@NotNull Map<String, Long> toDownloadMap) {
 		if (toDownloadMap.isEmpty()) {
 			log(INFO, "模组已经是最新版本");
 			return;
@@ -672,7 +673,7 @@ public class HexSync {
 		if (clientAutoStart) exit(0); // 自动退出
 	}
 	// 基础复选框框架
-	private static JCheckBox newJCheckBox(JPanel panel, String text, boolean selected) {
+	private static @NotNull JCheckBox newJCheckBox(@NotNull JPanel panel, String text, boolean selected) {
 		JCheckBox checkBox = new JCheckBox(text);
 		checkBox.setFocusPainted(false);
 		checkBox.setSelected(selected);
@@ -680,7 +681,7 @@ public class HexSync {
 		return checkBox;
 	}
 	// 基础按钮框架
-	private static void newJButton(JPanel panel, String text, ActionListener actionListener) {
+	private static void newJButton(@NotNull JPanel panel, String text, ActionListener actionListener) {
 		JButton button = new JButton("<html>" + text);
 		button.setFocusPainted(false);
 		button.setPreferredSize(new Dimension(0, screenLength / 55));
@@ -795,19 +796,19 @@ public class HexSync {
 		setWindow(settingsJDialog);
 	}
 	// 聚焦并全选输入框
-	private static void selectAndFocus(JTextField textField) {
+	private static void selectAndFocus(@NotNull JTextField textField) {
 		textField.requestFocus(); // 聚焦输入框
 		textField.selectAll(); // 选中输入框
 	}
 	// 设置字体的通用方法
-	private static void setFont(Container container, Font font) {
+	private static void setFont(@NotNull Container container, Font font) {
 		for (Component component : container.getComponents()) {
 			if (component instanceof Container) setFont((Container) component, font); // 递归设置子组件的字体
 			component.setFont(font); // 设置字体
 		}
 	}
 	// 处理请求
-	private static void processRequest(HttpExchange exchange) {
+	private static void processRequest(@NotNull HttpExchange exchange) {
 		if (!exchange.getRequestMethod().equalsIgnoreCase("GET")) return;
 		String requestURI = exchange.getRequestURI().getPath();
 		if (requestURI.startsWith("/download/")) {
@@ -879,7 +880,7 @@ public class HexSync {
 		}
 	}
 	// 单位转换方法
-	private static long convertToBytes(long value, String unit) {
+	private static long convertToBytes(long value, @NotNull String unit) {
 		try {
 			switch (unit) {
 				case "B":
