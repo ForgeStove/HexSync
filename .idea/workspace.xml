@@ -9,7 +9,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a142c8f4-7ccb-4bd9-ae6e-b78de2e6fbbe" name="更改" comment="feat: 新增版权信息及许可证更新至AGPL v3" />
+    <list default="true" id="a142c8f4-7ccb-4bd9-ae6e-b78de2e6fbbe" name="更改" comment="chore: 移除默认版权许可证设置并更新工作区配置">
+      <change beforePath="$PROJECT_DIR$/.idea/copyright/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/copyright/profiles_settings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -122,7 +125,8 @@
       <workItem from="1736059306457" duration="18000" />
       <workItem from="1736059328846" duration="12711000" />
       <workItem from="1736081503542" duration="801000" />
-      <workItem from="1736084347503" duration="843000" />
+      <workItem from="1736084347503" duration="868000" />
+      <workItem from="1736129194368" duration="194000" />
     </task>
     <task id="LOCAL-00001" summary="Updated">
       <option name="closed" value="true" />
@@ -196,7 +200,15 @@
       <option name="project" value="LOCAL" />
       <updated>1736084606460</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="feat: 新增版权信息及许可证更新至AGPL v3">
+      <option name="closed" value="true" />
+      <created>1736085211752</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1736085211752</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
