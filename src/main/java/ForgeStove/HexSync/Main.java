@@ -13,21 +13,20 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 package ForgeStove.HexSync;
-import static ForgeStove.HexSync.Client.*;
-import static ForgeStove.HexSync.Config.loadConfig;
-import static ForgeStove.HexSync.HeadlessUI.headlessUI;
-import static ForgeStove.HexSync.Log.initLog;
-import static ForgeStove.HexSync.NormalUI.*;
-import static ForgeStove.HexSync.Server.*;
-public class HexSync {
+import ForgeStove.HexSync.Client.Client;
+import ForgeStove.HexSync.HeadlessUI.HeadlessUI;
+import ForgeStove.HexSync.NormalUI.MainFrame;
+import ForgeStove.HexSync.Server.Server;
+import ForgeStove.HexSync.Util.*;
+public class Main {
 	public static final String HEX_SYNC_NAME = "HexSync"; // 程序名称
 	public static final String GITHUB_URL = "https://github.com/ForgeStove/HexSync"; // 项目GitHub地址
 	public static void main(String[] args) {
-		initLog();
-		loadConfig();
-		if (serverAutoStart) startServer();
-		if (clientAutoStart) startClient();
-		if (HEADLESS) headlessUI();
-		else normalUI();
+		Log.initLog();
+		Config.loadConfig();
+		if (Server.serverAutoStart) Server.startServer();
+		if (Client.clientAutoStart) Client.startClient();
+		if (Settings.HEADLESS) HeadlessUI.headlessUI();
+		else MainFrame.normalUI();
 	}
 }

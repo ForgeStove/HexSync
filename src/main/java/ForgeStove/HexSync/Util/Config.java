@@ -12,15 +12,15 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-package ForgeStove.HexSync;
+package ForgeStove.HexSync.Util;
 import java.io.*;
 import java.util.*;
 import java.util.function.Consumer;
 
-import static ForgeStove.HexSync.Client.*;
-import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
-import static ForgeStove.HexSync.Log.*;
-import static ForgeStove.HexSync.Server.*;
+import static ForgeStove.HexSync.Client.Client.*;
+import static ForgeStove.HexSync.Main.HEX_SYNC_NAME;
+import static ForgeStove.HexSync.Server.Server.*;
+import static ForgeStove.HexSync.Util.Log.*;
 import static java.io.File.separator;
 import static java.lang.System.lineSeparator;
 public class Config {
@@ -39,6 +39,7 @@ public class Config {
 	public static String clientOnlyDirectory = "clientOnlyMods"; // 仅客户端文件夹路径，默认值clientOnlyMods
 	public static String serverUploadRateLimitUnit = "MB"; // 上传速率限制单位，默认MB
 	public static String serverAddress = "localhost"; // 服务器地址，默认值localhost
+	// 加载配置
 	public static void loadConfig() {
 		File configFile = new File(CONFIG_PATH);
 		if (!configFile.isFile()) {
@@ -48,7 +49,7 @@ public class Config {
 		try (BufferedReader bufferedReader = new BufferedReader(new FileReader(configFile))) {
 			Map<String, Consumer<String>> configMap = new HashMap<>();
 			configMap.put(SERVER_PORT, input -> serverPort = Integer.parseInt(input));
-			configMap.put(SERVER_UPLOAD_RATE_LIMIT, Util::setRate);
+			configMap.put(SERVER_UPLOAD_RATE_LIMIT, Settings::setRate);
 			configMap.put(SERVER_SYNC_DIRECTORY, input -> serverSyncDirectory = input);
 			configMap.put(SERVER_AUTO_START, input -> serverAutoStart = Boolean.parseBoolean(input));
 			configMap.put(CLIENT_PORT, input -> clientPort = Integer.parseInt(input));

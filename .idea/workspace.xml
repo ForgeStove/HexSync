@@ -9,8 +9,30 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a142c8f4-7ccb-4bd9-ae6e-b78de2e6fbbe" name="更改" comment="chore: 移除默认版权许可证设置并更新工作区配置">
+    <list default="true" id="a142c8f4-7ccb-4bd9-ae6e-b78de2e6fbbe" name="更改" comment="refactor(core): 将ForgeStove包结构调整为ForgeStove.HexSync">
+      <change afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Client/FileCRCFetcher.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Client/FileDownloader.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/HeadlessUI/HeadlessSettings.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/NormalUI/AboutJDialog.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/NormalUI/ComponentFactory.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/NormalUI/SettingsJDialog.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Server/RequestHandler.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Server/ResponseSender.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Checksum.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Files.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Println.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Settings.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Unit.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Client/Client.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Config.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Config.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/HeadlessUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/HeadlessUI/HeadlessUI.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/HexSync.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Log.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Log.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/NormalUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/NormalUI/MainFrame.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Server/Server.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/META-INF/MANIFEST.MF" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/META-INF/MANIFEST.MF" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,7 +70,6 @@
 }</component>
   <component name="ProjectId" id="2rCNVT6tajaPsLtZYtLcMCCIbGm" />
   <component name="ProjectViewState">
-    <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">{
@@ -88,13 +109,21 @@
       <recent name="C:\Utils\Source\Java\HexSync\src\ForgeStove" />
       <recent name="C:\Utils\Source\Java\HexSync" />
     </key>
+    <key name="MoveMembersDialog.RECENTS_KEY">
+      <recent name="ForgeStove.HexSync.Util.Settings" />
+      <recent name="ForgeStove.HexSync.Client.FileDownloader" />
+      <recent name="ForgeStove.HexSync.Util.SettingsUtil" />
+      <recent name="ForgeStove.HexSync.HeadlessUI.HeadlessSettings" />
+      <recent name="ForgeStove.HexSync.Util.PrintlnUtil" />
+    </key>
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="ForgeStove.HexSync.Util" />
       <recent name="src.main" />
     </key>
   </component>
   <component name="RunManager">
     <configuration name="HexSync" type="Application" factoryName="Application">
-      <option name="MAIN_CLASS_NAME" value="ForgeStove.HexSync.HexSync" />
+      <option name="MAIN_CLASS_NAME" value="ForgeStove.HexSync.Main" />
       <module name="HexSync" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/out/artifacts" />
       <method v="2">
@@ -129,6 +158,8 @@
       <workItem from="1736129684570" duration="37000" />
       <workItem from="1736157463207" duration="122000" />
       <workItem from="1736157607358" duration="8000" />
+      <workItem from="1736223331889" duration="885000" />
+      <workItem from="1736253057711" duration="4063000" />
     </task>
     <task id="LOCAL-00001" summary="Updated">
       <option name="closed" value="true" />
@@ -218,7 +249,15 @@
       <option name="project" value="LOCAL" />
       <updated>1736129709554</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="refactor(core): 将ForgeStove包结构调整为ForgeStove.HexSync">
+      <option name="closed" value="true" />
+      <created>1736223606108</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1736223606108</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -229,7 +268,8 @@
     <MESSAGE value="Updated" />
     <MESSAGE value="feat: 新增版权信息及许可证更新至AGPL v3" />
     <MESSAGE value="chore: 移除默认版权许可证设置并更新工作区配置" />
-    <option name="LAST_COMMIT_MESSAGE" value="chore: 移除默认版权许可证设置并更新工作区配置" />
+    <MESSAGE value="refactor(core): 将ForgeStove包结构调整为ForgeStove.HexSync" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor(core): 将ForgeStove包结构调整为ForgeStove.HexSync" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
