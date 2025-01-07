@@ -12,7 +12,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-package ForgeStove;
+package ForgeStove.HexSync;
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
@@ -20,12 +20,12 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.Objects;
 
-import static ForgeStove.Client.*;
-import static ForgeStove.Config.*;
-import static ForgeStove.HexSync.*;
-import static ForgeStove.Log.*;
-import static ForgeStove.Server.*;
-import static ForgeStove.Util.*;
+import static ForgeStove.HexSync.Client.*;
+import static ForgeStove.HexSync.Config.*;
+import static ForgeStove.HexSync.HexSync.*;
+import static ForgeStove.HexSync.Log.*;
+import static ForgeStove.HexSync.Server.*;
+import static ForgeStove.HexSync.Util.*;
 import static java.lang.Math.max;
 import static java.lang.System.*;
 public class NormalUI {

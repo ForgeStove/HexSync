@@ -12,16 +12,16 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-package ForgeStove;
+package ForgeStove.HexSync;
 import java.util.*;
 import java.util.function.Consumer;
 
-import static ForgeStove.Client.clientAutoStart;
-import static ForgeStove.Config.*;
-import static ForgeStove.HexSync.*;
-import static ForgeStove.Log.*;
-import static ForgeStove.Server.serverAutoStart;
-import static ForgeStove.Util.*;
+import static ForgeStove.HexSync.Client.clientAutoStart;
+import static ForgeStove.HexSync.Config.*;
+import static ForgeStove.HexSync.HexSync.*;
+import static ForgeStove.HexSync.Log.*;
+import static ForgeStove.HexSync.Server.serverAutoStart;
+import static ForgeStove.HexSync.Util.*;
 import static java.io.File.separator;
 import static java.lang.System.*;
 public class HeadlessUI {

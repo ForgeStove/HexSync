@@ -12,15 +12,15 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-package ForgeStove;
+package ForgeStove.HexSync;
 import java.io.*;
 import java.util.*;
 import java.util.function.Consumer;
 
-import static ForgeStove.Client.*;
-import static ForgeStove.HexSync.HEX_SYNC_NAME;
-import static ForgeStove.Log.*;
-import static ForgeStove.Server.*;
+import static ForgeStove.HexSync.Client.*;
+import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
+import static ForgeStove.HexSync.Log.*;
+import static ForgeStove.HexSync.Server.*;
 import static java.io.File.separator;
 import static java.lang.System.lineSeparator;
 public class Config {

@@ -12,7 +12,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-package ForgeStove;
+package ForgeStove.HexSync;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
 import java.awt.Color;
@@ -21,9 +21,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.*;
 
-import static ForgeStove.HexSync.HEX_SYNC_NAME;
-import static ForgeStove.NormalUI.HEADLESS;
-import static ForgeStove.Util.makeDirectory;
+import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
+import static ForgeStove.HexSync.NormalUI.HEADLESS;
+import static ForgeStove.HexSync.Util.makeDirectory;
 import static java.io.File.separator;
 import static java.lang.System.*;
 public class Log {
