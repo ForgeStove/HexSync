@@ -8,11 +8,12 @@ import java.io.*;
 import java.util.Objects;
 
 import static ForgeStove.HexSync.Main.*;
+import static ForgeStove.HexSync.NormalUI.ComponentFactory.*;
 import static ForgeStove.HexSync.Util.Log.*;
 public class AboutJDialog {
 	// 关于
 	public static void aboutJDialog(Window parent) {
-		if (ComponentFactory.checkJDialog("关于")) return;
+		if (checkJDialog("关于")) return;
 		JDialog aboutDialog = new JDialog(parent, "关于");
 		JTextPane aboutTextPane = new JTextPane();
 		aboutTextPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -31,7 +32,7 @@ public class AboutJDialog {
 				if (url.equals(GITHUB_URL)) {
 					Desktop.getDesktop().browse(event.getURL().toURI());
 				} else if (url.equals("file:LICENSE")) {
-					if (ComponentFactory.checkJDialog("许可证")) return;
+					if (checkJDialog("许可证")) return;
 					try (
 							BufferedReader reader =
 									new BufferedReader(new InputStreamReader(Objects.requireNonNull(Main.class.getResourceAsStream(
@@ -47,7 +48,7 @@ public class AboutJDialog {
 						JDialog licenseJDialog = new JDialog(aboutDialog, "许可证");
 						licenseJDialog.add(new JScrollPane(licenseTextArea));
 						licenseJDialog.pack();
-						ComponentFactory.setWindow(licenseJDialog);
+						setWindow(licenseJDialog);
 					}
 				}
 			} catch (Exception error) {
@@ -56,6 +57,6 @@ public class AboutJDialog {
 		});
 		aboutDialog.add(new JScrollPane(aboutTextPane));
 		aboutDialog.pack();
-		ComponentFactory.setWindow(aboutDialog);
+		setWindow(aboutDialog);
 	}
 }

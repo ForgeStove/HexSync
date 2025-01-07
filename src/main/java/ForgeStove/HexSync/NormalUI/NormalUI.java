@@ -20,10 +20,12 @@ import java.awt.*;
 
 import static ForgeStove.HexSync.Client.Client.*;
 import static ForgeStove.HexSync.Main.HEX_SYNC_NAME;
+import static ForgeStove.HexSync.NormalUI.ComponentFactory.*;
+import static ForgeStove.HexSync.NormalUI.SettingsJDialog.settingsJDialog;
 import static ForgeStove.HexSync.Server.Server.*;
 import static ForgeStove.HexSync.Util.Log.*;
 import static java.lang.System.exit;
-public class MainFrame {
+public class NormalUI {
 	public static Image icon; // 程序图标
 	public static JFrame frame; // 主窗口
 	public static JTextPane textPane; // 日志面板
@@ -47,17 +49,17 @@ public class MainFrame {
 				frame = new JFrame(HEX_SYNC_NAME); // 主窗口
 				frame.setAlwaysOnTop(true);
 				JPanel buttonPanel = new JPanel(new GridLayout(2, 3));
-				ComponentFactory.newJButton(buttonPanel, "设置", event -> SettingsJDialog.settingsJDialog());
-				ComponentFactory.newJButton(buttonPanel, "启动服务端", event -> startServer());
-				ComponentFactory.newJButton(buttonPanel, "启动客户端", event -> startClient());
-				ComponentFactory.newJButton(buttonPanel, "停止服务端", event -> stopServer());
-				ComponentFactory.newJButton(buttonPanel, "停止客户端", event -> stopClient());
-				ComponentFactory.newJButton(buttonPanel, "退出", event -> exit(0));
+				newJButton(buttonPanel, "设置", event -> settingsJDialog());
+				newJButton(buttonPanel, "启动服务端", event -> startServer());
+				newJButton(buttonPanel, "启动客户端", event -> startClient());
+				newJButton(buttonPanel, "停止服务端", event -> stopServer());
+				newJButton(buttonPanel, "停止客户端", event -> stopClient());
+				newJButton(buttonPanel, "退出", event -> exit(0));
 				panel.add(buttonPanel, BorderLayout.SOUTH);
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				frame.add(panel);
 				frame.setSize(new Dimension(screenLength / 3, screenLength / 4));
-				ComponentFactory.setWindow(frame);
+				setWindow(frame);
 			} catch (Exception error) {
 				log(SEVERE, "初始化UI时出错:" + error.getMessage());
 			}

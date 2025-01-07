@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 package ForgeStove.HexSync.Util;
-import ForgeStove.HexSync.NormalUI.MainFrame;
+import ForgeStove.HexSync.NormalUI.NormalUI;
 
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
@@ -66,8 +66,8 @@ public class Log {
 									? new Color(0, 128, 0)
 									: warning ? new Color(255, 165, 0) : severe ? new Color(255, 0, 0) : Color.BLACK
 					);
-					if (MainFrame.textPane != null) try {
-						Document document = MainFrame.textPane.getDocument();
+					if (NormalUI.textPane != null) try {
+						Document document = NormalUI.textPane.getDocument();
 						while (document.getDefaultRootElement().getElementCount() > 128) {
 							Element element = document.getDefaultRootElement().getElement(0);
 							int lineStart = element.getStartOffset();

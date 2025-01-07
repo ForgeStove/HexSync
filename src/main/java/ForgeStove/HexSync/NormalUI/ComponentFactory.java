@@ -2,6 +2,8 @@ package ForgeStove.HexSync.NormalUI;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+
+import static ForgeStove.HexSync.NormalUI.NormalUI.*;
 public class ComponentFactory {
 	// 聚焦并全选输入框
 	public static void selectAndFocus(JTextField textField) {
@@ -39,14 +41,14 @@ public class ComponentFactory {
 	public static void newJButton(JPanel panel, String text, ActionListener actionListener) {
 		JButton button = new JButton("<html>" + text);
 		button.setFocusPainted(false);
-		button.setPreferredSize(new Dimension(0, MainFrame.screenLength / 55));
+		button.setPreferredSize(new Dimension(0, screenLength / 55));
 		button.addActionListener(actionListener);
 		panel.add(button);
 	}
 	// 设置窗口属性
 	public static void setWindow(Window window) {
 		setFont(window, new Font("Arial", Font.PLAIN, 14));
-		window.setIconImage(MainFrame.icon);
+		window.setIconImage(icon);
 		window.setLocationRelativeTo(null);
 		window.setVisible(true);
 	}

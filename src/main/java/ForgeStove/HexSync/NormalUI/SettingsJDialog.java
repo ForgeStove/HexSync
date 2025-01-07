@@ -5,6 +5,9 @@ import javax.swing.*;
 import java.awt.*;
 
 import static ForgeStove.HexSync.Client.Client.*;
+import static ForgeStove.HexSync.NormalUI.AboutJDialog.aboutJDialog;
+import static ForgeStove.HexSync.NormalUI.ComponentFactory.*;
+import static ForgeStove.HexSync.NormalUI.NormalUI.*;
 import static ForgeStove.HexSync.Server.Server.*;
 import static ForgeStove.HexSync.Util.Config.*;
 import static ForgeStove.HexSync.Util.Log.*;
@@ -12,10 +15,10 @@ import static ForgeStove.HexSync.Util.Settings.invalidLong;
 public class SettingsJDialog {
 	// 打开设置对话框
 	public static void settingsJDialog() {
-		if (ComponentFactory.checkJDialog("设置")) return;
+		if (checkJDialog("设置")) return;
 		loadConfig();
 		// 设置对话框
-		JDialog settingsJDialog = new JDialog(MainFrame.frame, "设置");
+		JDialog settingsJDialog = new JDialog(frame, "设置");
 		JPanel settingsPanel = new JPanel(new BorderLayout());
 		settingsPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		// 选项卡面板
@@ -38,7 +41,7 @@ public class SettingsJDialog {
 		serverPanel.add(new JLabel("<html>服务端同步路径:"));
 		JTextField serverSyncDirectoryField = new JTextField(serverSyncDirectory);
 		serverPanel.add(serverSyncDirectoryField);
-		JCheckBox serverAutoStartBox = ComponentFactory.newJCheckBox(
+		JCheckBox serverAutoStartBox = newJCheckBox(
 				serverPanel,
 				"<html>自动启动服务端",
 				serverAutoStart
@@ -58,7 +61,7 @@ public class SettingsJDialog {
 		clientPanel.add(new JLabel("<html>仅客户端模组路径:"));
 		JTextField clientOnlyDirectoryField = new JTextField(clientOnlyDirectory);
 		clientPanel.add(clientOnlyDirectoryField);
-		JCheckBox clientAutoStartBox = ComponentFactory.newJCheckBox(
+		JCheckBox clientAutoStartBox = newJCheckBox(
 				clientPanel,
 				"<html>自动启动客户端",
 				clientAutoStart
@@ -66,7 +69,7 @@ public class SettingsJDialog {
 		tabbedPane.addTab("<html>客户端设置", clientPanel);
 		// 按钮面板
 		JPanel buttonPanel = new JPanel(new GridLayout(1, 3, 5, 0));
-		ComponentFactory.newJButton(
+		newJButton(
 				buttonPanel, "保存", event -> {
 					// 定义输入框数组及其对应的提示信息和选项卡索引，并检查输入框是否为空
 					for (Object[] input : new Object[][]{
@@ -83,22 +86,20 @@ public class SettingsJDialog {
 							JTextField textField = (JTextField) input[1];
 							if (textField.getText().trim().isEmpty()) {
 								tabbedPane.setSelectedIndex((int) input[2]); // 跳转到对应的选项卡
-								ComponentFactory.selectAndFocus(textField);
+								selectAndFocus(textField);
 								log(WARNING, input[0] + "不能为空");
 								return;
 							}
 						}
 					// 检测输入框是否为数字且在合法范围内并尝试转换
-					if (!Settings.setPort(serverPortField.getText().trim(), true))
-						ComponentFactory.selectAndFocus(serverPortField);
-					if (!Settings.setPort(clientPortField.getText().trim(), false))
-						ComponentFactory.selectAndFocus(clientPortField);
+					if (!Settings.setPort(serverPortField.getText().trim(), true)) selectAndFocus(serverPortField);
+					if (!Settings.setPort(clientPortField.getText().trim(), false)) selectAndFocus(clientPortField);
 					// 检测最大上传速率
 					String uploadRateLimitText = serverUploadRateLimitField.getText().trim();
 					if (invalidLong(uploadRateLimitText) || Long.parseLong(uploadRateLimitText) < 0) {
 						log(WARNING, "最大上传速率格式错误: " + uploadRateLimitText);
 						tabbedPane.setSelectedIndex(0);
-						ComponentFactory.selectAndFocus(serverUploadRateLimitField);
+						selectAndFocus(serverUploadRateLimitField);
 						return;
 					}
 					serverAutoStart = serverAutoStartBox.isSelected();
@@ -113,11 +114,11 @@ public class SettingsJDialog {
 					settingsJDialog.dispose(); // 关闭对话框
 				}
 		);
-		ComponentFactory.newJButton(buttonPanel, "取消", event -> settingsJDialog.dispose());
-		ComponentFactory.newJButton(buttonPanel, "关于", event -> AboutJDialog.aboutJDialog(settingsJDialog));
+		newJButton(buttonPanel, "取消", event -> settingsJDialog.dispose());
+		newJButton(buttonPanel, "关于", event -> aboutJDialog(settingsJDialog));
 		settingsPanel.add(buttonPanel, BorderLayout.SOUTH);
 		settingsJDialog.add(settingsPanel);
-		settingsJDialog.setSize(MainFrame.screenLength / 5, MainFrame.screenLength / 8);
-		ComponentFactory.setWindow(settingsJDialog);
+		settingsJDialog.setSize(screenLength / 5, screenLength / 8);
+		setWindow(settingsJDialog);
 	}
 }

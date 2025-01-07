@@ -15,7 +15,7 @@
 package ForgeStove.HexSync;
 import ForgeStove.HexSync.Client.Client;
 import ForgeStove.HexSync.HeadlessUI.HeadlessUI;
-import ForgeStove.HexSync.NormalUI.MainFrame;
+import ForgeStove.HexSync.NormalUI.NormalUI;
 import ForgeStove.HexSync.Server.Server;
 import ForgeStove.HexSync.Util.*;
 public class Main {
@@ -27,6 +27,6 @@ public class Main {
 		if (Server.serverAutoStart) Server.startServer();
 		if (Client.clientAutoStart) Client.startClient();
 		if (Settings.HEADLESS) HeadlessUI.headlessUI();
-		else MainFrame.normalUI();
+		else NormalUI.normalUI();
 	}
 }
