@@ -18,7 +18,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import static ForgeStove.HexSync.Client.Client.*;
-import static ForgeStove.HexSync.Main.HEX_SYNC_NAME;
+import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
 import static ForgeStove.HexSync.Server.Server.*;
 import static ForgeStove.HexSync.Util.Log.*;
 import static java.io.File.separator;

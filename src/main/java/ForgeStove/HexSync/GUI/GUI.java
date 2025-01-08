@@ -12,44 +12,42 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-package ForgeStove.HexSync.NormalUI;
-import ForgeStove.HexSync.Main;
+package ForgeStove.HexSync.GUI;
+import ForgeStove.HexSync.HexSync;
 
 import javax.swing.*;
 import java.awt.*;
 
 import static ForgeStove.HexSync.Client.Client.*;
-import static ForgeStove.HexSync.Main.HEX_SYNC_NAME;
-import static ForgeStove.HexSync.NormalUI.ComponentFactory.*;
-import static ForgeStove.HexSync.NormalUI.SettingsJDialog.settingsJDialog;
+import static ForgeStove.HexSync.GUI.ComponentFactory.*;
+import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
 import static ForgeStove.HexSync.Server.Server.*;
 import static ForgeStove.HexSync.Util.Log.*;
 import static java.lang.System.exit;
-public class NormalUI {
+public class GUI {
 	public static Image icon; // 程序图标
 	public static JFrame frame; // 主窗口
-	public static JTextPane textPane; // 日志面板
+	public static JTextPane logPane; // 日志面板
 	public static int screenLength; // 屏幕长边
-	// 有头模式UI
-	public static void normalUI() {
+	// 图形化界面
+	public static void initGUI() {
 		SwingUtilities.invokeLater(() -> {
 			try {
-				icon = Toolkit.getDefaultToolkit().getImage(Main.class.getClassLoader().getResource("icon.png"));
+				icon = Toolkit.getDefaultToolkit().getImage(HexSync.class.getClassLoader().getResource("icon.png"));
 				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 				Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
 				screenLength = Math.max(size.width, size.height);
-				// 添加按钮，状态面板和托盘图标
-				JPanel panel = new JPanel();
+				JPanel panel = new JPanel(); // 主面板
 				panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 				panel.setLayout(new BorderLayout(5, 5));
-				textPane = new JTextPane();
-				textPane.setEditable(false);
-				textPane.setOpaque(false);
-				panel.add(new JScrollPane(textPane), BorderLayout.CENTER);
+				logPane = new JTextPane(); // 日志面板
+				logPane.setEditable(false);
+				logPane.setOpaque(false);
+				panel.add(new JScrollPane(logPane), BorderLayout.CENTER);
 				frame = new JFrame(HEX_SYNC_NAME); // 主窗口
 				frame.setAlwaysOnTop(true);
 				JPanel buttonPanel = new JPanel(new GridLayout(2, 3));
-				newJButton(buttonPanel, "设置", event -> settingsJDialog());
+				newJButton(buttonPanel, "设置", event -> new SettingsJDialog());
 				newJButton(buttonPanel, "启动服务端", event -> startServer());
 				newJButton(buttonPanel, "启动客户端", event -> startClient());
 				newJButton(buttonPanel, "停止服务端", event -> stopServer());
@@ -59,7 +57,7 @@ public class NormalUI {
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				frame.add(panel);
 				frame.setSize(new Dimension(screenLength / 3, screenLength / 4));
-				setWindow(frame);
+				setWindow(frame); // 设置窗口属性
 			} catch (Exception error) {
 				log(SEVERE, "初始化UI时出错:" + error.getMessage());
 			}

@@ -12,19 +12,19 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-package ForgeStove.HexSync.HeadlessUI;
+package ForgeStove.HexSync.CLI;
 import ForgeStove.HexSync.Client.Client;
 import ForgeStove.HexSync.Server.Server;
 import ForgeStove.HexSync.Util.Println;
 
 import java.util.*;
 
-import static ForgeStove.HexSync.Main.*;
+import static ForgeStove.HexSync.HexSync.*;
 import static ForgeStove.HexSync.Util.Log.*;
 import static java.lang.System.*;
-public class HeadlessUI {
-	// 无头模式
-	public static void headlessUI() {
+public class CLI {
+	// 命令行界面
+	public static void initCLI() {
 		out.println("欢迎使用" + HEX_SYNC_NAME + "!");
 		out.println("输入HELP以获取帮助.");
 		Map<String, Runnable> map = new HashMap<>();

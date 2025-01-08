@@ -2,7 +2,7 @@ package ForgeStove.HexSync.Util;
 import static ForgeStove.HexSync.Util.Log.*;
 import static java.lang.Math.multiplyExact;
 public class Unit {
-	// 单位转换方法
+	// 速率转换为字节
 	public static long convertToBytes(long value, String unit) {
 		try {
 			switch (unit) {

@@ -5,7 +5,7 @@ import java.io.*;
 import java.util.*;
 
 import static ForgeStove.HexSync.Client.Client.errorDownload;
-import static ForgeStove.HexSync.Main.HEX_SYNC_NAME;
+import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
 import static ForgeStove.HexSync.Util.Config.*;
 import static ForgeStove.HexSync.Util.Log.*;
 public class Files {

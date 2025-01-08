@@ -1,5 +1,5 @@
-package ForgeStove.HexSync.NormalUI;
-import ForgeStove.HexSync.Main;
+package ForgeStove.HexSync.GUI;
+import ForgeStove.HexSync.HexSync;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
@@ -7,8 +7,8 @@ import java.awt.*;
 import java.io.*;
 import java.util.Objects;
 
-import static ForgeStove.HexSync.Main.*;
-import static ForgeStove.HexSync.NormalUI.ComponentFactory.*;
+import static ForgeStove.HexSync.GUI.ComponentFactory.*;
+import static ForgeStove.HexSync.HexSync.*;
 import static ForgeStove.HexSync.Util.Log.*;
 public class AboutJDialog {
 	// 关于
@@ -34,8 +34,8 @@ public class AboutJDialog {
 				} else if (url.equals("file:LICENSE")) {
 					if (checkJDialog("许可证")) return;
 					try (
-							BufferedReader reader =
-									new BufferedReader(new InputStreamReader(Objects.requireNonNull(Main.class.getResourceAsStream(
+							BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(
+									HexSync.class.getResourceAsStream(
 									"LICENSE"))))
 					) {
 						StringBuilder licenseContent = new StringBuilder();

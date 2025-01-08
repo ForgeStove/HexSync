@@ -8,8 +8,8 @@ import java.util.*;
 import static ForgeStove.HexSync.Util.Config.serverAddress;
 import static ForgeStove.HexSync.Util.Log.*;
 public class FileCRCFetcher {
-	// 从服务器请求文件名和校验码列表
-	public static Map<String, Long> fileCRCFetcher() {
+	// 从服务器获取文件名和校验码列表
+	public static Map<String, Long> fetchFileCRCList() {
 		String URL = Settings.formatHTTP(serverAddress) + ":" + Client.clientPort + "/list"; // 服务器地址
 		log(INFO, "正在连接到: " + URL); // 记录请求开始日志
 		Map<String, Long> requestMap = new HashMap<>(); // 复制请求列表

@@ -1,20 +1,20 @@
-package ForgeStove.HexSync.NormalUI;
+package ForgeStove.HexSync.GUI;
 import ForgeStove.HexSync.Util.Settings;
 
 import javax.swing.*;
 import java.awt.*;
 
 import static ForgeStove.HexSync.Client.Client.*;
-import static ForgeStove.HexSync.NormalUI.AboutJDialog.aboutJDialog;
-import static ForgeStove.HexSync.NormalUI.ComponentFactory.*;
-import static ForgeStove.HexSync.NormalUI.NormalUI.*;
+import static ForgeStove.HexSync.GUI.AboutJDialog.aboutJDialog;
+import static ForgeStove.HexSync.GUI.ComponentFactory.*;
+import static ForgeStove.HexSync.GUI.GUI.*;
 import static ForgeStove.HexSync.Server.Server.*;
 import static ForgeStove.HexSync.Util.Config.*;
 import static ForgeStove.HexSync.Util.Log.*;
-import static ForgeStove.HexSync.Util.Settings.invalidLong;
+import static ForgeStove.HexSync.Util.Settings.isInvalidLong;
 public class SettingsJDialog {
 	// 打开设置对话框
-	public static void settingsJDialog() {
+	public SettingsJDialog() {
 		if (checkJDialog("设置")) return;
 		loadConfig();
 		// 设置对话框
@@ -92,11 +92,11 @@ public class SettingsJDialog {
 							}
 						}
 					// 检测输入框是否为数字且在合法范围内并尝试转换
-					if (!Settings.setPort(serverPortField.getText().trim(), true)) selectAndFocus(serverPortField);
-					if (!Settings.setPort(clientPortField.getText().trim(), false)) selectAndFocus(clientPortField);
+					if (!Settings.canSetPort(serverPortField.getText().trim(), true)) selectAndFocus(serverPortField);
+					if (!Settings.canSetPort(clientPortField.getText().trim(), false)) selectAndFocus(clientPortField);
 					// 检测最大上传速率
 					String uploadRateLimitText = serverUploadRateLimitField.getText().trim();
-					if (invalidLong(uploadRateLimitText) || Long.parseLong(uploadRateLimitText) < 0) {
+					if (isInvalidLong(uploadRateLimitText) || Long.parseLong(uploadRateLimitText) < 0) {
 						log(WARNING, "最大上传速率格式错误: " + uploadRateLimitText);
 						tabbedPane.setSelectedIndex(0);
 						selectAndFocus(serverUploadRateLimitField);

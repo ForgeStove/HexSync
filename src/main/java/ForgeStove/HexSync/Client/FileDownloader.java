@@ -21,7 +21,7 @@ public class FileDownloader {
 		int toDownloadMapSize = toDownloadMap.size();
 		for (Map.Entry<String, Long> entry : toDownloadMap.entrySet()) {
 			String filePath = clientSyncDirectory + separator + entry.getKey(); // 设置下载路径
-			if (downloadFile(filePath, toDownloadMap)) {
+			if (canDownloadFile(filePath, toDownloadMap)) {
 				count++; // 成功下载时增加计数
 				log(INFO, "已下载: [" + count + "/" + toDownloadMapSize + "] " + filePath);
 			} else {
@@ -33,7 +33,7 @@ public class FileDownloader {
 		if (Client.clientAutoStart) exit(0); // 自动退出
 	}
 	// 从服务器下载文件
-	public static boolean downloadFile(String filePath, Map<String, Long> toDownloadMap) {
+	public static boolean canDownloadFile(String filePath, Map<String, Long> toDownloadMap) {
 		if (Client.clientThread == null) return false; // 客户端线程已关闭
 		File clientFile = new File(filePath); // 目标本地文件
 		Long requestCRC = toDownloadMap.get(filePath.substring(clientSyncDirectory.length() + 1));

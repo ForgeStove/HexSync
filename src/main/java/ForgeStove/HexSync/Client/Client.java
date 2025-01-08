@@ -13,14 +13,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 package ForgeStove.HexSync.Client;
-import ForgeStove.HexSync.Util.Files;
-
 import java.io.IOException;
 import java.net.*;
 import java.util.Map;
 
-import static ForgeStove.HexSync.Main.HEX_SYNC_NAME;
+import static ForgeStove.HexSync.Client.FileCRCFetcher.fetchFileCRCList;
+import static ForgeStove.HexSync.Client.FileDownloader.downloadMissingFiles;
+import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
 import static ForgeStove.HexSync.Util.Config.*;
+import static ForgeStove.HexSync.Util.Files.*;
 import static ForgeStove.HexSync.Util.Log.*;
 import static java.lang.System.exit;
 public class Client {
@@ -42,14 +43,14 @@ public class Client {
 		if (clientThread != null) return;
 		clientThread = new Thread(() -> {
 			log(INFO, HEX_SYNC_NAME + "Client正在启动...");
-			Files.initFiles(false);
-			Map<String, Long> requestMap = FileCRCFetcher.fileCRCFetcher();
+			initFiles(false);
+			Map<String, Long> requestMap = fetchFileCRCList();
 			if (!requestMap.isEmpty()) {
-				Files.deleteFilesNotInMaps(requestMap, Files.initMap(clientOnlyDirectory)); // 删除多余文件
-				Map<String, Long> clientMap = Files.initMap(clientSyncDirectory); // 初始化客户端文件列表
+				deleteFilesNotInMaps(requestMap, initMap(clientOnlyDirectory)); // 删除多余文件
+				Map<String, Long> clientMap = initMap(clientSyncDirectory); // 初始化客户端文件列表
 				requestMap.entrySet().removeIf(entry -> clientMap.containsValue(entry.getValue()));
-				FileDownloader.downloadMissingFiles(requestMap);// 下载文件
-				Files.copyDirectory(clientOnlyDirectory, clientSyncDirectory);// 复制仅客户端模组文件夹中的文件到客户端同步文件夹
+				downloadMissingFiles(requestMap);// 下载文件
+				copyDirectory(clientOnlyDirectory, clientSyncDirectory);// 复制仅客户端模组文件夹中的文件到客户端同步文件夹
 			}
 			stopClient();
 		});

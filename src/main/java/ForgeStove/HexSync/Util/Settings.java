@@ -11,7 +11,7 @@ import static java.lang.System.*;
 public class Settings {
 	public static final boolean HEADLESS = GraphicsEnvironment.isHeadless(); // 是否处于无头模式
 	// 字符串转端口
-	public static boolean setPort(String portInput, boolean isServer) {
+	public static boolean canSetPort(String portInput, boolean isServer) {
 		String side = isServer ? "服务端" : "客户端";
 		try {
 			int port = Integer.parseInt(portInput);
@@ -32,13 +32,13 @@ public class Settings {
 	// 设置最大上传速率
 	public static void setRate(String input) {
 		String[] parts = input.split("\\s+");
-		if (input.matches("\\d+(\\s+B|\\s+KB|\\s+MB|\\s+GB)") && !invalidLong(parts[0])) {
+		if (input.matches("\\d+(\\s+B|\\s+KB|\\s+MB|\\s+GB)") && !isInvalidLong(parts[0])) {
 			serverUploadRateLimit = Long.parseLong(parts[0]);
 			serverUploadRateLimitUnit = parts[1];
 		} else if (HEADLESS) err.println("速率格式错误");
 	}
 	// 检测数字输入是否不在Long范围内
-	public static boolean invalidLong(String input) {
+	public static boolean isInvalidLong(String input) {
 		try {
 			Long.parseLong(input.trim());
 			return false;

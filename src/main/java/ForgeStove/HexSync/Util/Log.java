@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 package ForgeStove.HexSync.Util;
-import ForgeStove.HexSync.NormalUI.NormalUI;
+import ForgeStove.HexSync.GUI.GUI;
 
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
@@ -23,7 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.*;
 
-import static ForgeStove.HexSync.Main.HEX_SYNC_NAME;
+import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
 import static ForgeStove.HexSync.Util.Files.makeDirectory;
 import static ForgeStove.HexSync.Util.Settings.HEADLESS;
 import static java.io.File.separator;
@@ -66,8 +66,8 @@ public class Log {
 									? new Color(0, 128, 0)
 									: warning ? new Color(255, 165, 0) : severe ? new Color(255, 0, 0) : Color.BLACK
 					);
-					if (NormalUI.textPane != null) try {
-						Document document = NormalUI.textPane.getDocument();
+					if (GUI.logPane != null) try {
+						Document document = GUI.logPane.getDocument();
 						while (document.getDefaultRootElement().getElementCount() > 128) {
 							Element element = document.getDefaultRootElement().getElement(0);
 							int lineStart = element.getStartOffset();

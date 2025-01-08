@@ -1,11 +1,11 @@
-package ForgeStove.HexSync.HeadlessUI;
+package ForgeStove.HexSync.CLI;
 import ForgeStove.HexSync.Util.*;
 
 import java.util.*;
 import java.util.function.Consumer;
 
 import static ForgeStove.HexSync.Client.Client.clientAutoStart;
-import static ForgeStove.HexSync.Main.HEX_SYNC_NAME;
+import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
 import static ForgeStove.HexSync.Server.Server.serverAutoStart;
 import static ForgeStove.HexSync.Util.Config.*;
 import static java.lang.System.*;
@@ -13,11 +13,11 @@ public class HeadlessSettings {
 	// 无头模式设置
 	public static void headlessSettings() {
 		Map<String, Consumer<String[]>> map = new HashMap<>();
-		map.put("SP", args -> Settings.setPort(args[1], true));
+		map.put("SP", args -> Settings.canSetPort(args[1], true));
 		map.put("SL", args -> Settings.setRate(args[1] + " " + args[2]));
 		map.put("SD", args -> Settings.setDirectory(args[1], "服务端同步", value -> serverSyncDirectory = value));
 		map.put("SS", args -> Settings.setAutoStart(args[1], true, value -> serverAutoStart = value));
-		map.put("CP", args -> Settings.setPort(args[1], false));
+		map.put("CP", args -> Settings.canSetPort(args[1], false));
 		map.put(
 				"SA", args -> {
 					serverAddress = args[1];
