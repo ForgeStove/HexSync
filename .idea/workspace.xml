@@ -9,7 +9,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a142c8f4-7ccb-4bd9-ae6e-b78de2e6fbbe" name="更改" comment="docs(core): 添加GNU Affero通用公共许可证声明" />
+    <list default="true" id="a142c8f4-7ccb-4bd9-ae6e-b78de2e6fbbe" name="更改" comment="docs(core): 添加GNU Affero通用公共许可证声明">
+      <change afterPath="$PROJECT_DIR$/LICENSE" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -61,7 +63,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Utils/Source/Java/HexSync/out/artifacts",
+    "last_opened_file_path": "C:/Utils/Source/Java/HexSync",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -77,9 +79,9 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Utils\Source\Java\HexSync" />
       <recent name="C:\Utils\Source\Java\HexSync\out\artifacts" />
       <recent name="C:\Utils\Source\Java\HexSync\.idea" />
-      <recent name="C:\Utils\Source\Java\HexSync" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Utils\Source\Java\HexSync\src\main\resources" />
@@ -151,7 +153,7 @@
       <workItem from="1736312324551" duration="895000" />
       <workItem from="1736334345330" duration="4662000" />
       <workItem from="1736514737800" duration="19000" />
-      <workItem from="1736755940248" duration="918000" />
+      <workItem from="1736755940248" duration="1362000" />
     </task>
     <task id="LOCAL-00001" summary="Updated">
       <option name="closed" value="true" />
@@ -305,11 +307,22 @@
       <option name="project" value="LOCAL" />
       <updated>1736756676393</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="docs(core): 添加GNU Affero通用公共许可证声明">
+      <option name="closed" value="true" />
+      <created>1736756891064</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1736756891064</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="UpdateCopyrightCheckinHandler">
+    <option name="UPDATE_COPYRIGHT" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
