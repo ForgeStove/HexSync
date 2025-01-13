@@ -35,8 +35,7 @@ public class AboutJDialog {
 					if (checkJDialog("许可证")) return;
 					try (
 							BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(
-									HexSync.class.getResourceAsStream(
-									"LICENSE"))))
+									HexSync.class.getClassLoader().getResourceAsStream("LICENSE"))))
 					) {
 						StringBuilder licenseContent = new StringBuilder();
 						String line;
