@@ -1,3 +1,8 @@
 <component name="CopyrightManager">
-  <settings default="AGPL-3.0" />
+  <settings default="AGPL-3_0">
+    <LanguageOptions name="__TEMPLATE__">
+      <option name="addBlankAfter" value="false" />
+      <option name="block" value="false" />
+    </LanguageOptions>
+  </settings>
 </component>

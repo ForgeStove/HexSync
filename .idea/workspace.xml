@@ -9,11 +9,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a142c8f4-7ccb-4bd9-ae6e-b78de2e6fbbe" name="更改" comment="refactor(core): 更新工作记录和任务计数器">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/LICENSE" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/GUI/AboutJDialog.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/GUI/AboutJDialog.java" afterDir="false" />
-    </list>
+    <list default="true" id="a142c8f4-7ccb-4bd9-ae6e-b78de2e6fbbe" name="更改" comment="refactor(core): 更新工作记录和任务计数器" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -154,7 +150,7 @@
       <workItem from="1736312324551" duration="895000" />
       <workItem from="1736334345330" duration="4662000" />
       <workItem from="1736514737800" duration="19000" />
-      <workItem from="1736755940248" duration="307000" />
+      <workItem from="1736755940248" duration="617000" />
     </task>
     <task id="LOCAL-00001" summary="Updated">
       <option name="closed" value="true" />
@@ -284,7 +280,23 @@
       <option name="project" value="LOCAL" />
       <updated>1736755986473</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="fix: 修复资源加载路径错误">
+      <option name="closed" value="true" />
+      <created>1736756384489</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1736756384489</updated>
+    </task>
+    <task id="LOCAL-00018" summary="refactor(core): 更新工作记录和任务计数器">
+      <option name="closed" value="true" />
+      <created>1736756392391</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1736756392391</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -298,6 +310,8 @@
     <MESSAGE value="refactor(core): 将ForgeStove包结构调整为ForgeStove.HexSync" />
     <MESSAGE value="feat: 新增多个功能模块，重构代码结构和优化文件管理系统" />
     <MESSAGE value="feat(core): 重构代码结构" />
+    <MESSAGE value="refactor(core): 更新资源加载方式和工作记录" />
+    <MESSAGE value="fix: 修复资源加载路径错误" />
     <MESSAGE value="refactor(core): 更新工作记录和任务计数器" />
     <option name="LAST_COMMIT_MESSAGE" value="refactor(core): 更新工作记录和任务计数器" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
