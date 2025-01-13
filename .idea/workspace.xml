@@ -9,7 +9,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a142c8f4-7ccb-4bd9-ae6e-b78de2e6fbbe" name="更改" comment="refactor(core): 更新工作记录和任务计数器" />
+    <list default="true" id="a142c8f4-7ccb-4bd9-ae6e-b78de2e6fbbe" name="更改" comment="docs(core): 添加GNU Affero通用公共许可证声明" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -24,6 +24,7 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="SIGN_OFF_COMMIT" value="true" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {}
@@ -69,7 +70,7 @@
     "project.structure.last.edited": "问题",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "Errors",
+    "settings.editor.selected.configurable": "template.copyright.formatting",
     "vue.rearranger.settings.migration": "true",
     "应用程序.HexSync.executor": "Debug"
   }
@@ -150,7 +151,7 @@
       <workItem from="1736312324551" duration="895000" />
       <workItem from="1736334345330" duration="4662000" />
       <workItem from="1736514737800" duration="19000" />
-      <workItem from="1736755940248" duration="617000" />
+      <workItem from="1736755940248" duration="918000" />
     </task>
     <task id="LOCAL-00001" summary="Updated">
       <option name="closed" value="true" />
@@ -296,7 +297,15 @@
       <option name="project" value="LOCAL" />
       <updated>1736756392391</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="docs(core): 添加GNU Affero通用公共许可证声明">
+      <option name="closed" value="true" />
+      <created>1736756676393</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1736756676393</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -313,7 +322,8 @@
     <MESSAGE value="refactor(core): 更新资源加载方式和工作记录" />
     <MESSAGE value="fix: 修复资源加载路径错误" />
     <MESSAGE value="refactor(core): 更新工作记录和任务计数器" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor(core): 更新工作记录和任务计数器" />
+    <MESSAGE value="docs(core): 添加GNU Affero通用公共许可证声明" />
+    <option name="LAST_COMMIT_MESSAGE" value="docs(core): 添加GNU Affero通用公共许可证声明" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
