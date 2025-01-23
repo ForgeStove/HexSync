@@ -1,4 +1,2 @@
-# 默认忽略的文件
-/shelf/
-/HexSync/
-/out/
+# Git 忽略的文件
+/out
