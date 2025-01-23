@@ -10,7 +10,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a142c8f4-7ccb-4bd9-ae6e-b78de2e6fbbe" name="更改" comment="docs(core): 添加GNU Affero通用公共许可证声明">
-      <change afterPath="$PROJECT_DIR$/LICENSE" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,16 +20,29 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
+        <option value="JavaFXApplication" />
         <option value="Class" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="ForgeStove &lt;2071948808@qq.com&gt;" />
+      </list>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="SIGN_OFF_COMMIT" value="true" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
-  &quot;lastFilter&quot;: {}
+  &quot;history&quot;: [
+    {
+      &quot;state&quot;: &quot;OPEN&quot;
+    }
+  ],
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;
+  }
 }</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
@@ -51,32 +64,33 @@
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Downloaded.Files.Path.Enabled": "false",
-    "JAR 应用程序.HexSync.executor": "Run",
-    "JAR 应用程序.HexSync.jar.executor": "Run",
-    "Repository.Attach.Annotations": "false",
-    "Repository.Attach.JavaDocs": "false",
-    "Repository.Attach.Sources": "false",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Utils/Source/Java/HexSync",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "问题",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "template.copyright.formatting",
-    "vue.rearranger.settings.migration": "true",
-    "应用程序.HexSync.executor": "Debug"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Downloaded.Files.Path.Enabled&quot;: &quot;false&quot;,
+    &quot;JAR 应用程序.HexSync.executor&quot;: &quot;Run&quot;,
+    &quot;JAR 应用程序.HexSync.jar.executor&quot;: &quot;Run&quot;,
+    &quot;Repository.Attach.Annotations&quot;: &quot;false&quot;,
+    &quot;Repository.Attach.JavaDocs&quot;: &quot;false&quot;,
+    &quot;Repository.Attach.Sources&quot;: &quot;false&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;UI_DESIGNER_EDITOR_MODE.UIDesignerToolWindowManager.SHOW&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Utils/Source/Java/HexSync&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;问题&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;,
+    &quot;应用程序.HexSync.executor&quot;: &quot;Debug&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Utils\Source\Java\HexSync" />
@@ -84,11 +98,11 @@
       <recent name="C:\Utils\Source\Java\HexSync\.idea" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Utils\Source\Java\HexSync\src\main\java\ForgeStove\HexSync" />
       <recent name="C:\Utils\Source\Java\HexSync\src\main\resources" />
       <recent name="C:\Utils\Source\Java\HexSync\src\main\java\ForgeStove" />
       <recent name="C:\Utils\Source\Java\HexSync\src\ForgeStove\resources" />
       <recent name="C:\Utils\Source\Java\HexSync\src\ForgeStove" />
-      <recent name="C:\Utils\Source\Java\HexSync" />
     </key>
     <key name="MoveMembersDialog.RECENTS_KEY">
       <recent name="ForgeStove.HexSync.Util.Settings" />
@@ -102,7 +116,7 @@
       <recent name="src.main" />
     </key>
   </component>
-  <component name="RunManager" selected="应用程序.HexSync">
+  <component name="RunManager" selected="JAR 应用程序.HexSync.jar">
     <configuration name="HexSync" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="ForgeStove.HexSync.HexSync" />
       <module name="HexSync" />
@@ -153,7 +167,14 @@
       <workItem from="1736312324551" duration="895000" />
       <workItem from="1736334345330" duration="4662000" />
       <workItem from="1736514737800" duration="19000" />
-      <workItem from="1736755940248" duration="1362000" />
+      <workItem from="1736755940248" duration="3247000" />
+      <workItem from="1736839222850" duration="196000" />
+      <workItem from="1737102978841" duration="268000" />
+      <workItem from="1737103254553" duration="111000" />
+      <workItem from="1737103372111" duration="3873000" />
+      <workItem from="1737132787595" duration="50000" />
+      <workItem from="1737391837426" duration="7000" />
+      <workItem from="1737609469931" duration="681000" />
     </task>
     <task id="LOCAL-00001" summary="Updated">
       <option name="closed" value="true" />
@@ -315,7 +336,15 @@
       <option name="project" value="LOCAL" />
       <updated>1736756891064</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="docs(core): 添加GNU Affero通用公共许可证声明">
+      <option name="closed" value="true" />
+      <created>1736759182421</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1736759182421</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -326,6 +355,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
+    <option name="CHECK_NEW_TODO" value="false" />
     <MESSAGE value="Updated" />
     <MESSAGE value="feat: 新增版权信息及许可证更新至AGPL v3" />
     <MESSAGE value="chore: 移除默认版权许可证设置并更新工作区配置" />
