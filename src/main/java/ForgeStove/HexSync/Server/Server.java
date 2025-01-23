@@ -65,10 +65,9 @@ public class Server {
 	}
 	// 停止服务端
 	public static void stopServer() {
-		if (serverThread == null || HTTPServer == null) return;
-		serverMap.clear();
-		HTTPServer.stop(0);
-		serverThread = null;
+		if (serverMap != null) serverMap.clear();
+		if (serverThread != null) serverThread = null;
+		if (HTTPServer != null) HTTPServer.stop(0);
 		log(INFO, HEX_SYNC_NAME + "Server已关闭");
 	}
 }
