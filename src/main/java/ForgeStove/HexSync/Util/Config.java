@@ -96,10 +96,10 @@ public class Config {
 					.append(entry.length > 1 ? entry[1] : "")
 					.append(lineSeparator());
 		}
-		configContent.deleteCharAt(configContent.length() - 1);// 去除末尾的换行符
+		configContent.deleteCharAt(configContent.length() - 1); // 去除末尾的换行符
 		File configFile = new File(CONFIG_PATH);
 		try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(configFile))) {
-			bufferedWriter.write(configContent.toString());// 写入配置文件
+			bufferedWriter.write(configContent.toString()); // 写入配置文件
 			log(INFO, "配置已保存: " + lineSeparator() + configContent);
 		} catch (IOException error) {
 			log(SEVERE, "配置保存失败: " + error.getMessage());
