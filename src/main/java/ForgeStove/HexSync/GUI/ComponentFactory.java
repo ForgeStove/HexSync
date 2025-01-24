@@ -61,7 +61,7 @@ public class ComponentFactory {
 	}
 	// 设置窗口属性
 	public static void setWindow(Window window) {
-		setFont(window, new Font("Arial", Font.PLAIN, 14));
+		setFont(window, new Font("Arial", Font.PLAIN, 16));
 		window.setIconImage(icon);
 		window.setLocationRelativeTo(null);
 		window.setVisible(true);
