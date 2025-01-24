@@ -9,9 +9,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="refactor: 移除工作区配置文件并更新相关设置">
+    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="feat: 新增HexSync和HexSync -headless运行配置">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/GUI/AboutJDialog.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/GUI/AboutJDialog.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,6 +58,7 @@
     "project.structure.proportion": "0.12207031",
     "project.structure.side.proportion": "0.2",
     "vue.rearranger.settings.migration": "true",
+    "应用程序.HexSync -headless.executor": "Profiler#1",
     "应用程序.HexSync.executor": "Profiler#1"
   }
 }]]></component>
@@ -98,7 +98,7 @@
       <option name="presentableId" value="Default" />
       <updated>1737689932776</updated>
       <workItem from="1737689935226" duration="2616000" />
-      <workItem from="1737695137719" duration="855000" />
+      <workItem from="1737695137719" duration="1964000" />
     </task>
     <task id="LOCAL-00002" summary="fix(ui): 更新许可证链接并简化代码">
       <option name="closed" value="true" />
@@ -156,7 +156,23 @@
       <option name="project" value="LOCAL" />
       <updated>1737695087991</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="refactor: 将启动方法名从start改为run">
+      <option name="closed" value="true" />
+      <created>1737696267082</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1737696267082</updated>
+    </task>
+    <task id="LOCAL-00010" summary="feat: 新增HexSync和HexSync -headless运行配置">
+      <option name="closed" value="true" />
+      <created>1737696273045</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1737696273045</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -170,6 +186,8 @@
     <MESSAGE value="refactor(ui): 删除.uiDesigner.xml文件中的Swing组件配置" />
     <MESSAGE value="docs: 添加服务端和客户端配置说明" />
     <MESSAGE value="refactor: 移除工作区配置文件并更新相关设置" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor: 移除工作区配置文件并更新相关设置" />
+    <MESSAGE value="refactor: 将启动方法名从start改为run" />
+    <MESSAGE value="feat: 新增HexSync和HexSync -headless运行配置" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: 新增HexSync和HexSync -headless运行配置" />
   </component>
 </project>
