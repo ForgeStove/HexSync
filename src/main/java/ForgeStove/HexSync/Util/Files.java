@@ -1,13 +1,13 @@
-package HexSync.Util;
+package ForgeStove.HexSync.Util;
 import java.io.*;
 import java.util.*;
 
-import static HexSync.Client.Client.errorDownload;
-import static HexSync.HexSync.HEX_SYNC_NAME;
-import static HexSync.Server.Server.serverMap;
-import static HexSync.Util.Checksum.calculateCRC;
-import static HexSync.Util.Config.*;
-import static HexSync.Util.Log.*;
+import static ForgeStove.HexSync.Client.Client.errorDownload;
+import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
+import static ForgeStove.HexSync.Server.Server.serverMap;
+import static ForgeStove.HexSync.Util.Checksum.calculateCRC;
+import static ForgeStove.HexSync.Util.Config.*;
+import static ForgeStove.HexSync.Util.Log.*;
 import static java.lang.String.valueOf;
 import static java.nio.file.Files.copy;
 public class Files {

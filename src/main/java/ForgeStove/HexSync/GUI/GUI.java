@@ -1,14 +1,14 @@
-package HexSync.GUI;
-import HexSync.HexSync;
+package ForgeStove.HexSync.GUI;
+import ForgeStove.HexSync.HexSync;
 
 import javax.swing.*;
 import java.awt.*;
 
-import static HexSync.Client.Client.*;
-import static HexSync.GUI.ComponentFactory.*;
-import static HexSync.HexSync.HEX_SYNC_NAME;
-import static HexSync.Server.Server.*;
-import static HexSync.Util.Log.*;
+import static ForgeStove.HexSync.Client.Client.*;
+import static ForgeStove.HexSync.GUI.ComponentFactory.*;
+import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
+import static ForgeStove.HexSync.Server.Server.*;
+import static ForgeStove.HexSync.Util.Log.*;
 import static java.awt.BorderLayout.*;
 import static java.awt.Toolkit.getDefaultToolkit;
 import static java.lang.Math.max;

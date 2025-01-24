@@ -1,10 +1,10 @@
-package HexSync.Util;
+package ForgeStove.HexSync.Util;
 import java.util.function.Consumer;
 
-import static HexSync.Client.Client.clientPort;
-import static HexSync.Server.Server.*;
-import static HexSync.Util.Config.serverUploadRateLimitUnit;
-import static HexSync.Util.Log.*;
+import static ForgeStove.HexSync.Client.Client.clientPort;
+import static ForgeStove.HexSync.Server.Server.*;
+import static ForgeStove.HexSync.Util.Config.serverUploadRateLimitUnit;
+import static ForgeStove.HexSync.Util.Log.*;
 import static java.awt.GraphicsEnvironment.isHeadless;
 import static java.io.File.separator;
 import static java.lang.System.*;

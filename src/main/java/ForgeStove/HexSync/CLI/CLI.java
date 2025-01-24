@@ -1,12 +1,12 @@
-package HexSync.CLI;
-import HexSync.Client.Client;
-import HexSync.Server.Server;
+package ForgeStove.HexSync.CLI;
+import ForgeStove.HexSync.Client.Client;
+import ForgeStove.HexSync.Server.Server;
 
 import java.util.*;
 
-import static HexSync.HexSync.*;
-import static HexSync.Util.Log.*;
-import static HexSync.Util.Println.printlnStrings;
+import static ForgeStove.HexSync.HexSync.*;
+import static ForgeStove.HexSync.Util.Log.*;
+import static ForgeStove.HexSync.Util.Println.printlnStrings;
 import static java.lang.System.*;
 public class CLI {
 	// 命令行界面

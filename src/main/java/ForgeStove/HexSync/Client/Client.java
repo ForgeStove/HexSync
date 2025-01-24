@@ -1,14 +1,14 @@
-package HexSync.Client;
+package ForgeStove.HexSync.Client;
 import java.io.IOException;
 import java.net.*;
 import java.util.Map;
 
-import static HexSync.Client.FileCRCFetcher.fetchFileCRCList;
-import static HexSync.Client.FileDownloader.downloadMissingFiles;
-import static HexSync.HexSync.HEX_SYNC_NAME;
-import static HexSync.Util.Config.*;
-import static HexSync.Util.Files.*;
-import static HexSync.Util.Log.*;
+import static ForgeStove.HexSync.Client.FileCRCFetcher.fetchFileCRCList;
+import static ForgeStove.HexSync.Client.FileDownloader.downloadMissingFiles;
+import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
+import static ForgeStove.HexSync.Util.Config.*;
+import static ForgeStove.HexSync.Util.Files.*;
+import static ForgeStove.HexSync.Util.Log.*;
 import static java.lang.System.exit;
 public class Client {
 	public static Thread clientThread; // 客户端线程

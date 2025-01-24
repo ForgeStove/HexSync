@@ -1,12 +1,12 @@
-package HexSync.Util;
+package ForgeStove.HexSync.Util;
 import java.io.*;
 import java.util.*;
 import java.util.function.Consumer;
 
-import static HexSync.Client.Client.*;
-import static HexSync.HexSync.HEX_SYNC_NAME;
-import static HexSync.Server.Server.*;
-import static HexSync.Util.Log.*;
+import static ForgeStove.HexSync.Client.Client.*;
+import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
+import static ForgeStove.HexSync.Server.Server.*;
+import static ForgeStove.HexSync.Util.Log.*;
 import static java.io.File.separator;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;

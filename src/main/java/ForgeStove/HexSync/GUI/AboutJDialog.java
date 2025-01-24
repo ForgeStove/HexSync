@@ -1,10 +1,10 @@
-package HexSync.GUI;
+package ForgeStove.HexSync.GUI;
 import javax.swing.*;
 import java.awt.Window;
 
-import static HexSync.GUI.ComponentFactory.*;
-import static HexSync.HexSync.*;
-import static HexSync.Util.Log.*;
+import static ForgeStove.HexSync.GUI.ComponentFactory.*;
+import static ForgeStove.HexSync.HexSync.*;
+import static ForgeStove.HexSync.Util.Log.*;
 import static java.awt.Desktop.getDesktop;
 import static javax.swing.BorderFactory.createEmptyBorder;
 import static javax.swing.event.HyperlinkEvent.EventType.ACTIVATED;

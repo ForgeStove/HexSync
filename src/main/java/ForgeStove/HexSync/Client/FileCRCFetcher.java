@@ -1,12 +1,12 @@
-package HexSync.Client;
+package ForgeStove.HexSync.Client;
 import java.io.*;
 import java.net.*;
 import java.util.*;
 
-import static HexSync.Client.Client.*;
-import static HexSync.Util.Config.serverAddress;
-import static HexSync.Util.Log.*;
-import static HexSync.Util.Settings.formatHTTP;
+import static ForgeStove.HexSync.Client.Client.*;
+import static ForgeStove.HexSync.Util.Config.serverAddress;
+import static ForgeStove.HexSync.Util.Log.*;
+import static ForgeStove.HexSync.Util.Settings.formatHTTP;
 import static java.lang.Long.parseLong;
 import static java.net.HttpURLConnection.*;
 public class FileCRCFetcher {

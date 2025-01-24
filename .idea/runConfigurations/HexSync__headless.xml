@@ -1,12 +1,12 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="HexSync -headless" type="Application" factoryName="Application">
-    <option name="MAIN_CLASS_NAME" value="HexSync.HexSync" />
+    <option name="MAIN_CLASS_NAME" value="ForgeStove.HexSync.HexSync" />
     <module name="HexSync" />
     <option name="VM_PARAMETERS" value="-Djava.awt.headless=true" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/out/artifacts" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="HexSync.HexSync" />
+        <option name="PATTERN" value="ForgeStove.HexSync.HexSync" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>

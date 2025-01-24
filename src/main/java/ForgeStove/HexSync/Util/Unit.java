@@ -1,5 +1,5 @@
-package HexSync.Util;
-import static HexSync.Util.Log.*;
+package ForgeStove.HexSync.Util;
+import static ForgeStove.HexSync.Util.Log.*;
 import static java.lang.Math.multiplyExact;
 public class Unit {
 	// 速率转换为字节

@@ -1,15 +1,15 @@
-package HexSync.GUI;
+package ForgeStove.HexSync.GUI;
 import javax.swing.*;
 import java.awt.*;
 
-import static HexSync.Client.Client.*;
-import static HexSync.GUI.AboutJDialog.aboutJDialog;
-import static HexSync.GUI.ComponentFactory.*;
-import static HexSync.GUI.GUI.*;
-import static HexSync.Server.Server.*;
-import static HexSync.Util.Config.*;
-import static HexSync.Util.Log.*;
-import static HexSync.Util.Settings.*;
+import static ForgeStove.HexSync.Client.Client.*;
+import static ForgeStove.HexSync.GUI.AboutJDialog.aboutJDialog;
+import static ForgeStove.HexSync.GUI.ComponentFactory.*;
+import static ForgeStove.HexSync.GUI.GUI.*;
+import static ForgeStove.HexSync.Server.Server.*;
+import static ForgeStove.HexSync.Util.Config.*;
+import static ForgeStove.HexSync.Util.Log.*;
+import static ForgeStove.HexSync.Util.Settings.*;
 import static javax.swing.BorderFactory.createEmptyBorder;
 import static javax.swing.JTabbedPane.*;
 public class SettingsJDialog {

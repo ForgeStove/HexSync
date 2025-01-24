@@ -1,8 +1,8 @@
-package HexSync.Util;
+package ForgeStove.HexSync.Util;
 import java.io.*;
 import java.util.zip.CRC32;
 
-import static HexSync.Util.Log.*;
+import static ForgeStove.HexSync.Util.Log.*;
 public class Checksum {
 	// 计算文件校验码
 	public static long calculateCRC(File file) {

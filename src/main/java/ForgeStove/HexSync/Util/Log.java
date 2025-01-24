@@ -1,5 +1,5 @@
-package HexSync.Util;
-import HexSync.GUI.GUI;
+package ForgeStove.HexSync.Util;
+import ForgeStove.HexSync.GUI.GUI;
 
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
@@ -9,9 +9,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.*;
 
-import static HexSync.HexSync.HEX_SYNC_NAME;
-import static HexSync.Util.Files.makeDirectory;
-import static HexSync.Util.Settings.HEADLESS;
+import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
+import static ForgeStove.HexSync.Util.Files.makeDirectory;
+import static ForgeStove.HexSync.Util.Settings.HEADLESS;
 import static java.io.File.separator;
 import static java.lang.System.*;
 public class Log {

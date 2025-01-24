@@ -107,6 +107,8 @@
       <workItem from="1737701082809" duration="17000" />
       <workItem from="1737707228764" duration="3918000" />
       <workItem from="1737712211241" duration="13000" />
+      <workItem from="1737712230661" duration="2994000" />
+      <workItem from="1737739494115" duration="1000" />
     </task>
     <task id="LOCAL-00002" summary="fix(ui): 更新许可证链接并简化代码">
       <option name="closed" value="true" />
@@ -228,7 +230,15 @@
       <option name="project" value="LOCAL" />
       <updated>1737712161065</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="refactor: 移除重复代码并简化逻辑">
+      <option name="closed" value="true" />
+      <created>1737715354865</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1737715354865</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -245,6 +255,7 @@
     <MESSAGE value="refactor: 将启动方法名从start改为run" />
     <MESSAGE value="feat: 新增HexSync和HexSync -headless运行配置" />
     <MESSAGE value="refactor: 移除不必要的版权信息并简化代码" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor: 移除不必要的版权信息并简化代码" />
+    <MESSAGE value="refactor: 移除重复代码并简化逻辑" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor: 移除重复代码并简化逻辑" />
   </component>
 </project>

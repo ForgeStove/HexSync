@@ -1,9 +1,9 @@
-package HexSync.GUI;
+package ForgeStove.HexSync.GUI;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
-import static HexSync.GUI.GUI.*;
+import static ForgeStove.HexSync.GUI.GUI.*;
 public class ComponentFactory {
 	// 聚焦并全选输入框
 	public static void selectAndFocus(JTextField textField) {

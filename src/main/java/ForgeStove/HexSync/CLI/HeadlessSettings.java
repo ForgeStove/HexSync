@@ -1,13 +1,13 @@
-package HexSync.CLI;
+package ForgeStove.HexSync.CLI;
 import java.util.*;
 import java.util.function.Consumer;
 
-import static HexSync.Client.Client.clientAutoStart;
-import static HexSync.HexSync.HEX_SYNC_NAME;
-import static HexSync.Server.Server.serverAutoStart;
-import static HexSync.Util.Config.*;
-import static HexSync.Util.Println.printlnStrings;
-import static HexSync.Util.Settings.*;
+import static ForgeStove.HexSync.Client.Client.clientAutoStart;
+import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
+import static ForgeStove.HexSync.Server.Server.serverAutoStart;
+import static ForgeStove.HexSync.Util.Config.*;
+import static ForgeStove.HexSync.Util.Println.printlnStrings;
+import static ForgeStove.HexSync.Util.Settings.*;
 import static java.lang.System.*;
 public class HeadlessSettings {
 	// 无头模式设置

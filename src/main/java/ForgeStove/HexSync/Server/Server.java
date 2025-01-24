@@ -1,4 +1,4 @@
-package HexSync.Server;
+package ForgeStove.HexSync.Server;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
@@ -7,12 +7,12 @@ import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static HexSync.HexSync.HEX_SYNC_NAME;
-import static HexSync.Server.RequestHandler.*;
-import static HexSync.Util.Config.*;
-import static HexSync.Util.Files.*;
-import static HexSync.Util.Log.*;
-import static HexSync.Util.Unit.*;
+import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
+import static ForgeStove.HexSync.Server.RequestHandler.*;
+import static ForgeStove.HexSync.Util.Config.*;
+import static ForgeStove.HexSync.Util.Files.*;
+import static ForgeStove.HexSync.Util.Log.*;
+import static ForgeStove.HexSync.Util.Unit.*;
 import static com.sun.net.httpserver.HttpServer.*;
 import static java.util.concurrent.Executors.*;
 public class Server {

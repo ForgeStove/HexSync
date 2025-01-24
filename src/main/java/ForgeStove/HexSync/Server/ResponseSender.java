@@ -1,10 +1,10 @@
-package HexSync.Server;
+package ForgeStove.HexSync.Server;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.*;
 
-import static HexSync.Server.Server.*;
-import static HexSync.Util.Log.*;
+import static ForgeStove.HexSync.Server.Server.*;
+import static ForgeStove.HexSync.Util.Log.*;
 import static java.lang.Math.min;
 import static java.lang.System.currentTimeMillis;
 import static java.lang.Thread.sleep;
