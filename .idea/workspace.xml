@@ -9,36 +9,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="refactor: 移除工作区配置文件中的重复提交信息">
-      <change afterPath="$PROJECT_DIR$/src/main/java/HexSync/Client/FileCRCFetcher.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/HexSync/Server/RequestHandler.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/HexSync/Util/Checksum.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/HexSync/Util/Println.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/copyright/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/copyright/profiles_settings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/HexSync.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations/HexSync.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/HexSync__headless.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations/HexSync__headless.xml" afterDir="false" />
+    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="refactor: 移除重复代码并简化逻辑">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/CLI/CLI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/HexSync/CLI/CLI.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/CLI/HeadlessSettings.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/HexSync/CLI/HeadlessSettings.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Client/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/HexSync/Client/Client.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Client/FileCRCFetcher.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Client/FileDownloader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/HexSync/Client/FileDownloader.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/GUI/AboutJDialog.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/HexSync/GUI/AboutJDialog.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/GUI/ComponentFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/HexSync/GUI/ComponentFactory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/GUI/GUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/HexSync/GUI/GUI.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/GUI/SettingsJDialog.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/HexSync/GUI/SettingsJDialog.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/HexSync.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/HexSync/HexSync.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Server/RequestHandler.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Server/ResponseSender.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/HexSync/Server/ResponseSender.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Server/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/HexSync/Server/Server.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Checksum.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Config.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/HexSync/Util/Config.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Files.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/HexSync/Util/Files.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Log.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/HexSync/Util/Log.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Println.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Settings.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/HexSync/Util/Settings.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Unit.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/HexSync/Util/Unit.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/META-INF/MANIFEST.MF" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/META-INF/MANIFEST.MF" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -70,28 +42,31 @@
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Utils/Source/Java/HexSync/out/artifacts",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "SDK",
-    "project.structure.proportion": "0.12207031",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "copyright.profiles",
-    "vue.rearranger.settings.migration": "true",
-    "应用程序.HexSync -headless.executor": "Profiler#1",
-    "应用程序.HexSync.executor": "Debug"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Utils/Source/Java/HexSync/out/artifacts&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;SDK&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.12207031&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;,
+    &quot;应用程序.HexSync -headless.executor&quot;: &quot;Profiler#1&quot;,
+    &quot;应用程序.HexSync.executor&quot;: &quot;Debug&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Utils\Source\Java\HexSync\src" />
+    </key>
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
       <recent name="" />
     </key>
@@ -130,7 +105,8 @@
       <workItem from="1737695137719" duration="4505000" />
       <workItem from="1737701059982" duration="7000" />
       <workItem from="1737701082809" duration="17000" />
-      <workItem from="1737707228764" duration="3652000" />
+      <workItem from="1737707228764" duration="3918000" />
+      <workItem from="1737712211241" duration="13000" />
     </task>
     <task id="LOCAL-00002" summary="fix(ui): 更新许可证链接并简化代码">
       <option name="closed" value="true" />
@@ -244,7 +220,15 @@
       <option name="project" value="LOCAL" />
       <updated>1737700702154</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="refactor: 移除不必要的版权信息并简化代码">
+      <option name="closed" value="true" />
+      <created>1737712161065</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1737712161065</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -260,5 +244,7 @@
     <MESSAGE value="refactor: 移除工作区配置文件并更新相关设置" />
     <MESSAGE value="refactor: 将启动方法名从start改为run" />
     <MESSAGE value="feat: 新增HexSync和HexSync -headless运行配置" />
+    <MESSAGE value="refactor: 移除不必要的版权信息并简化代码" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor: 移除不必要的版权信息并简化代码" />
   </component>
 </project>
