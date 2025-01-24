@@ -11,6 +11,8 @@
   <component name="ChangeListManager">
     <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="feat: 新增HexSync和HexSync -headless运行配置">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Server/RequestHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Server/RequestHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Checksum.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Checksum.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,7 +64,7 @@
     "应用程序.HexSync.executor": "Profiler#1"
   }
 }]]></component>
-  <component name="RunManager" selected="应用程序.HexSync -headless">
+  <component name="RunManager" selected="应用程序.HexSync">
     <list>
       <item itemvalue="应用程序.HexSync" />
       <item itemvalue="应用程序.HexSync -headless" />
@@ -98,7 +100,7 @@
       <option name="presentableId" value="Default" />
       <updated>1737689932776</updated>
       <workItem from="1737689935226" duration="2616000" />
-      <workItem from="1737695137719" duration="1964000" />
+      <workItem from="1737695137719" duration="4096000" />
     </task>
     <task id="LOCAL-00002" summary="fix(ui): 更新许可证链接并简化代码">
       <option name="closed" value="true" />
@@ -172,7 +174,15 @@
       <option name="project" value="LOCAL" />
       <updated>1737696273045</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="feat: 新增HexSync和HexSync -headless运行配置">
+      <option name="closed" value="true" />
+      <created>1737699056126</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1737699056126</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
