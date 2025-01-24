@@ -26,7 +26,8 @@ public class Checksum {
 			int bytesRead;
 			while ((bytesRead = fileInputStream.read(buffer)) != -1) crc.update(buffer, 0, bytesRead);
 		} catch (IOException error) {
-			log(SEVERE, "计算CRC时出错: " + error.getMessage());
+			log(SEVERE, "校验码计算错误: " + error.getMessage());
+			return -1;
 		}
 		return crc.getValue();
 	}
