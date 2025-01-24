@@ -198,6 +198,5 @@
     <MESSAGE value="refactor: 移除工作区配置文件并更新相关设置" />
     <MESSAGE value="refactor: 将启动方法名从start改为run" />
     <MESSAGE value="feat: 新增HexSync和HexSync -headless运行配置" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: 新增HexSync和HexSync -headless运行配置" />
   </component>
 </project>
