@@ -1,27 +1,15 @@
-// Copyright (C) 2025 ForgeStove
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published
-// by the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-package ForgeStove.HexSync.Client;
-import ForgeStove.HexSync.Util.*;
-
+package HexSync.Client;
 import java.io.*;
 import java.net.*;
 import java.util.Map;
 
-import static ForgeStove.HexSync.Util.Config.*;
-import static ForgeStove.HexSync.Util.Log.*;
+import static HexSync.Client.Client.*;
+import static HexSync.Util.Checksum.calculateCRC;
+import static HexSync.Util.Config.*;
+import static HexSync.Util.Log.*;
+import static HexSync.Util.Settings.formatHTTP;
 import static java.io.File.separator;
+import static java.lang.String.format;
 import static java.lang.System.exit;
 public class FileDownloader {
 	// 从服务端同步文件夹下载客户端缺少的文件
@@ -40,15 +28,15 @@ public class FileDownloader {
 				log(INFO, "已下载: [" + count + "/" + toDownloadMapSize + "] " + filePath);
 			} else {
 				log(SEVERE, "下载失败: " + filePath);
-				Client.errorDownload = true; // 记录下载失败
+				errorDownload = true; // 记录下载失败
 			}
 		}
-		log(INFO, (Client.errorDownload ? "下载失败" : "下载完成") + ": [" + count + "/" + toDownloadMapSize + "]");
-		if (Client.clientAutoStart) exit(0); // 自动退出
+		log(INFO, (errorDownload ? "下载失败" : "下载完成") + ": [" + count + "/" + toDownloadMapSize + "]");
+		if (clientAutoStart) exit(0); // 自动退出
 	}
 	// 从服务器下载文件
 	public static boolean canDownloadFile(String filePath, Map<String, Long> toDownloadMap) {
-		if (Client.clientThread == null) return false; // 客户端线程已关闭
+		if (clientThread == null) return false; // 客户端线程已关闭
 		File clientFile = new File(filePath); // 目标本地文件
 		Long requestCRC = toDownloadMap.get(filePath.substring(clientSyncDirectory.length() + 1));
 		if (requestCRC == null) {
@@ -56,10 +44,10 @@ public class FileDownloader {
 			return false;
 		}
 		try {
-			int responseCode = Client.getResponseCode(new URI(String.format(
+			int responseCode = getResponseCode(new URI(format(
 					"%s:%d/download/%s",
-					Settings.formatHTTP(serverAddress),
-					Client.clientPort,
+					formatHTTP(serverAddress),
+					clientPort,
 					requestCRC
 			)).toURL());
 			if (responseCode != HttpURLConnection.HTTP_OK) {
@@ -72,7 +60,7 @@ public class FileDownloader {
 		}
 		// 读取输入流并写入本地文件
 		try (
-				InputStream inputStream = Client.HTTPURLConnection.getInputStream();
+				InputStream inputStream = HTTPURLConnection.getInputStream();
 				FileOutputStream outputStream = new FileOutputStream(clientFile)
 		) {
 			byte[] buffer = new byte[16384];
@@ -83,7 +71,7 @@ public class FileDownloader {
 			return false;
 		}
 		// 校验下载的文件
-		if (!requestCRC.equals(Checksum.calculateCRC(clientFile))) {
+		if (!requestCRC.equals(calculateCRC(clientFile))) {
 			log(SEVERE, "校验失败,文件可能已损坏: " + clientFile);
 			if (!clientFile.delete()) log(SEVERE, "无法删除损坏的文件: " + clientFile);
 			return false;

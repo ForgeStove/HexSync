@@ -1,19 +1,4 @@
-// Copyright (C) 2025 ForgeStove
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published
-// by the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-package ForgeStove.HexSync.Server;
-import ForgeStove.HexSync.Util.*;
+package HexSync.Server;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
@@ -22,9 +7,14 @@ import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
-import static ForgeStove.HexSync.Util.Config.*;
-import static ForgeStove.HexSync.Util.Log.*;
+import static HexSync.HexSync.HEX_SYNC_NAME;
+import static HexSync.Server.RequestHandler.*;
+import static HexSync.Util.Config.*;
+import static HexSync.Util.Files.*;
+import static HexSync.Util.Log.*;
+import static HexSync.Util.Unit.*;
+import static com.sun.net.httpserver.HttpServer.*;
+import static java.util.concurrent.Executors.*;
 public class Server {
 	public static final AtomicLong AVAILABLE_TOKENS = new AtomicLong(0); // 当前可用令牌数量
 	public static Thread serverThread; // 服务器线程
@@ -39,21 +29,18 @@ public class Server {
 		if (serverThread != null) return;
 		serverThread = new Thread(() -> {
 			log(INFO, HEX_SYNC_NAME + "Server正在启动...");
-			Files.initFiles(true);
+			initFiles(true);
 			if (serverMap.isEmpty()) {
 				log(WARNING, serverSyncDirectory + "没有文件,无法启动服务器");
 				stopServer();
 				return;
 			}
 			try {
-				ExecutorService executorService = Executors.newFixedThreadPool(8);
-				maxUploadRateInBytes = Unit.convertToBytes(serverUploadRateLimit, serverUploadRateLimitUnit);
-				HTTPServer = HttpServer.create(new InetSocketAddress(serverPort), 0);
+				ExecutorService executorService = newFixedThreadPool(8);
+				maxUploadRateInBytes = convertToBytes(serverUploadRateLimit, serverUploadRateLimitUnit);
+				HTTPServer = create(new InetSocketAddress(serverPort), 0);
 				HTTPServer.setExecutor(executorService);
-				HTTPServer.createContext(
-						"/",
-						exchange -> executorService.submit(() -> RequestHandler.requestHandler(exchange))
-				);
+				HTTPServer.createContext("/", exchange -> executorService.submit(() -> requestHandler(exchange)));
 				HTTPServer.start();
 			} catch (IOException error) {
 				log(SEVERE, HEX_SYNC_NAME + "Server无法启动: " + error.getMessage());

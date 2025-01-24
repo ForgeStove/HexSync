@@ -1,26 +1,12 @@
-// Copyright (C) 2025 ForgeStove
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published
-// by the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-package ForgeStove.HexSync.CLI;
-import ForgeStove.HexSync.Client.Client;
-import ForgeStove.HexSync.Server.Server;
-import ForgeStove.HexSync.Util.Println;
+package HexSync.CLI;
+import HexSync.Client.Client;
+import HexSync.Server.Server;
 
 import java.util.*;
 
-import static ForgeStove.HexSync.HexSync.*;
-import static ForgeStove.HexSync.Util.Log.*;
+import static HexSync.HexSync.*;
+import static HexSync.Util.Log.*;
+import static HexSync.Util.Println.printlnStrings;
 import static java.lang.System.*;
 public class CLI {
 	// 命令行界面
@@ -35,7 +21,7 @@ public class CLI {
 		map.put("SET", HeadlessSettings::headlessSettings);
 		map.put("GITHUB", () -> out.println(GITHUB_URL));
 		map.put(
-				"HELP", () -> Println.printlnStrings(new String[]{
+				"HELP", () -> printlnStrings(new String[]{
 						"RS     |启动服务端",
 						"RC     |启动客户端",
 						"SS     |停止服务端",

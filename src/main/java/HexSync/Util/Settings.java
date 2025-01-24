@@ -1,29 +1,15 @@
-// Copyright (C) 2025 ForgeStove
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published
-// by the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-package ForgeStove.HexSync.Util;
-import java.awt.GraphicsEnvironment;
+package HexSync.Util;
 import java.util.function.Consumer;
 
-import static ForgeStove.HexSync.Client.Client.clientPort;
-import static ForgeStove.HexSync.Server.Server.*;
-import static ForgeStove.HexSync.Util.Config.serverUploadRateLimitUnit;
-import static ForgeStove.HexSync.Util.Log.*;
+import static HexSync.Client.Client.clientPort;
+import static HexSync.Server.Server.*;
+import static HexSync.Util.Config.serverUploadRateLimitUnit;
+import static HexSync.Util.Log.*;
+import static java.awt.GraphicsEnvironment.isHeadless;
 import static java.io.File.separator;
 import static java.lang.System.*;
 public class Settings {
-	public static final boolean HEADLESS = GraphicsEnvironment.isHeadless(); // 是否处于无头模式
+	public static final boolean HEADLESS = isHeadless(); // 是否处于无头模式
 	// 字符串转端口
 	public static boolean canSetPort(String portInput, boolean isServer) {
 		String side = isServer ? "服务端" : "客户端";

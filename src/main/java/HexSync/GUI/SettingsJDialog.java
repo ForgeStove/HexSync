@@ -1,31 +1,17 @@
-// Copyright (C) 2025 ForgeStove
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published
-// by the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-package ForgeStove.HexSync.GUI;
-import ForgeStove.HexSync.Util.Settings;
-
+package HexSync.GUI;
 import javax.swing.*;
 import java.awt.*;
 
-import static ForgeStove.HexSync.Client.Client.*;
-import static ForgeStove.HexSync.GUI.AboutJDialog.aboutJDialog;
-import static ForgeStove.HexSync.GUI.ComponentFactory.*;
-import static ForgeStove.HexSync.GUI.GUI.*;
-import static ForgeStove.HexSync.Server.Server.*;
-import static ForgeStove.HexSync.Util.Config.*;
-import static ForgeStove.HexSync.Util.Log.*;
-import static ForgeStove.HexSync.Util.Settings.isInvalidLong;
+import static HexSync.Client.Client.*;
+import static HexSync.GUI.AboutJDialog.aboutJDialog;
+import static HexSync.GUI.ComponentFactory.*;
+import static HexSync.GUI.GUI.*;
+import static HexSync.Server.Server.*;
+import static HexSync.Util.Config.*;
+import static HexSync.Util.Log.*;
+import static HexSync.Util.Settings.*;
+import static javax.swing.BorderFactory.createEmptyBorder;
+import static javax.swing.JTabbedPane.*;
 public class SettingsJDialog {
 	// 打开设置对话框
 	public SettingsJDialog() {
@@ -34,9 +20,9 @@ public class SettingsJDialog {
 		// 设置对话框
 		JDialog settingsJDialog = new JDialog(frame, "设置");
 		JPanel settingsPanel = new JPanel(new BorderLayout());
-		settingsPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		settingsPanel.setBorder(createEmptyBorder(5, 5, 5, 5));
 		// 选项卡面板
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
+		JTabbedPane tabbedPane = new JTabbedPane(TOP, SCROLL_TAB_LAYOUT);
 		tabbedPane.setFocusable(false);
 		settingsPanel.add(tabbedPane, BorderLayout.CENTER);
 		// 服务端选项卡
@@ -55,11 +41,7 @@ public class SettingsJDialog {
 		serverPanel.add(new JLabel("<html>服务端同步路径:"));
 		JTextField serverSyncDirectoryField = new JTextField(serverSyncDirectory);
 		serverPanel.add(serverSyncDirectoryField);
-		JCheckBox serverAutoStartBox = newJCheckBox(
-				serverPanel,
-				"<html>自动启动服务端",
-				serverAutoStart
-		);
+		JCheckBox serverAutoStartBox = newJCheckBox(serverPanel, "<html>自动启动服务端", serverAutoStart);
 		tabbedPane.addTab("<html>服务端设置", serverPanel);
 		// 客户端选项卡
 		JPanel clientPanel = new JPanel(new GridLayout(5, 2));
@@ -75,11 +57,7 @@ public class SettingsJDialog {
 		clientPanel.add(new JLabel("<html>仅客户端模组路径:"));
 		JTextField clientOnlyDirectoryField = new JTextField(clientOnlyDirectory);
 		clientPanel.add(clientOnlyDirectoryField);
-		JCheckBox clientAutoStartBox = newJCheckBox(
-				clientPanel,
-				"<html>自动启动客户端",
-				clientAutoStart
-		);
+		JCheckBox clientAutoStartBox = newJCheckBox(clientPanel, "<html>自动启动客户端", clientAutoStart);
 		tabbedPane.addTab("<html>客户端设置", clientPanel);
 		// 按钮面板
 		JPanel buttonPanel = new JPanel(new GridLayout(1, 3, 5, 0));
@@ -106,8 +84,8 @@ public class SettingsJDialog {
 							}
 						}
 					// 检测输入框是否为数字且在合法范围内并尝试转换
-					if (!Settings.canSetPort(serverPortField.getText().trim(), true)) selectAndFocus(serverPortField);
-					if (!Settings.canSetPort(clientPortField.getText().trim(), false)) selectAndFocus(clientPortField);
+					if (!canSetPort(serverPortField.getText().trim(), true)) selectAndFocus(serverPortField);
+					if (!canSetPort(clientPortField.getText().trim(), false)) selectAndFocus(clientPortField);
 					// 检测最大上传速率
 					String uploadRateLimitText = serverUploadRateLimitField.getText().trim();
 					if (isInvalidLong(uploadRateLimitText) || Long.parseLong(uploadRateLimitText) < 0) {

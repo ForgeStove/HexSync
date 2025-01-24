@@ -1,34 +1,22 @@
-// Copyright (C) 2025 ForgeStove
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published
-// by the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-package ForgeStove.HexSync.Util;
-import ForgeStove.HexSync.Server.Server;
-
+package HexSync.Util;
 import java.io.*;
 import java.util.*;
 
-import static ForgeStove.HexSync.Client.Client.errorDownload;
-import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
-import static ForgeStove.HexSync.Util.Config.*;
-import static ForgeStove.HexSync.Util.Log.*;
+import static HexSync.Client.Client.errorDownload;
+import static HexSync.HexSync.HEX_SYNC_NAME;
+import static HexSync.Server.Server.serverMap;
+import static HexSync.Util.Checksum.calculateCRC;
+import static HexSync.Util.Config.*;
+import static HexSync.Util.Log.*;
+import static java.lang.String.valueOf;
+import static java.nio.file.Files.copy;
 public class Files {
 	// 初始化文件
 	public static void initFiles(boolean isServer) {
 		makeDirectory(isServer ? serverSyncDirectory : clientSyncDirectory);
 		makeDirectory(HEX_SYNC_NAME);
 		loadConfig();
-		if (isServer) Server.serverMap = initMap(serverSyncDirectory);
+		if (isServer) serverMap = initMap(serverSyncDirectory);
 		else {
 			makeDirectory(clientOnlyDirectory);
 			errorDownload = false;
@@ -39,7 +27,7 @@ public class Files {
 		Map<String, Long> map = new HashMap<>();
 		File[] fileList = new File(directory).listFiles(); // 获取文件夹下的所有文件
 		if (fileList != null) for (File file : fileList)
-			if (file.isFile()) map.put(file.getName(), Checksum.calculateCRC(file));
+			if (file.isFile()) map.put(file.getName(), calculateCRC(file));
 		return map;
 	}
 	// 创建文件夹
@@ -54,7 +42,7 @@ public class Files {
 		File[] fileList = new File(clientSyncDirectory).listFiles();
 		if (fileList != null) for (File file : fileList)
 			if (file.isFile()) {
-				long CRC = Checksum.calculateCRC(file);
+				long CRC = calculateCRC(file);
 				if (requestMap.containsValue(CRC) || clientOnlyMap.containsValue(CRC)) continue;
 				if (file.delete()) log(INFO, "已删除文件: " + file);
 				else log(SEVERE, "删除文件失败: " + file);
@@ -71,10 +59,10 @@ public class Files {
 				File targetFile = new File(target, targetFileName);
 				if (new File(target, targetFileName + ".disable").exists()) continue; // 跳过此文件
 				if (file.isDirectory()) {
-					copyDirectory(String.valueOf(file), String.valueOf(targetFile));
+					copyDirectory(valueOf(file), valueOf(targetFile));
 				} else if (!targetFile.exists()) {
-					java.nio.file.Files.copy(file.toPath(), targetFile.toPath());
-					log(INFO, "已复制: " + file + " -> " + targetFile);
+					copy(file.toPath(), targetFile.toPath());
+					log(INFO, "已复制: " + file + " -> " + target);
 				}
 			}
 		} catch (IOException error) {
