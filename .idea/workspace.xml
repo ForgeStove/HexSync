@@ -9,7 +9,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="docs: 添加服务端和客户端配置说明" />
+    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="refactor: 移除工作区配置文件并更新相关设置" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -89,7 +89,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1737689932776</updated>
-      <workItem from="1737689935226" duration="1527000" />
+      <workItem from="1737689935226" duration="2326000" />
     </task>
     <task id="LOCAL-00002" summary="fix(ui): 更新许可证链接并简化代码">
       <option name="closed" value="true" />
@@ -131,7 +131,15 @@
       <option name="project" value="LOCAL" />
       <updated>1737691655354</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="refactor: 移除工作区配置文件并更新相关设置">
+      <option name="closed" value="true" />
+      <created>1737691707748</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1737691707748</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -139,12 +147,12 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="feat(ui): 添加Swing组件默认配置&#10;refactor: 更新工作区配置和任务记录&#10;style: 调整JSON格式以提高可读性&#10;fix(Server): 修正停止服务器时的空指针检查顺序" />
-    <MESSAGE value="refactor: 移除工作区配置文件并更新相关设置" />
     <MESSAGE value="fix(ui): 更新许可证链接并简化代码" />
     <MESSAGE value="fix: 窗口字体大小调整为16" />
     <MESSAGE value="chore: 删除旧版GNU Affero General Public License" />
     <MESSAGE value="refactor(ui): 删除.uiDesigner.xml文件中的Swing组件配置" />
     <MESSAGE value="docs: 添加服务端和客户端配置说明" />
-    <option name="LAST_COMMIT_MESSAGE" value="docs: 添加服务端和客户端配置说明" />
+    <MESSAGE value="refactor: 移除工作区配置文件并更新相关设置" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor: 移除工作区配置文件并更新相关设置" />
   </component>
 </project>
