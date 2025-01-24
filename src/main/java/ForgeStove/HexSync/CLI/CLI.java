@@ -28,8 +28,8 @@ public class CLI {
 		out.println("欢迎使用" + HEX_SYNC_NAME + "!");
 		out.println("输入HELP以获取帮助.");
 		Map<String, Runnable> map = new HashMap<>();
-		map.put("RS", Server::startServer);
-		map.put("RC", Client::startClient);
+		map.put("RS", Server::runServer);
+		map.put("RC", Client::runClient);
 		map.put("SS", Server::stopServer);
 		map.put("SC", Client::stopClient);
 		map.put("SET", HeadlessSettings::headlessSettings);

@@ -39,7 +39,7 @@ public class Client {
 		return HTTPURLConnection.getResponseCode(); // 返回响应码
 	}
 	// 启动客户端
-	public static void startClient() {
+	public static void runClient() {
 		if (clientThread != null) return;
 		clientThread = new Thread(() -> {
 			log(INFO, HEX_SYNC_NAME + "Client正在启动...");

@@ -35,7 +35,7 @@ public class Server {
 	public static boolean serverAutoStart; // 服务端自动启动，默认不自动启动
 	public static int serverPort = 65535; // 服务端端口，默认值65535
 	// 启动服务端
-	public static void startServer() {
+	public static void runServer() {
 		if (serverThread != null) return;
 		serverThread = new Thread(() -> {
 			log(INFO, HEX_SYNC_NAME + "Server正在启动...");

@@ -24,8 +24,8 @@ public class HexSync {
 	public static void main(String[] args) {
 		Log.initLog();
 		Config.loadConfig();
-		if (Server.serverAutoStart) Server.startServer();
-		if (Client.clientAutoStart) Client.startClient();
+		if (Server.serverAutoStart) Server.runServer();
+		if (Client.clientAutoStart) Client.runClient();
 		if (Settings.HEADLESS) CLI.initCLI();
 		else GUI.initGUI();
 	}

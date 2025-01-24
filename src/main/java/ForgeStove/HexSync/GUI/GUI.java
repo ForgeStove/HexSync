@@ -48,8 +48,8 @@ public class GUI {
 				frame.setAlwaysOnTop(true);
 				JPanel buttonPanel = new JPanel(new GridLayout(2, 3));
 				newJButton(buttonPanel, "设置", event -> new SettingsJDialog());
-				newJButton(buttonPanel, "启动服务端", event -> startServer());
-				newJButton(buttonPanel, "启动客户端", event -> startClient());
+				newJButton(buttonPanel, "启动服务端", event -> runServer());
+				newJButton(buttonPanel, "启动客户端", event -> runClient());
 				newJButton(buttonPanel, "停止服务端", event -> stopServer());
 				newJButton(buttonPanel, "停止客户端", event -> stopClient());
 				newJButton(buttonPanel, "退出", event -> exit(0));
