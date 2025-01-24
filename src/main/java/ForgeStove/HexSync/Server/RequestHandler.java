@@ -13,16 +13,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 package ForgeStove.HexSync.Server;
+import ForgeStove.HexSync.Util.Config;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.util.Map;
 
-import static ForgeStove.HexSync.Util.Config.serverSyncDirectory;
 import static ForgeStove.HexSync.Util.Log.*;
 import static java.io.File.separator;
-import static java.lang.System.lineSeparator;
 public class RequestHandler {
 	// 处理请求
 	public static void requestHandler(HttpExchange exchange) {
@@ -33,7 +32,7 @@ public class RequestHandler {
 			String filePath = null;
 			for (Map.Entry<String, Long> entry : Server.serverMap.entrySet())
 				if (entry.getValue() == requestCRC) {
-					filePath = serverSyncDirectory + separator + entry.getKey();
+					filePath = Config.serverSyncDirectory + separator + entry.getKey();
 					break;
 				}
 			if (filePath == null) return;
@@ -47,10 +46,7 @@ public class RequestHandler {
 		} else if (requestURI.startsWith("/list")) {
 			StringBuilder responseBuilder = new StringBuilder();
 			for (Map.Entry<String, Long> entry : Server.serverMap.entrySet())
-				responseBuilder.append(entry.getKey())
-						.append(lineSeparator())
-						.append(entry.getValue())
-						.append(lineSeparator());
+				responseBuilder.append(String.format("%s%n%s%n", entry.getKey(), entry.getValue()));
 			byte[] bytes = responseBuilder.toString().getBytes();
 			try (InputStream inputStream = new ByteArrayInputStream(bytes)) {
 				ResponseSender.responseSender(exchange, inputStream, bytes.length);
