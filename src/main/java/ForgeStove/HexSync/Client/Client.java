@@ -3,7 +3,7 @@ import java.io.IOException;
 import java.net.*;
 import java.util.Map;
 
-import static ForgeStove.HexSync.Client.FileCRCFetcher.fetchFileCRCList;
+import static ForgeStove.HexSync.Client.FileDownloader.fetchFileCRCList;
 import static ForgeStove.HexSync.Client.FileDownloader.downloadMissingFiles;
 import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
 import static ForgeStove.HexSync.Util.Config.*;
