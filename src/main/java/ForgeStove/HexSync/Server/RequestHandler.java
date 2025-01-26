@@ -6,16 +6,16 @@ import java.util.Map;
 
 import static ForgeStove.HexSync.Server.ResponseSender.sendResponse;
 import static ForgeStove.HexSync.Server.Server.serverMap;
-import static ForgeStove.HexSync.Util.Config.serverSyncDirectory;
+import static ForgeStove.HexSync.Util.Config.*;
 import static ForgeStove.HexSync.Util.Log.*;
 import static java.io.File.separator;
 import static java.nio.file.Files.newInputStream;
 public class RequestHandler {
 	// 处理请求
 	public static void handleRequest(HttpExchange exchange) {
-		if (!exchange.getRequestMethod().equalsIgnoreCase("GET")) return;
+		if (!exchange.getRequestMethod().equalsIgnoreCase(GET)) return;
 		String requestURI = exchange.getRequestURI().getPath();
-		if (requestURI.startsWith("/download/")) {
+		if (requestURI.startsWith("/" + DOWNLOAD + "/")) {
 			long requestCRC = Long.parseLong(requestURI.substring(requestURI.lastIndexOf("/") + 1));
 			String filePath = null;
 			for (Map.Entry<String, Long> entry : serverMap.entrySet())
@@ -31,7 +31,7 @@ public class RequestHandler {
 			} catch (IOException error) {
 				log(SEVERE, "发送文件时出错: " + error.getMessage());
 			}
-		} else if (requestURI.startsWith("/list")) {
+		} else if (requestURI.startsWith("/" + LIST)) {
 			StringBuilder responseBuilder = new StringBuilder();
 			for (Map.Entry<String, Long> entry : serverMap.entrySet())
 				responseBuilder.append(String.format("%s%n%s%n", entry.getKey(), entry.getValue()));

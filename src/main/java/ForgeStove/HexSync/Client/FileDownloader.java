@@ -45,7 +45,7 @@ public class FileDownloader {
 		}
 		try {
 			int responseCode = getResponseCode(new URI(String.format(
-					"%s:%d/download/%s",
+					"%s:%d/" + DOWNLOAD + "/%s",
 					formatHTTP(serverAddress),
 					clientPort,
 					requestCRC
@@ -80,7 +80,7 @@ public class FileDownloader {
 	}
 	// 从服务器获取文件名和校验码列表
 	public static Map<String, Long> fetchFileCRCList() {
-		String URL = formatHTTP(serverAddress) + ":" + clientPort + "/list"; // 服务器地址
+		String URL = formatHTTP(serverAddress) + ":" + clientPort + "/" + LIST; // 服务器地址
 		log(INFO, "正在连接到: " + URL); // 记录请求开始日志
 		Map<String, Long> requestMap = new HashMap<>(); // 复制请求列表
 		try {

@@ -3,8 +3,7 @@ import java.io.IOException;
 import java.net.*;
 import java.util.Map;
 
-import static ForgeStove.HexSync.Client.FileDownloader.fetchFileCRCList;
-import static ForgeStove.HexSync.Client.FileDownloader.downloadMissingFiles;
+import static ForgeStove.HexSync.Client.FileDownloader.*;
 import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
 import static ForgeStove.HexSync.Util.Config.*;
 import static ForgeStove.HexSync.Util.Files.*;
@@ -19,7 +18,7 @@ public class Client {
 	// 获取响应码
 	public static int getResponseCode(URL requestURL) throws IOException {
 		HTTPURLConnection = (HttpURLConnection) requestURL.openConnection(); // 打开连接
-		HTTPURLConnection.setRequestMethod("GET"); // 设置请求方式为GET
+		HTTPURLConnection.setRequestMethod(GET); // 设置请求方式为GET
 		HTTPURLConnection.setConnectTimeout(5000); // 设置连接超时为5秒
 		HTTPURLConnection.setReadTimeout(5000); // 设置读取超时为5秒
 		return HTTPURLConnection.getResponseCode(); // 返回响应码
@@ -33,8 +32,7 @@ public class Client {
 			Map<String, Long> requestMap = fetchFileCRCList();
 			if (!requestMap.isEmpty()) {
 				deleteFilesNotInMaps(requestMap, initMap(clientOnlyDirectory)); // 删除多余文件
-				Map<String, Long> clientMap = initMap(clientSyncDirectory); // 初始化客户端文件列表
-				requestMap.entrySet().removeIf(entry -> clientMap.containsValue(entry.getValue()));
+				requestMap.entrySet().removeIf(entry -> initMap(clientSyncDirectory).containsValue(entry.getValue()));
 				downloadMissingFiles(requestMap);// 下载文件
 				copyDirectory(clientOnlyDirectory, clientSyncDirectory);// 复制仅客户端模组文件夹中的文件到客户端同步文件夹
 			}

@@ -25,6 +25,9 @@ public class Config {
 	public static final String MBPS = "MBps"; // 上传速率限制单位MBps
 	public static final String GBPS = "GBps"; // 上传速率限制单位GBps
 	public static final String[] RATE_UNITS = {BPS, KBPS, MBPS, GBPS}; // 上传速率限制单位数组
+	public static final String DOWNLOAD = "download"; // 下载命令
+	public static final String LIST = "list"; // 列出文件命令
+	public static final String GET = "GET"; // 下载文件命令
 	public static String serverSyncDirectory = "mods"; // 服务端同步文件夹路径，默认值mods
 	public static String clientSyncDirectory = "mods"; // 客户端同步文件夹路径，默认值mods
 	public static String clientOnlyDirectory = "clientOnlyMods"; // 仅客户端文件夹路径，默认值clientOnlyMods
