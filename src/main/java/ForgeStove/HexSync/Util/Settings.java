@@ -31,8 +31,8 @@ public class Settings {
 	}
 	// 设置最大上传速率
 	public static void setRate(String input) {
-		String[] parts = input.split("\\s+");
-		if (input.matches("\\d+(\\s+B|\\s+KB|\\s+MB|\\s+GB)") && !isInvalidLong(parts[0])) {
+		String[] parts = input.split("\\s+", 2);
+		if (input.matches("\\d+(\\s+Bps|\\s+KBps|\\s+MBps|\\s+GBps)") && !isInvalidLong(parts[0])) {
 			serverUploadRateLimit = Long.parseLong(parts[0]);
 			serverUploadRateLimitUnit = parts[1];
 		} else if (HEADLESS) err.println("速率格式错误");

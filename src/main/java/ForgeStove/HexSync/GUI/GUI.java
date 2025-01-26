@@ -9,10 +9,10 @@ import static ForgeStove.HexSync.GUI.ComponentFactory.*;
 import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
 import static ForgeStove.HexSync.Server.Server.*;
 import static ForgeStove.HexSync.Util.Log.*;
-import static java.awt.BorderLayout.*;
 import static java.awt.Toolkit.getDefaultToolkit;
 import static java.lang.Math.max;
 import static java.lang.System.exit;
+import static javax.swing.BorderFactory.createEmptyBorder;
 import static javax.swing.JFrame.EXIT_ON_CLOSE;
 import static javax.swing.UIManager.*;
 public class GUI {
@@ -29,12 +29,12 @@ public class GUI {
 				Dimension size = getDefaultToolkit().getScreenSize();
 				screenLength = max(size.width, size.height);
 				JPanel panel = new JPanel(); // 主面板
-				panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+				panel.setBorder(createEmptyBorder(5, 5, 5, 5));
 				panel.setLayout(new BorderLayout(5, 5));
 				logPane = new JTextPane(); // 日志面板
 				logPane.setEditable(false);
 				logPane.setOpaque(false);
-				panel.add(new JScrollPane(logPane), CENTER);
+				panel.add(new JScrollPane(logPane), BorderLayout.CENTER);
 				frame = new JFrame(HEX_SYNC_NAME); // 主窗口
 				frame.setAlwaysOnTop(true);
 				JPanel buttonPanel = new JPanel(new GridLayout(2, 3));
@@ -44,7 +44,7 @@ public class GUI {
 				newJButton(buttonPanel, "停止服务端", event -> stopServer());
 				newJButton(buttonPanel, "停止客户端", event -> stopClient());
 				newJButton(buttonPanel, "退出", event -> exit(0));
-				panel.add(buttonPanel, SOUTH);
+				panel.add(buttonPanel, BorderLayout.SOUTH);
 				frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
 				frame.add(panel);
 				frame.setSize(new Dimension(screenLength / 3, screenLength / 4));

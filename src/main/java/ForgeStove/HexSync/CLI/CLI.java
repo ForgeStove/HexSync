@@ -11,8 +11,8 @@ import static java.lang.System.*;
 public class CLI {
 	// 命令行界面
 	public static void initCLI() {
-		out.println("欢迎使用" + HEX_SYNC_NAME + "!");
-		out.println("输入HELP以获取帮助.");
+		out.println("欢迎使用" + HEX_SYNC_NAME + "!\n输入HELP以获取帮助.");
+		out.println();
 		Map<String, Runnable> map = new HashMap<>();
 		map.put("RS", Server::runServer);
 		map.put("RC", Client::runClient);

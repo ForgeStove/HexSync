@@ -4,17 +4,17 @@ import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
-import static ForgeStove.HexSync.Server.RequestHandler.*;
+import static ForgeStove.HexSync.Server.RequestHandler.requestHandler;
 import static ForgeStove.HexSync.Util.Config.*;
-import static ForgeStove.HexSync.Util.Files.*;
+import static ForgeStove.HexSync.Util.Files.initFiles;
 import static ForgeStove.HexSync.Util.Log.*;
-import static ForgeStove.HexSync.Util.Unit.*;
-import static com.sun.net.httpserver.HttpServer.*;
-import static java.util.concurrent.Executors.*;
+import static ForgeStove.HexSync.Util.Unit.convertToBytes;
+import static com.sun.net.httpserver.HttpServer.create;
+import static java.util.concurrent.Executors.newFixedThreadPool;
 public class Server {
 	public static final AtomicLong AVAILABLE_TOKENS = new AtomicLong(0); // 当前可用令牌数量
 	public static Thread serverThread; // 服务器线程

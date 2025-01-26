@@ -1,6 +1,6 @@
 package ForgeStove.HexSync.Client;
 import java.io.*;
-import java.net.*;
+import java.net.URI;
 import java.util.Map;
 
 import static ForgeStove.HexSync.Client.Client.*;
@@ -9,8 +9,8 @@ import static ForgeStove.HexSync.Util.Config.*;
 import static ForgeStove.HexSync.Util.Log.*;
 import static ForgeStove.HexSync.Util.Settings.formatHTTP;
 import static java.io.File.separator;
-import static java.lang.String.format;
 import static java.lang.System.exit;
+import static java.net.HttpURLConnection.HTTP_OK;
 public class FileDownloader {
 	// 从服务端同步文件夹下载客户端缺少的文件
 	public static void downloadMissingFiles(Map<String, Long> toDownloadMap) {
@@ -44,13 +44,13 @@ public class FileDownloader {
 			return false;
 		}
 		try {
-			int responseCode = getResponseCode(new URI(format(
+			int responseCode = getResponseCode(new URI(String.format(
 					"%s:%d/download/%s",
 					formatHTTP(serverAddress),
 					clientPort,
 					requestCRC
 			)).toURL());
-			if (responseCode != HttpURLConnection.HTTP_OK) {
+			if (responseCode != HTTP_OK) {
 				log(SEVERE, "下载失败,错误代码: " + responseCode);
 				return false;
 			}

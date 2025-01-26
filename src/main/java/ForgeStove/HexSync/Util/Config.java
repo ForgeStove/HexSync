@@ -8,9 +8,6 @@ import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
 import static ForgeStove.HexSync.Server.Server.*;
 import static ForgeStove.HexSync.Util.Log.*;
 import static java.io.File.separator;
-import static java.lang.Boolean.parseBoolean;
-import static java.lang.Integer.parseInt;
-import static java.lang.String.*;
 import static java.lang.System.lineSeparator;
 public class Config {
 	public static final String CONFIG_PATH = HEX_SYNC_NAME + separator + "config.properties"; // 配置文件路径
@@ -26,7 +23,7 @@ public class Config {
 	public static String serverSyncDirectory = "mods"; // 服务端同步文件夹路径，默认值mods
 	public static String clientSyncDirectory = "mods"; // 客户端同步文件夹路径，默认值mods
 	public static String clientOnlyDirectory = "clientOnlyMods"; // 仅客户端文件夹路径，默认值clientOnlyMods
-	public static String serverUploadRateLimitUnit = "MB"; // 上传速率限制单位，默认MB
+	public static String serverUploadRateLimitUnit = "MBps"; // 上传速率限制单位，默认MBps
 	public static String serverAddress = "localhost"; // 服务器地址，默认值localhost
 	// 加载配置
 	public static void loadConfig() {
@@ -37,20 +34,19 @@ public class Config {
 		}
 		try (BufferedReader bufferedReader = new BufferedReader(new FileReader(configFile))) {
 			Map<String, Consumer<String>> configMap = new HashMap<>();
-			configMap.put(SERVER_PORT, input -> serverPort = parseInt(input));
+			configMap.put(SERVER_PORT, input -> serverPort = Integer.parseInt(input));
 			configMap.put(SERVER_UPLOAD_RATE_LIMIT, Settings::setRate);
 			configMap.put(SERVER_SYNC_DIRECTORY, input -> serverSyncDirectory = input);
-			configMap.put(SERVER_AUTO_START, input -> serverAutoStart = parseBoolean(input));
-			configMap.put(CLIENT_PORT, input -> clientPort = parseInt(input));
+			configMap.put(SERVER_AUTO_START, input -> serverAutoStart = Boolean.parseBoolean(input));
+			configMap.put(CLIENT_PORT, input -> clientPort = Integer.parseInt(input));
 			configMap.put(SERVER_ADDRESS, input -> serverAddress = input);
 			configMap.put(CLIENT_SYNC_DIRECTORY, input -> clientSyncDirectory = input);
 			configMap.put(CLIENT_ONLY_DIRECTORY, input -> clientOnlyDirectory = input);
-			configMap.put(CLIENT_AUTO_START, input -> clientAutoStart = parseBoolean(input));
+			configMap.put(CLIENT_AUTO_START, input -> clientAutoStart = Boolean.parseBoolean(input));
 			String line;
 			while ((line = bufferedReader.readLine()) != null) {
-				line = line.replace(" ", ""); // 去除空格
 				if (!line.matches("^[a-zA-Z].*")) continue; // 仅当首字符不是字母时跳过
-				String[] parts = line.split("=");
+				String[] parts = line.trim().split("=");
 				if (parts.length != 2) {
 					log(WARNING, "配置格式错误: " + line);
 					continue;
@@ -67,21 +63,21 @@ public class Config {
 	public static void saveConfig() {
 		String[][] configEntries = {
 				{"# 服务端配置"},
-				{SERVER_PORT, valueOf(serverPort)},
+				{SERVER_PORT, String.valueOf(serverPort)},
 				{SERVER_UPLOAD_RATE_LIMIT, serverUploadRateLimit + " " + serverUploadRateLimitUnit},
 				{SERVER_SYNC_DIRECTORY, serverSyncDirectory},
-				{SERVER_AUTO_START, valueOf(serverAutoStart)},
+				{SERVER_AUTO_START, String.valueOf(serverAutoStart)},
 				{"# 客户端配置"},
-				{CLIENT_PORT, valueOf(clientPort)},
+				{CLIENT_PORT, String.valueOf(clientPort)},
 				{SERVER_ADDRESS, serverAddress},
 				{CLIENT_SYNC_DIRECTORY, clientSyncDirectory},
 				{CLIENT_ONLY_DIRECTORY, clientOnlyDirectory},
-				{CLIENT_AUTO_START, valueOf(clientAutoStart)}
+				{CLIENT_AUTO_START, String.valueOf(clientAutoStart)}
 		};
 		StringBuilder configContent = new StringBuilder();
 		for (String[] entry : configEntries) {
 			if (entry[0].startsWith("#")) configContent.append(entry[0]).append(lineSeparator());
-			else configContent.append(format("%s=%s%n", entry[0], entry.length > 1 ? entry[1] : ""));
+			else configContent.append(String.format("%s=%s%n", entry[0], entry.length > 1 ? entry[1] : ""));
 		}
 		configContent.deleteCharAt(configContent.length() - 1); // 去除末尾的换行符
 		File configFile = new File(CONFIG_PATH);

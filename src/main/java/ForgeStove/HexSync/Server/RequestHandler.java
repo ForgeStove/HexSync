@@ -9,8 +9,6 @@ import static ForgeStove.HexSync.Server.Server.serverMap;
 import static ForgeStove.HexSync.Util.Config.serverSyncDirectory;
 import static ForgeStove.HexSync.Util.Log.*;
 import static java.io.File.separator;
-import static java.lang.Long.*;
-import static java.lang.String.format;
 import static java.nio.file.Files.newInputStream;
 public class RequestHandler {
 	// 处理请求
@@ -18,11 +16,11 @@ public class RequestHandler {
 		if (!exchange.getRequestMethod().equalsIgnoreCase("GET")) return;
 		String requestURI = exchange.getRequestURI().getPath();
 		if (requestURI.startsWith("/download/")) {
-			long requestCRC = parseLong(requestURI.substring(requestURI.lastIndexOf("/") + 1));
+			long requestCRC = Long.parseLong(requestURI.substring(requestURI.lastIndexOf("/") + 1));
 			String filePath = null;
 			for (Map.Entry<String, Long> entry : serverMap.entrySet())
 				if (entry.getValue() == requestCRC) {
-					filePath = format("%s%s%s", serverSyncDirectory, separator, entry.getKey());
+					filePath = String.format("%s%s%s", serverSyncDirectory, separator, entry.getKey());
 					break;
 				}
 			if (filePath == null) return;
@@ -36,7 +34,7 @@ public class RequestHandler {
 		} else if (requestURI.startsWith("/list")) {
 			StringBuilder responseBuilder = new StringBuilder();
 			for (Map.Entry<String, Long> entry : serverMap.entrySet())
-				responseBuilder.append(format("%s%n%s%n", entry.getKey(), entry.getValue()));
+				responseBuilder.append(String.format("%s%n%s%n", entry.getKey(), entry.getValue()));
 			byte[] bytes = responseBuilder.toString().getBytes();
 			try (InputStream inputStream = new ByteArrayInputStream(bytes)) {
 				responseSender(exchange, inputStream, bytes.length);

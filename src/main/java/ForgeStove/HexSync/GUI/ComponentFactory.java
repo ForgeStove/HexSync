@@ -4,6 +4,8 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 
 import static ForgeStove.HexSync.GUI.GUI.*;
+import static java.awt.Font.PLAIN;
+import static java.awt.Window.getWindows;
 public class ComponentFactory {
 	// 聚焦并全选输入框
 	public static void selectAndFocus(JTextField textField) {
@@ -19,7 +21,7 @@ public class ComponentFactory {
 	}
 	// 检测是否有同名窗口并显示
 	public static boolean checkJDialog(String title) {
-		for (Window window : Window.getWindows()) {
+		for (Window window : getWindows()) {
 			if (!(window instanceof JDialog)) continue;
 			JDialog dialog = (JDialog) window;
 			if (!dialog.getTitle().equals(title)) continue;
@@ -47,7 +49,7 @@ public class ComponentFactory {
 	}
 	// 设置窗口属性
 	public static void setWindow(Window window) {
-		setFont(window, new Font("Arial", Font.PLAIN, 16));
+		setFont(window, new Font("Arial", PLAIN, 16));
 		window.setIconImage(icon);
 		window.setLocationRelativeTo(null);
 		window.setVisible(true);

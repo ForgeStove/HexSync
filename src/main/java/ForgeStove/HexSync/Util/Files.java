@@ -8,7 +8,6 @@ import static ForgeStove.HexSync.Server.Server.serverMap;
 import static ForgeStove.HexSync.Util.Checksum.calculateCRC;
 import static ForgeStove.HexSync.Util.Config.*;
 import static ForgeStove.HexSync.Util.Log.*;
-import static java.lang.String.valueOf;
 import static java.nio.file.Files.copy;
 public class Files {
 	// 初始化文件
@@ -59,7 +58,7 @@ public class Files {
 				File targetFile = new File(target, targetFileName);
 				if (new File(target, targetFileName + ".disable").exists()) continue; // 跳过此文件
 				if (file.isDirectory()) {
-					copyDirectory(valueOf(file), valueOf(targetFile));
+					copyDirectory(String.valueOf(file), String.valueOf(targetFile));
 				} else if (!targetFile.exists()) {
 					copy(file.toPath(), targetFile.toPath());
 					log(INFO, "已复制: " + file + " -> " + target);

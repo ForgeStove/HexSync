@@ -1,14 +1,13 @@
 package ForgeStove.HexSync.Client;
 import java.io.*;
-import java.net.*;
+import java.net.URI;
 import java.util.*;
 
 import static ForgeStove.HexSync.Client.Client.*;
 import static ForgeStove.HexSync.Util.Config.serverAddress;
 import static ForgeStove.HexSync.Util.Log.*;
 import static ForgeStove.HexSync.Util.Settings.formatHTTP;
-import static java.lang.Long.parseLong;
-import static java.net.HttpURLConnection.*;
+import static java.net.HttpURLConnection.HTTP_OK;
 public class FileCRCFetcher {
 	// 从服务器获取文件名和校验码列表
 	public static Map<String, Long> fetchFileCRCList() {
@@ -33,7 +32,7 @@ public class FileCRCFetcher {
 		) {
 			String fileName;
 			while ((fileName = bufferedReader.readLine()) != null) { // 读取文件名
-				requestMap.put(fileName, parseLong(bufferedReader.readLine())); // 将文件名与校验码放入Map
+				requestMap.put(fileName, Long.parseLong(bufferedReader.readLine())); // 将文件名与校验码放入Map
 			}
 		} catch (IOException error) {
 			log(SEVERE, "读取响应时出错: " + error.getMessage());

@@ -1,19 +1,20 @@
 package ForgeStove.HexSync.Util;
-import ForgeStove.HexSync.GUI.GUI;
-
-import javax.swing.SwingUtilities;
 import javax.swing.text.*;
 import java.awt.Color;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
 
+import static ForgeStove.HexSync.GUI.GUI.logPane;
 import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
 import static ForgeStove.HexSync.Util.Files.makeDirectory;
 import static ForgeStove.HexSync.Util.Settings.HEADLESS;
 import static java.io.File.separator;
 import static java.lang.System.*;
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
+import static javax.swing.SwingUtilities.invokeLater;
+import static javax.swing.text.StyleConstants.setForeground;
 public class Log {
 	public static final String LOG_PATH = HEX_SYNC_NAME + separator + "latest.log"; // 日志文件路径
 	public static final boolean ANSI = getProperty("ansi", "true").equalsIgnoreCase("false"); // 是否启用ANSI控制台输出
@@ -44,16 +45,16 @@ public class Log {
 						info ? "\u001B[32m" : warning ? "\u001B[33m" : severe ? "\u001B[31m" : "\u001B[0m",
 						formattedLog
 				);
-				if (!HEADLESS) SwingUtilities.invokeLater(() -> {
+				if (!HEADLESS) invokeLater(() -> {
 					SimpleAttributeSet attributeSet = new SimpleAttributeSet();
-					StyleConstants.setForeground(
+					setForeground(
 							attributeSet,
 							info
 									? new Color(0, 128, 0)
 									: warning ? new Color(255, 165, 0) : severe ? new Color(255, 0, 0) : Color.BLACK
 					);
-					if (GUI.logPane != null) try {
-						Document document = GUI.logPane.getDocument();
+					if (logPane != null) try {
+						Document document = logPane.getDocument();
 						while (document.getDefaultRootElement().getElementCount() > 128) {
 							Element element = document.getDefaultRootElement().getElement(0);
 							int lineStart = element.getStartOffset();
@@ -61,7 +62,7 @@ public class Log {
 						}
 						document.insertString(document.getLength(), formattedLog, attributeSet);
 					} catch (Exception error) {
-						System.err.println("日志输出失败: " + error.getMessage());
+						err.println("日志输出失败: " + error.getMessage());
 					}
 				});
 			} catch (IOException error) {
@@ -78,6 +79,6 @@ public class Log {
 		} catch (IOException error) {
 			err.println("日志初始化失败: " + error.getMessage());
 		}
-		if (LOG) logExecutor = Executors.newSingleThreadExecutor();
+		if (LOG) logExecutor = newSingleThreadExecutor();
 	}
 }

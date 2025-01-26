@@ -11,7 +11,6 @@ import static ForgeStove.HexSync.Util.Config.*;
 import static ForgeStove.HexSync.Util.Log.*;
 import static ForgeStove.HexSync.Util.Settings.*;
 import static javax.swing.BorderFactory.createEmptyBorder;
-import static javax.swing.JTabbedPane.*;
 public class SettingsJDialog {
 	// 打开设置对话框
 	public SettingsJDialog() {
@@ -22,7 +21,7 @@ public class SettingsJDialog {
 		JPanel settingsPanel = new JPanel(new BorderLayout());
 		settingsPanel.setBorder(createEmptyBorder(5, 5, 5, 5));
 		// 选项卡面板
-		JTabbedPane tabbedPane = new JTabbedPane(TOP, SCROLL_TAB_LAYOUT);
+		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
 		tabbedPane.setFocusable(false);
 		settingsPanel.add(tabbedPane, BorderLayout.CENTER);
 		// 服务端选项卡
@@ -34,7 +33,7 @@ public class SettingsJDialog {
 		JTextField serverUploadRateLimitField = new JTextField(String.valueOf(serverUploadRateLimit));
 		serverPanel.add(serverUploadRateLimitField);
 		serverPanel.add(new JLabel("<html>上传速率单位(每秒):"));
-		JComboBox<String> serverUploadRateLimitUnitBox = new JComboBox<>(new String[]{"B", "KB", "MB", "GB"});
+		JComboBox<String> serverUploadRateLimitUnitBox = new JComboBox<>(new String[]{"Bps", "KBps", "MBps", "GBps"});
 		serverUploadRateLimitUnitBox.setFocusable(false);
 		serverUploadRateLimitUnitBox.setSelectedItem(serverUploadRateLimitUnit);
 		serverPanel.add(serverUploadRateLimitUnitBox);
