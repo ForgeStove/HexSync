@@ -40,13 +40,14 @@ public class Log {
 				boolean info = level.equals(INFO);
 				boolean warning = level.equals(WARNING);
 				boolean severe = level.equals(SEVERE);
-				if (ANSI) out.print(formattedLog);
-				else out.printf(
-						"%s%s\u001B[0m",
-						info ? "\u001B[32m" : warning ? "\u001B[33m" : severe ? "\u001B[31m" : "\u001B[0m",
-						formattedLog
-				);
-				if (!HEADLESS) invokeLater(() -> {
+				if (HEADLESS) {
+					if (ANSI) out.print(formattedLog);
+					else out.printf(
+							"%s%s\u001B[0m",
+							info ? "\u001B[32m" : warning ? "\u001B[33m" : severe ? "\u001B[31m" : "\u001B[0m",
+							formattedLog
+					);
+				} else invokeLater(() -> {
 					SimpleAttributeSet attributeSet = new SimpleAttributeSet();
 					setForeground(
 							attributeSet,

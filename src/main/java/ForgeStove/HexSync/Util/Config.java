@@ -92,6 +92,6 @@ public class Config {
 		} catch (IOException error) {
 			log(SEVERE, "配置保存失败: " + error.getMessage());
 		}
-		if (serverThread != null || clientThread != null) log(INFO, "配置已更改，将在下次启动生效。");
+		if (serverThread != null || clientThread != null) log(INFO, "配置已更改，将在下次启动生效");
 	}
 }
