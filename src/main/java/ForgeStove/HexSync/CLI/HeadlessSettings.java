@@ -6,7 +6,6 @@ import static ForgeStove.HexSync.Client.Client.clientAutoStart;
 import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
 import static ForgeStove.HexSync.Server.Server.serverAutoStart;
 import static ForgeStove.HexSync.Util.Config.*;
-import static ForgeStove.HexSync.Util.Println.printlnStrings;
 import static ForgeStove.HexSync.Util.Settings.*;
 import static java.lang.System.*;
 public class HeadlessSettings {
@@ -29,20 +28,23 @@ public class HeadlessSettings {
 		map.put("CS", args -> setAutoStart(args[1], false, value -> clientAutoStart = value));
 		map.put("SAVE", args -> saveConfig());
 		map.put(
-				"HELP", args -> printlnStrings(new String[]{
-						"SP [端口]                      |设置服务端端口",
-						"SL [整型] [Bps/KBps/MBps/GBps] |设置服务端最大上传速率",
-						"SD [目录]                      |设置服务端同步目录",
-						"SS [Y|N]                       |设置服务端自动启动",
-						"CP [端口]                      |设置客户端端口",
-						"SA [地址]                      |设置服务器地址",
-						"CD [目录]                      |设置客户端同步目录",
-						"CO [目录]                      |设置客户端仅客户端目录",
-						"CS [Y|N]                       |设置客户端自动启动",
-						"SAVE                           |保存并退出设置",
-						"EXIT                           |退出设置而不保存",
-						"HELP                           |帮助"
-				})
+				"HELP", args -> {
+					for (String message : new String[]{
+							"SP [端口]                      |设置服务端端口",
+							"SL [整型] [Bps/KBps/MBps/GBps] |设置服务端最大上传速率",
+							"SD [目录]                      |设置服务端同步目录",
+							"SS [Y|N]                       |设置服务端自动启动",
+							"CP [端口]                      |设置客户端端口",
+							"SA [地址]                      |设置服务器地址",
+							"CD [目录]                      |设置客户端同步目录",
+							"CO [目录]                      |设置客户端仅客户端目录",
+							"CS [Y|N]                       |设置客户端自动启动",
+							"SAVE                           |保存并退出设置",
+							"EXIT                           |退出设置而不保存",
+							"HELP                           |帮助"
+					})
+						System.out.println(message);
+				}
 		);
 		out.println("进入设置模式,输入命令或输入HELP以获取帮助.");
 		Scanner scanner = new Scanner(in);

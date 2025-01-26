@@ -9,7 +9,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="refactor: 更新包名并简化导入语句" />
+    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="fix: 修复转换单位名称错误">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -113,7 +115,7 @@
       <workItem from="1737798624190" duration="3000" />
       <workItem from="1737823152747" duration="928000" />
       <workItem from="1737861936753" duration="1000" />
-      <workItem from="1737861943872" duration="3774000" />
+      <workItem from="1737861943872" duration="5877000" />
     </task>
     <task id="LOCAL-00002" summary="fix(ui): 更新许可证链接并简化代码">
       <option name="closed" value="true" />
@@ -267,7 +269,15 @@
       <option name="project" value="LOCAL" />
       <updated>1737866708190</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="fix: 修复转换单位名称错误">
+      <option name="closed" value="true" />
+      <created>1737870606112</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1737870606112</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -287,6 +297,7 @@
     <MESSAGE value="refactor: 移除重复代码并简化逻辑" />
     <MESSAGE value="fix: 修复CLI和GUI中的一些格式问题和逻辑错误" />
     <MESSAGE value="refactor: 更新包名并简化导入语句" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor: 更新包名并简化导入语句" />
+    <MESSAGE value="fix: 修复转换单位名称错误" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix: 修复转换单位名称错误" />
   </component>
 </project>

@@ -6,7 +6,6 @@ import java.util.*;
 
 import static ForgeStove.HexSync.HexSync.*;
 import static ForgeStove.HexSync.Util.Log.*;
-import static ForgeStove.HexSync.Util.Println.printlnStrings;
 import static java.lang.System.*;
 public class CLI {
 	// 命令行界面
@@ -21,16 +20,19 @@ public class CLI {
 		map.put("SET", HeadlessSettings::headlessSettings);
 		map.put("GITHUB", () -> out.println(GITHUB_URL));
 		map.put(
-				"HELP", () -> printlnStrings(new String[]{
-						"RS     |启动服务端",
-						"RC     |启动客户端",
-						"SS     |停止服务端",
-						"SC     |停止客户端",
-						"SET    |设置",
-						"GITHUB |仓库",
-						"EXIT   |退出",
-						"HELP   |帮助"
-				})
+				"HELP", () -> {
+					for (String message : new String[]{
+							"RS     |启动服务端",
+							"RC     |启动客户端",
+							"SS     |停止服务端",
+							"SC     |停止客户端",
+							"SET    |设置",
+							"GITHUB |仓库",
+							"EXIT   |退出",
+							"HELP   |帮助"
+					})
+						System.out.println(message);
+				}
 		);
 		map.put("EXIT", () -> exit(0));
 		Scanner scanner = new Scanner(in);
