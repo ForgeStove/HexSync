@@ -67,11 +67,11 @@ public class SettingsJDialog {
 							{"服务端端口", serverPortField, 0},
 							{"最大上传速率", serverUploadRateLimitField, 0},
 							{"上传速率单位", serverUploadRateLimitUnitBox, 0},
-							{"服务端同步文件夹路径", serverSyncDirectoryField, 0},
+							{"服务端同步路径", serverSyncDirectoryField, 0},
 							{"客户端端口", clientPortField, 1},
 							{"服务器地址", serverAddressField, 1},
-							{"客户端同步文件夹路径", clientSyncDirectoryField, 1},
-							{"仅客户端模组文件夹路径", clientOnlyDirectoryField, 1}
+							{"客户端同步路径", clientSyncDirectoryField, 1},
+							{"仅客户端模组路径", clientOnlyDirectoryField, 1}
 					})
 						if (input[1] instanceof JTextField) {
 							JTextField textField = (JTextField) input[1];

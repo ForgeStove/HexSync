@@ -9,13 +9,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="fix(ui): 修正日志输出逻辑和格式">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Client/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Client/Client.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Client/FileDownloader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Client/FileDownloader.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Server/RequestHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Server/RequestHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Config.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Config.java" afterDir="false" />
-    </list>
+    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="fix(ui): 修正日志输出逻辑和格式" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -128,7 +122,7 @@
       <workItem from="1737823152747" duration="928000" />
       <workItem from="1737861936753" duration="1000" />
       <workItem from="1737861943872" duration="5877000" />
-      <workItem from="1737903676668" duration="4800000" />
+      <workItem from="1737903676668" duration="5150000" />
     </task>
     <task id="LOCAL-00002" summary="fix(ui): 更新许可证链接并简化代码">
       <option name="closed" value="true" />
@@ -346,7 +340,31 @@
       <option name="project" value="LOCAL" />
       <updated>1737908037523</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL-00029" summary="refactor(Client): 使用静态导入优化导入语句&#10;refactor(Client/Client.java): 替换硬编码字符串为常量&#10;refactor(Client/FileDownloader.java): 替换硬编码字符串为常量&#10;refactor(Server/RequestHandler.java): 替换硬编码字符串为常量">
+      <option name="closed" value="true" />
+      <created>1737908490675</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1737908490675</updated>
+    </task>
+    <task id="LOCAL-00030" summary="refactor(Client): 修复文件删除逻辑">
+      <option name="closed" value="true" />
+      <created>1737908806588</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1737908806588</updated>
+    </task>
+    <task id="LOCAL-00031" summary="fix(ui): 修正日志输出逻辑和格式">
+      <option name="closed" value="true" />
+      <created>1737908823551</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1737908823551</updated>
+    </task>
+    <option name="localTasksCounter" value="32" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -374,6 +392,8 @@
     <MESSAGE value="updated" />
     <MESSAGE value="refactor(sync): 合并FileCRCFetcher到FileDownloader并更新相关方法名" />
     <MESSAGE value="fix: 修正上传速率设置逻辑和输出格式" />
+    <MESSAGE value="refactor(Client): 使用静态导入优化导入语句&#10;refactor(Client/Client.java): 替换硬编码字符串为常量&#10;refactor(Client/FileDownloader.java): 替换硬编码字符串为常量&#10;refactor(Server/RequestHandler.java): 替换硬编码字符串为常量" />
+    <MESSAGE value="refactor(Client): 修复文件删除逻辑" />
     <MESSAGE value="fix(ui): 修正日志输出逻辑和格式" />
     <option name="LAST_COMMIT_MESSAGE" value="fix(ui): 修正日志输出逻辑和格式" />
   </component>
