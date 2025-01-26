@@ -6,13 +6,13 @@ public class Unit {
 	public static long convertToBytes(long value, String unit) {
 		try {
 			switch (unit) {
-				case "B":
+				case "Bps":
 					return value;
-				case "KB":
+				case "KBps":
 					return multiplyExact(value, 1024);
-				case "MB":
+				case "MBps":
 					return multiplyExact(value, 1048576);
-				case "GB":
+				case "GBps":
 					return multiplyExact(value, 1073741824);
 				default:
 					log(WARNING, "未知的最大上传速率单位: " + unit);
