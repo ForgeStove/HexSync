@@ -32,7 +32,8 @@ public class Client {
 			Map<String, Long> requestMap = fetchFileCRCList();
 			if (!requestMap.isEmpty()) {
 				deleteFilesNotInMaps(requestMap, initMap(clientOnlyDirectory)); // 删除多余文件
-				requestMap.entrySet().removeIf(entry -> initMap(clientSyncDirectory).containsValue(entry.getValue()));
+				Map<String, Long> clientMap = initMap(clientSyncDirectory); // 初始化客户端文件列表
+				requestMap.entrySet().removeIf(entry -> clientMap.containsValue(entry.getValue())); // 循环并删除已存在文件
 				downloadMissingFiles(requestMap);// 下载文件
 				copyDirectory(clientOnlyDirectory, clientSyncDirectory);// 复制仅客户端模组文件夹中的文件到客户端同步文件夹
 			}
