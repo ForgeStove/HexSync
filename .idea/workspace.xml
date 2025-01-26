@@ -9,8 +9,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="fix: 迁移Checksum和Unit类并优化相关方法">
+    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="fix(ui): 修正日志输出逻辑和格式">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Client/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Client/Client.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Client/FileDownloader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Client/FileDownloader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Server/RequestHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Server/RequestHandler.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Config.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Config.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -69,7 +72,12 @@
       <recent name="C:\Utils\Source\Java\HexSync\src" />
     </key>
     <key name="MoveMembersDialog.RECENTS_KEY">
+      <recent name="ForgeStove.HexSync.Util.Config" />
+      <recent name="ForgeStove.HexSync.Client.FileDownloader" />
       <recent name="ForgeStove.HexSync.Util.Files" />
+    </key>
+    <key name="IntroduceConstantDialog.RECENTS_KEY">
+      <recent name="ForgeStove.HexSync.Server.RequestHandler" />
     </key>
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
       <recent name="" />
@@ -120,7 +128,7 @@
       <workItem from="1737823152747" duration="928000" />
       <workItem from="1737861936753" duration="1000" />
       <workItem from="1737861943872" duration="5877000" />
-      <workItem from="1737903676668" duration="3210000" />
+      <workItem from="1737903676668" duration="4800000" />
     </task>
     <task id="LOCAL-00002" summary="fix(ui): 更新许可证链接并简化代码">
       <option name="closed" value="true" />
@@ -298,7 +306,47 @@
       <option name="project" value="LOCAL" />
       <updated>1737905608258</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="feat: 配置更改通知">
+      <option name="closed" value="true" />
+      <created>1737906984015</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1737906984015</updated>
+    </task>
+    <task id="LOCAL-00025" summary="updated">
+      <option name="closed" value="true" />
+      <created>1737907013140</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1737907013140</updated>
+    </task>
+    <task id="LOCAL-00026" summary="refactor(sync): 合并FileCRCFetcher到FileDownloader并更新相关方法名">
+      <option name="closed" value="true" />
+      <created>1737907545631</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1737907545631</updated>
+    </task>
+    <task id="LOCAL-00027" summary="fix: 修正上传速率设置逻辑和输出格式">
+      <option name="closed" value="true" />
+      <created>1737907549981</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1737907549981</updated>
+    </task>
+    <task id="LOCAL-00028" summary="fix(ui): 修正日志输出逻辑和格式">
+      <option name="closed" value="true" />
+      <created>1737908037523</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1737908037523</updated>
+    </task>
+    <option name="localTasksCounter" value="29" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -321,6 +369,12 @@
     <MESSAGE value="fix: 修复转换单位名称错误" />
     <MESSAGE value="fix: 移除printlnStrings方法并直接使用System.out.println" />
     <MESSAGE value="fix: 迁移Checksum和Unit类并优化相关方法" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix: 迁移Checksum和Unit类并优化相关方法" />
+    <MESSAGE value="fix: 添加配置更改提示信息" />
+    <MESSAGE value="feat: 配置更改通知" />
+    <MESSAGE value="updated" />
+    <MESSAGE value="refactor(sync): 合并FileCRCFetcher到FileDownloader并更新相关方法名" />
+    <MESSAGE value="fix: 修正上传速率设置逻辑和输出格式" />
+    <MESSAGE value="fix(ui): 修正日志输出逻辑和格式" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix(ui): 修正日志输出逻辑和格式" />
   </component>
 </project>
