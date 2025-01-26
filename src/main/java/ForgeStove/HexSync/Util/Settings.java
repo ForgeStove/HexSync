@@ -32,11 +32,11 @@ public class Settings {
 	// 设置最大上传速率
 	public static void setRate(String input) {
 		String[] parts = input.split("\\s+", 2);
-		if (input.toUpperCase().matches("\\d+(\\s+" + BPS + "|\\s+" + KBPS + "|\\s+" + MBPS + "|\\s+" + GBPS + ")".toUpperCase()) && !isInvalidLong(
+		if (input.matches("\\d+(\\s+" + BPS + "|\\s+" + KBPS + "|\\s+" + MBPS + "|\\s+" + GBPS + ")") && !isInvalidLong(
 				parts[0])) {
 			serverUploadRateLimit = Long.parseLong(parts[0]);
 			serverUploadRateLimitUnit = parts[1];
-			if (HEADLESS) out.println("上传速率已设置为: " + serverUploadRateLimit + serverUploadRateLimitUnit);
+			if (HEADLESS) out.println("上传速率已设置为: " + serverUploadRateLimit + " " + serverUploadRateLimitUnit);
 		} else if (HEADLESS) err.println("速率格式错误");
 	}
 	// 检测数字输入是否不在Long范围内
