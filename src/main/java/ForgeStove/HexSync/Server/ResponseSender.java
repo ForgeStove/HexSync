@@ -11,7 +11,7 @@ import static java.lang.Thread.sleep;
 import static java.net.HttpURLConnection.HTTP_OK;
 public class ResponseSender {
 	// 发送数据
-	public static void responseSender(HttpExchange exchange, InputStream inputStream, long responseBytesLength) {
+	public static void sendResponse(HttpExchange exchange, InputStream inputStream, long responseBytesLength) {
 		if (inputStream == null) return;
 		try (OutputStream outputStream = exchange.getResponseBody()) {
 			exchange.sendResponseHeaders(HTTP_OK, responseBytesLength); // 设置响应头

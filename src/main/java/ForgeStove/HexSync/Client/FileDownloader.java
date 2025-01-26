@@ -4,7 +4,7 @@ import java.net.URI;
 import java.util.Map;
 
 import static ForgeStove.HexSync.Client.Client.*;
-import static ForgeStove.HexSync.Util.Checksum.calculateCRC;
+import static ForgeStove.HexSync.Util.Files.calculateCRC;
 import static ForgeStove.HexSync.Util.Config.*;
 import static ForgeStove.HexSync.Util.Log.*;
 import static ForgeStove.HexSync.Util.Settings.formatHTTP;

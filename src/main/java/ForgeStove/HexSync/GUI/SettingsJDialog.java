@@ -33,7 +33,7 @@ public class SettingsJDialog {
 		JTextField serverUploadRateLimitField = new JTextField(String.valueOf(serverUploadRateLimit));
 		serverPanel.add(serverUploadRateLimitField);
 		serverPanel.add(new JLabel("<html>上传速率单位(每秒):"));
-		JComboBox<String> serverUploadRateLimitUnitBox = new JComboBox<>(new String[]{"Bps", "KBps", "MBps", "GBps"});
+		JComboBox<String> serverUploadRateLimitUnitBox = new JComboBox<>(RATE_UNITS);
 		serverUploadRateLimitUnitBox.setFocusable(false);
 		serverUploadRateLimitUnitBox.setSelectedItem(serverUploadRateLimitUnit);
 		serverPanel.add(serverUploadRateLimitUnitBox);
@@ -66,7 +66,7 @@ public class SettingsJDialog {
 					for (Object[] input : new Object[][]{
 							{"服务端端口", serverPortField, 0},
 							{"最大上传速率", serverUploadRateLimitField, 0},
-							{"上传速率单位(每秒)", serverUploadRateLimitUnitBox, 0},
+							{"上传速率单位", serverUploadRateLimitUnitBox, 0},
 							{"服务端同步文件夹路径", serverSyncDirectoryField, 0},
 							{"客户端端口", clientPortField, 1},
 							{"服务器地址", serverAddressField, 1},

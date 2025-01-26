@@ -1,11 +1,11 @@
 package ForgeStove.HexSync.Util;
 import java.io.*;
 import java.util.*;
+import java.util.zip.CRC32;
 
 import static ForgeStove.HexSync.Client.Client.errorDownload;
 import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
 import static ForgeStove.HexSync.Server.Server.serverMap;
-import static ForgeStove.HexSync.Util.Checksum.calculateCRC;
 import static ForgeStove.HexSync.Util.Config.*;
 import static ForgeStove.HexSync.Util.Log.*;
 import static java.nio.file.Files.copy;
@@ -28,6 +28,19 @@ public class Files {
 		if (fileList != null) for (File file : fileList)
 			if (file.isFile()) map.put(file.getName(), calculateCRC(file));
 		return map;
+	}
+	// 计算文件校验码
+	public static long calculateCRC(File file) {
+		CRC32 crc = new CRC32();
+		try (FileInputStream fileInputStream = new FileInputStream(file)) {
+			byte[] buffer = new byte[16384];
+			int bytesRead;
+			while ((bytesRead = fileInputStream.read(buffer)) != -1) crc.update(buffer, 0, bytesRead);
+		} catch (IOException error) {
+			log(SEVERE, "校验码计算错误: " + error.getMessage());
+			return -1;
+		}
+		return crc.getValue();
 	}
 	// 创建文件夹
 	public static void makeDirectory(String directoryPath) {

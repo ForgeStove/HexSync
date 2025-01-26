@@ -20,10 +20,15 @@ public class Config {
 	public static final String CLIENT_SYNC_DIRECTORY = "clientSyncDirectory"; // 客户端同步文件夹路径配置项
 	public static final String CLIENT_ONLY_DIRECTORY = "clientOnlyDirectory"; // 仅客户端文件夹路径配置项
 	public static final String CLIENT_AUTO_START = "clientAutoStart"; // 客户端自动启动配置项
+	public static final String BPS = "Bps"; // 上传速率限制单位Bps
+	public static final String KBPS = "KBps"; // 上传速率限制单位KBps
+	public static final String MBPS = "MBps"; // 上传速率限制单位MBps
+	public static final String GBPS = "GBps"; // 上传速率限制单位GBps
+	public static final String[] RATE_UNITS = {BPS, KBPS, MBPS, GBPS}; // 上传速率限制单位数组
 	public static String serverSyncDirectory = "mods"; // 服务端同步文件夹路径，默认值mods
 	public static String clientSyncDirectory = "mods"; // 客户端同步文件夹路径，默认值mods
 	public static String clientOnlyDirectory = "clientOnlyMods"; // 仅客户端文件夹路径，默认值clientOnlyMods
-	public static String serverUploadRateLimitUnit = "MBps"; // 上传速率限制单位，默认MBps
+	public static String serverUploadRateLimitUnit = MBPS; // 上传速率限制单位，默认MBps
 	public static String serverAddress = "localhost"; // 服务器地址，默认值localhost
 	// 加载配置
 	public static void loadConfig() {

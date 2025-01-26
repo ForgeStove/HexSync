@@ -3,7 +3,7 @@ import java.util.function.Consumer;
 
 import static ForgeStove.HexSync.Client.Client.clientPort;
 import static ForgeStove.HexSync.Server.Server.*;
-import static ForgeStove.HexSync.Util.Config.serverUploadRateLimitUnit;
+import static ForgeStove.HexSync.Util.Config.*;
 import static ForgeStove.HexSync.Util.Log.*;
 import static java.awt.GraphicsEnvironment.isHeadless;
 import static java.io.File.separator;
@@ -32,9 +32,11 @@ public class Settings {
 	// 设置最大上传速率
 	public static void setRate(String input) {
 		String[] parts = input.split("\\s+", 2);
-		if (input.matches("\\d+(\\s+Bps|\\s+KBps|\\s+MBps|\\s+GBps)") && !isInvalidLong(parts[0])) {
+		if (input.toUpperCase().matches("\\d+(\\s+" + BPS + "|\\s+" + KBPS + "|\\s+" + MBPS + "|\\s+" + GBPS + ")".toUpperCase()) && !isInvalidLong(
+				parts[0])) {
 			serverUploadRateLimit = Long.parseLong(parts[0]);
 			serverUploadRateLimitUnit = parts[1];
+			if (HEADLESS) out.println("上传速率已设置为: " + serverUploadRateLimit + serverUploadRateLimitUnit);
 		} else if (HEADLESS) err.println("速率格式错误");
 	}
 	// 检测数字输入是否不在Long范围内
@@ -60,7 +62,7 @@ public class Settings {
 			boolean value = input.matches("[yY]");
 			consumer.accept(value);
 			out.println(isServer ? "服务端" : "客户端" + "自动启动已设置为: " + value);
-		} else err.println("无效输入,请输入Y/N.");
+		} else err.println("无效输入,请输入Y|N.");
 	}
 	// 地址格式化,转换为HTTP协议
 	public static String formatHTTP(String address) {

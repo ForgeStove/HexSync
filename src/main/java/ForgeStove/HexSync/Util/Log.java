@@ -10,6 +10,7 @@ import static ForgeStove.HexSync.GUI.GUI.logPane;
 import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
 import static ForgeStove.HexSync.Util.Files.makeDirectory;
 import static ForgeStove.HexSync.Util.Settings.HEADLESS;
+import static java.awt.Color.BLACK;
 import static java.io.File.separator;
 import static java.lang.System.*;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
@@ -51,7 +52,7 @@ public class Log {
 							attributeSet,
 							info
 									? new Color(0, 128, 0)
-									: warning ? new Color(255, 165, 0) : severe ? new Color(255, 0, 0) : Color.BLACK
+									: warning ? new Color(255, 165, 0) : severe ? new Color(255, 0, 0) : BLACK
 					);
 					if (logPane != null) try {
 						Document document = logPane.getDocument();
