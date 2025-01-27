@@ -3,7 +3,6 @@ import javax.swing.text.*;
 import java.awt.Color;
 import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.concurrent.ExecutorService;
 
 import static ForgeStove.HexSync.GUI.GUI.logPane;
@@ -30,8 +29,8 @@ public class Log {
 		if (LOG && logWriter != null && logExecutor != null) logExecutor.submit(() -> {
 			try {
 				String formattedLog = String.format(
-						"%s [%s] %s%n",
-						new SimpleDateFormat("[HH:mm:ss]").format(new Date()),
+						"[%s] [%s] %s%n",
+						new SimpleDateFormat("HH:mm:ss").format(currentTimeMillis()),
 						level,
 						message
 				);

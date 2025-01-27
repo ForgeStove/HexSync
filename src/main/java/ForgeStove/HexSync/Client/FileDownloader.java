@@ -44,12 +44,12 @@ public class FileDownloader {
 			return false;
 		}
 		try {
-			int responseCode = getResponseCode(new URI(String.format(
+			int responseCode = getResponseCode(String.format(
 					"%s:%d/" + DOWNLOAD + "/%s",
 					formatHTTP(serverAddress),
 					clientPort,
 					requestCRC
-			)).toURL());
+			));
 			if (responseCode != HTTP_OK) {
 				log(SEVERE, "下载失败,错误代码: " + responseCode);
 				return false;
@@ -79,8 +79,8 @@ public class FileDownloader {
 		return true; // 下载成功且校验通过
 	}
 	// 获取响应码
-	public static int getResponseCode(URL requestURL) throws IOException {
-		HTTPURLConnection = (HttpURLConnection) requestURL.openConnection(); // 打开连接
+	public static int getResponseCode(String requestURL) throws IOException {
+		HTTPURLConnection = (HttpURLConnection) new URL(requestURL).openConnection(); // 打开连接
 		HTTPURLConnection.setRequestMethod(GET); // 设置请求方式为GET
 		HTTPURLConnection.setConnectTimeout(5000); // 设置连接超时为5秒
 		HTTPURLConnection.setReadTimeout(5000); // 设置读取超时为5秒
@@ -88,11 +88,11 @@ public class FileDownloader {
 	}
 	// 从服务器获取文件名和校验码列表
 	public static Map<String, Long> fetchFileCRCList() {
-		String URL = formatHTTP(serverAddress) + ":" + clientPort + "/" + LIST; // 服务器地址
+		String URL = String.format("%s:%d/%s", formatHTTP(serverAddress), clientPort, LIST); // 服务器地址
 		log(INFO, "正在连接到: " + URL); // 记录请求开始日志
 		Map<String, Long> requestMap = new HashMap<>(); // 复制请求列表
 		try {
-			int responseCode = getResponseCode(new URI(URL).toURL());
+			int responseCode = getResponseCode(URL);
 			if (responseCode != HTTP_OK) {
 				if (clientThread != null) log(SEVERE, "请求列表失败,错误代码: " + responseCode);
 				errorDownload = true;

@@ -4,9 +4,11 @@ import java.util.function.Consumer;
 import static ForgeStove.HexSync.Client.Client.clientPort;
 import static ForgeStove.HexSync.Server.Server.*;
 import static ForgeStove.HexSync.Util.Config.*;
-import static ForgeStove.HexSync.Util.Config.RateUnit.*;
+import static ForgeStove.HexSync.Util.Log.log;
 import static ForgeStove.HexSync.Util.Log.*;
+import static ForgeStove.HexSync.Util.RateUnit.*;
 import static java.io.File.separator;
+import static java.lang.Math.*;
 import static java.lang.System.*;
 public class Settings {
 	// 字符串转端口
@@ -31,11 +33,14 @@ public class Settings {
 	// 设置最大上传速率
 	public static void setRate(String input) {
 		String[] parts = input.split("\\s+", 2);
-		if (input.matches("\\d+(\\s+(" + BPS + "|" + KBPS + "|" + MBPS + "|" + GBPS + "))")
+		if (input.matches("\\d+(\\s+(" + BPS.unit + "|" + KBPS.unit + "|" + MBPS.unit + "|" + GBPS.unit + "))")
 				&& !isInvalidLong(parts[0])) {
 			serverUploadRateLimit = Long.parseLong(parts[0]);
-			serverUploadRateLimitUnit = RateUnit.valueOf(parts[1]);
-			if (HEADLESS) out.println("上传速率已设置为: " + serverUploadRateLimit + " " + serverUploadRateLimitUnit);
+			serverUploadRateLimitUnit = fromUnit(parts[1]);
+			if (serverThread != null) maxUploadRateInBytes = multiplyExact(
+					serverUploadRateLimit,
+					(long) pow(1024, serverUploadRateLimitUnit.exponent)
+			);
 		} else if (HEADLESS) err.println("速率格式错误");
 	}
 	// 检测数字输入是否不在Long范围内

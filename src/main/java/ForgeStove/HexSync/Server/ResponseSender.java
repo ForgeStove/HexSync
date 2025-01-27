@@ -3,7 +3,8 @@ import com.sun.net.httpserver.HttpExchange;
 
 import java.io.*;
 
-import static ForgeStove.HexSync.Server.Server.*;
+import static ForgeStove.HexSync.Server.Server.AVAILABLE_TOKENS;
+import static ForgeStove.HexSync.Util.Config.*;
 import static ForgeStove.HexSync.Util.Log.*;
 import static java.lang.Math.min;
 import static java.lang.System.currentTimeMillis;

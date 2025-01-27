@@ -6,7 +6,7 @@ import java.awt.*;
 
 import static ForgeStove.HexSync.Client.Client.*;
 import static ForgeStove.HexSync.GUI.ComponentFactory.*;
-import static ForgeStove.HexSync.GUI.SettingsJDialog.settingsJDialog;
+import static ForgeStove.HexSync.GUI.SettingsJDialog.initSettingsJDialog;
 import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
 import static ForgeStove.HexSync.Server.Server.*;
 import static ForgeStove.HexSync.Util.Log.*;
@@ -41,7 +41,7 @@ public class GUI {
 				JPanel buttonPanel = new JPanel(new GridLayout(2, 3));
 				newJButton(buttonPanel, "启动服务端", event -> runServer());
 				newJButton(buttonPanel, "启动客户端", event -> runClient());
-				newJButton(buttonPanel, "设置", event -> settingsJDialog());
+				newJButton(buttonPanel, "设置", event -> initSettingsJDialog());
 				newJButton(buttonPanel, "停止服务端", event -> stopServer());
 				newJButton(buttonPanel, "停止客户端", event -> stopClient());
 				newJButton(buttonPanel, "退出", event -> exit(0));

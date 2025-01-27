@@ -6,8 +6,8 @@ import java.util.function.Consumer;
 import static ForgeStove.HexSync.Client.Client.*;
 import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
 import static ForgeStove.HexSync.Server.Server.*;
-import static ForgeStove.HexSync.Util.Config.RateUnit.*;
 import static ForgeStove.HexSync.Util.Log.*;
+import static ForgeStove.HexSync.Util.RateUnit.MBPS;
 import static java.awt.GraphicsEnvironment.isHeadless;
 import static java.io.File.separator;
 import static java.lang.System.lineSeparator;
@@ -22,7 +22,6 @@ public class Config {
 	public static final String CLIENT_SYNC_DIRECTORY = "clientSyncDirectory"; // 客户端同步文件夹路径配置项
 	public static final String CLIENT_ONLY_DIRECTORY = "clientOnlyDirectory"; // 仅客户端文件夹路径配置项
 	public static final String CLIENT_AUTO_START = "clientAutoStart"; // 客户端自动启动配置项
-	public static final RateUnit[] RATE_UNITS = {BPS, KBPS, MBPS, GBPS}; // 上传速率限制单位数组
 	public static final String DOWNLOAD = "download"; // 构造下载URL命令
 	public static final String LIST = "list"; // 构造列出文件URL命令
 	public static final String GET = "GET"; // 下载文件命令
@@ -32,6 +31,8 @@ public class Config {
 	public static String clientOnlyDirectory = "clientOnlyMods"; // 仅客户端文件夹路径，默认值clientOnlyMods
 	public static RateUnit serverUploadRateLimitUnit = MBPS; // 上传速率限制单位，默认MBps
 	public static String serverAddress = "localhost"; // 服务器地址，默认值localhost
+	public static long serverUploadRateLimit = 1; // 上传速率限制值，默认限速1MB
+	public static long maxUploadRateInBytes; // 上传速率限制值对应的字节数
 	// 加载配置
 	public static void loadConfig() {
 		File configFile = new File(CONFIG_PATH);
@@ -68,23 +69,23 @@ public class Config {
 	}
 	// 保存配置
 	public static void saveConfig() {
-		String[][] configEntries = {
+		Object[][] configEntries = {
 				{"# 服务端配置"},
-				{SERVER_PORT, String.valueOf(serverPort)},
+				{SERVER_PORT, serverPort},
 				{SERVER_UPLOAD_RATE_LIMIT, serverUploadRateLimit + " " + serverUploadRateLimitUnit.unit},
 				{SERVER_SYNC_DIRECTORY, serverSyncDirectory},
-				{SERVER_AUTO_START, String.valueOf(serverAutoStart)},
+				{SERVER_AUTO_START, serverAutoStart},
 				{"# 客户端配置"},
-				{CLIENT_PORT, String.valueOf(clientPort)},
+				{CLIENT_PORT, clientPort},
 				{SERVER_ADDRESS, serverAddress},
 				{CLIENT_SYNC_DIRECTORY, clientSyncDirectory},
 				{CLIENT_ONLY_DIRECTORY, clientOnlyDirectory},
-				{CLIENT_AUTO_START, String.valueOf(clientAutoStart)}
+				{CLIENT_AUTO_START, clientAutoStart}
 		};
 		StringBuilder configContent = new StringBuilder();
-		for (String[] entry : configEntries) {
-			if (entry[0].startsWith("#")) configContent.append(entry[0]).append(lineSeparator());
-			else configContent.append(String.format("%s=%s%n", entry[0], entry.length > 1 ? entry[1] : ""));
+		for (Object[] config : configEntries) {
+			if (config[0].toString().startsWith("#")) configContent.append(config[0]).append(lineSeparator());
+			else configContent.append(String.format("%s=%s%n", config[0], config.length > 1 ? config[1] : ""));
 		}
 		configContent.deleteCharAt(configContent.length() - 1); // 去除末尾的换行符
 		File configFile = new File(CONFIG_PATH);
@@ -93,16 +94,6 @@ public class Config {
 			log(INFO, "配置已保存: " + lineSeparator() + configContent);
 		} catch (IOException error) {
 			log(SEVERE, "配置保存失败: " + error.getMessage());
-		}
-		if (serverThread != null || clientThread != null) log(INFO, "配置已更改，将在下次启动生效");
-	}
-	public enum RateUnit {
-		BPS("Bps", 0), KBPS("K" + BPS.unit, 1), MBPS("M" + BPS.unit, 2), GBPS("G" + BPS.unit, 3);
-		public final String unit;
-		public final int exponent;
-		RateUnit(String unit, int exponent) {
-			this.unit = unit;
-			this.exponent = exponent;
 		}
 	}
 }

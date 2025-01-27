@@ -10,7 +10,7 @@ import static javax.swing.BorderFactory.createEmptyBorder;
 import static javax.swing.event.HyperlinkEvent.EventType.ACTIVATED;
 public class AboutJDialog {
 	// 关于
-	public static void aboutJDialog(Window parent) {
+	public static void initAboutJDialog(Window parent) {
 		if (checkJDialog("关于")) return;
 		JDialog aboutDialog = new JDialog(parent, "关于");
 		JTextPane aboutTextPane = new JTextPane();

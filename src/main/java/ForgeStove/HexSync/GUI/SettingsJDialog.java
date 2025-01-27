@@ -3,17 +3,18 @@ import javax.swing.*;
 import java.awt.*;
 
 import static ForgeStove.HexSync.Client.Client.*;
-import static ForgeStove.HexSync.GUI.AboutJDialog.aboutJDialog;
+import static ForgeStove.HexSync.GUI.AboutJDialog.initAboutJDialog;
 import static ForgeStove.HexSync.GUI.ComponentFactory.*;
 import static ForgeStove.HexSync.GUI.GUI.*;
 import static ForgeStove.HexSync.Server.Server.*;
 import static ForgeStove.HexSync.Util.Config.*;
 import static ForgeStove.HexSync.Util.Log.*;
+import static ForgeStove.HexSync.Util.RateUnit.*;
 import static ForgeStove.HexSync.Util.Settings.*;
 import static javax.swing.BorderFactory.createEmptyBorder;
 public class SettingsJDialog {
 	// 打开设置对话框
-	public static void settingsJDialog() {
+	public static void initSettingsJDialog() {
 		if (checkJDialog("设置")) return;
 		loadConfig();
 		// 设置对话框
@@ -32,10 +33,12 @@ public class SettingsJDialog {
 		serverPanel.add(new JLabel("<html>最大上传速率:"));
 		JTextField serverUploadRateLimitField = new JTextField(String.valueOf(serverUploadRateLimit));
 		serverPanel.add(serverUploadRateLimitField);
-		serverPanel.add(new JLabel("<html>上传速率单位(每秒):"));
-		JComboBox<RateUnit> serverUploadRateLimitUnitBox = new JComboBox<>(RATE_UNITS);
+		serverPanel.add(new JLabel("<html>上传速率单位:"));
+		JComboBox<String> serverUploadRateLimitUnitBox = new JComboBox<>(new String[]{
+				BPS.unit, KBPS.unit, MBPS.unit, GBPS.unit
+		});
 		serverUploadRateLimitUnitBox.setFocusable(false);
-		serverUploadRateLimitUnitBox.setSelectedItem(serverUploadRateLimitUnit);
+		serverUploadRateLimitUnitBox.setSelectedItem(serverUploadRateLimitUnit.unit);
 		serverPanel.add(serverUploadRateLimitUnitBox);
 		serverPanel.add(new JLabel("<html>服务端同步路径:"));
 		JTextField serverSyncDirectoryField = new JTextField(serverSyncDirectory);
@@ -95,7 +98,7 @@ public class SettingsJDialog {
 					}
 					serverAutoStart = serverAutoStartBox.isSelected();
 					serverUploadRateLimit = Long.parseLong(uploadRateLimitText);
-					serverUploadRateLimitUnit = (RateUnit) serverUploadRateLimitUnitBox.getSelectedItem();
+					serverUploadRateLimitUnit = fromUnit((String) serverUploadRateLimitUnitBox.getSelectedItem());
 					serverSyncDirectory = serverSyncDirectoryField.getText().trim();
 					clientAutoStart = clientAutoStartBox.isSelected();
 					serverAddress = serverAddressField.getText().trim();
@@ -106,7 +109,7 @@ public class SettingsJDialog {
 				}
 		);
 		newJButton(buttonPanel, "取消", event -> settingsJDialog.dispose());
-		newJButton(buttonPanel, "关于", event -> aboutJDialog(settingsJDialog));
+		newJButton(buttonPanel, "关于", event -> initAboutJDialog(settingsJDialog));
 		settingsPanel.add(buttonPanel, BorderLayout.SOUTH);
 		settingsJDialog.add(settingsPanel);
 		settingsJDialog.setSize(screenLength / 5, screenLength / 8);
