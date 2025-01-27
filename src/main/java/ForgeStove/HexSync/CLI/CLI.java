@@ -31,7 +31,7 @@ public class CLI {
 							"EXIT   |退出",
 							"HELP   |帮助"
 					})
-						System.out.println(message);
+						out.println(message);
 				}
 		);
 		map.put("EXIT", () -> exit(0));
