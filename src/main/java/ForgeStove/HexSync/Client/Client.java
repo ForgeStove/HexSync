@@ -1,5 +1,4 @@
 package ForgeStove.HexSync.Client;
-import java.io.IOException;
 import java.net.*;
 import java.util.Map;
 
@@ -15,14 +14,6 @@ public class Client {
 	public static boolean errorDownload; // 客户端下载文件时是否发生错误，影响客户端是否自动关闭
 	public static boolean clientAutoStart; // 客户端自动启动，默认不自动启动
 	public static int clientPort = 65535; // 客户端端口，默认值65535
-	// 获取响应码
-	public static int getResponseCode(URL requestURL) throws IOException {
-		HTTPURLConnection = (HttpURLConnection) requestURL.openConnection(); // 打开连接
-		HTTPURLConnection.setRequestMethod(GET); // 设置请求方式为GET
-		HTTPURLConnection.setConnectTimeout(5000); // 设置连接超时为5秒
-		HTTPURLConnection.setReadTimeout(5000); // 设置读取超时为5秒
-		return HTTPURLConnection.getResponseCode(); // 返回响应码
-	}
 	// 启动客户端
 	public static void runClient() {
 		if (clientThread != null) return;

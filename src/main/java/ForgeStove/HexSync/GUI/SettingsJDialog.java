@@ -33,7 +33,7 @@ public class SettingsJDialog {
 		JTextField serverUploadRateLimitField = new JTextField(String.valueOf(serverUploadRateLimit));
 		serverPanel.add(serverUploadRateLimitField);
 		serverPanel.add(new JLabel("<html>上传速率单位(每秒):"));
-		JComboBox<String> serverUploadRateLimitUnitBox = new JComboBox<>(RATE_UNITS);
+		JComboBox<RateUnit> serverUploadRateLimitUnitBox = new JComboBox<>(RATE_UNITS);
 		serverUploadRateLimitUnitBox.setFocusable(false);
 		serverUploadRateLimitUnitBox.setSelectedItem(serverUploadRateLimitUnit);
 		serverPanel.add(serverUploadRateLimitUnitBox);
@@ -95,7 +95,7 @@ public class SettingsJDialog {
 					}
 					serverAutoStart = serverAutoStartBox.isSelected();
 					serverUploadRateLimit = Long.parseLong(uploadRateLimitText);
-					serverUploadRateLimitUnit = (String) serverUploadRateLimitUnitBox.getSelectedItem();
+					serverUploadRateLimitUnit = (RateUnit) serverUploadRateLimitUnitBox.getSelectedItem();
 					serverSyncDirectory = serverSyncDirectoryField.getText().trim();
 					clientAutoStart = clientAutoStartBox.isSelected();
 					serverAddress = serverAddressField.getText().trim();

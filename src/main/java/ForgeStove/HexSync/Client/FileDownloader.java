@@ -1,6 +1,6 @@
 package ForgeStove.HexSync.Client;
 import java.io.*;
-import java.net.URI;
+import java.net.*;
 import java.util.*;
 
 import static ForgeStove.HexSync.Client.Client.*;
@@ -77,6 +77,14 @@ public class FileDownloader {
 			return false;
 		}
 		return true; // 下载成功且校验通过
+	}
+	// 获取响应码
+	public static int getResponseCode(URL requestURL) throws IOException {
+		HTTPURLConnection = (HttpURLConnection) requestURL.openConnection(); // 打开连接
+		HTTPURLConnection.setRequestMethod(GET); // 设置请求方式为GET
+		HTTPURLConnection.setConnectTimeout(5000); // 设置连接超时为5秒
+		HTTPURLConnection.setReadTimeout(5000); // 设置读取超时为5秒
+		return HTTPURLConnection.getResponseCode(); // 返回响应码
 	}
 	// 从服务器获取文件名和校验码列表
 	public static Map<String, Long> fetchFileCRCList() {

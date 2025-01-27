@@ -6,8 +6,11 @@ import java.util.function.Consumer;
 import static ForgeStove.HexSync.Client.Client.*;
 import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
 import static ForgeStove.HexSync.Server.Server.*;
+import static ForgeStove.HexSync.Util.Config.RateUnit.*;
 import static ForgeStove.HexSync.Util.Log.*;
+import static java.awt.GraphicsEnvironment.isHeadless;
 import static java.io.File.separator;
+import static java.lang.Math.pow;
 import static java.lang.System.lineSeparator;
 public class Config {
 	public static final String CONFIG_PATH = HEX_SYNC_NAME + separator + "config.properties"; // 配置文件路径
@@ -20,18 +23,15 @@ public class Config {
 	public static final String CLIENT_SYNC_DIRECTORY = "clientSyncDirectory"; // 客户端同步文件夹路径配置项
 	public static final String CLIENT_ONLY_DIRECTORY = "clientOnlyDirectory"; // 仅客户端文件夹路径配置项
 	public static final String CLIENT_AUTO_START = "clientAutoStart"; // 客户端自动启动配置项
-	public static final String BPS = "Bps"; // 上传速率限制单位Bps
-	public static final String KBPS = "KBps"; // 上传速率限制单位KBps
-	public static final String MBPS = "MBps"; // 上传速率限制单位MBps
-	public static final String GBPS = "GBps"; // 上传速率限制单位GBps
-	public static final String[] RATE_UNITS = {BPS, KBPS, MBPS, GBPS}; // 上传速率限制单位数组
-	public static final String DOWNLOAD = "download"; // 下载命令
-	public static final String LIST = "list"; // 列出文件命令
+	public static final RateUnit[] RATE_UNITS = {BPS, KBPS, MBPS, GBPS}; // 上传速率限制单位数组
+	public static final String DOWNLOAD = "download"; // 构造下载URL命令
+	public static final String LIST = "list"; // 构造列出文件URL命令
 	public static final String GET = "GET"; // 下载文件命令
+	public static final boolean HEADLESS = isHeadless(); // 是否处于无头模式
 	public static String serverSyncDirectory = "mods"; // 服务端同步文件夹路径，默认值mods
 	public static String clientSyncDirectory = "mods"; // 客户端同步文件夹路径，默认值mods
 	public static String clientOnlyDirectory = "clientOnlyMods"; // 仅客户端文件夹路径，默认值clientOnlyMods
-	public static String serverUploadRateLimitUnit = MBPS; // 上传速率限制单位，默认MBps
+	public static RateUnit serverUploadRateLimitUnit = MBPS; // 上传速率限制单位，默认MBps
 	public static String serverAddress = "localhost"; // 服务器地址，默认值localhost
 	// 加载配置
 	public static void loadConfig() {
@@ -72,7 +72,7 @@ public class Config {
 		String[][] configEntries = {
 				{"# 服务端配置"},
 				{SERVER_PORT, String.valueOf(serverPort)},
-				{SERVER_UPLOAD_RATE_LIMIT, serverUploadRateLimit + " " + serverUploadRateLimitUnit},
+				{SERVER_UPLOAD_RATE_LIMIT, serverUploadRateLimit + " " + serverUploadRateLimitUnit.unit},
 				{SERVER_SYNC_DIRECTORY, serverSyncDirectory},
 				{SERVER_AUTO_START, String.valueOf(serverAutoStart)},
 				{"# 客户端配置"},
@@ -96,5 +96,14 @@ public class Config {
 			log(SEVERE, "配置保存失败: " + error.getMessage());
 		}
 		if (serverThread != null || clientThread != null) log(INFO, "配置已更改，将在下次启动生效");
+	}
+	public enum RateUnit {
+		BPS("Bps", 0), KBPS("K" + BPS.unit, 1), MBPS("M" + BPS.unit, 2), GBPS("G" + BPS.unit, 3);
+		public final String unit;
+		public final int exponent;
+		RateUnit(String unit, int exponent) {
+			this.unit = unit;
+			this.exponent = exponent;
+		}
 	}
 }

@@ -8,8 +8,8 @@ import java.util.concurrent.ExecutorService;
 
 import static ForgeStove.HexSync.GUI.GUI.logPane;
 import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
+import static ForgeStove.HexSync.Util.Config.HEADLESS;
 import static ForgeStove.HexSync.Util.Files.makeDirectory;
-import static ForgeStove.HexSync.Util.Settings.HEADLESS;
 import static java.awt.Color.BLACK;
 import static java.io.File.separator;
 import static java.lang.System.*;
