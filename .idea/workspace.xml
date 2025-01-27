@@ -9,11 +9,31 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="fix(ui): 修正日志输出逻辑和格式" />
+    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="fix: 修正速率输入匹配逻辑">
+      <change afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/RateUnit.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Client/FileDownloader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Client/FileDownloader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/GUI/AboutJDialog.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/GUI/AboutJDialog.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/GUI/GUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/GUI/GUI.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/GUI/SettingsJDialog.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/GUI/SettingsJDialog.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Server/ResponseSender.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Server/ResponseSender.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Server/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Server/Server.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Config.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Config.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Log.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Log.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Settings.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Settings.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -52,7 +72,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "SDK",
+    "project.structure.last.edited": "模块",
     "project.structure.proportion": "0.12207031",
     "project.structure.side.proportion": "0.2",
     "settings.editor.selected.configurable": "preferences.sourceCode.Java",
@@ -66,15 +86,24 @@
       <recent name="C:\Utils\Source\Java\HexSync\src" />
     </key>
     <key name="MoveMembersDialog.RECENTS_KEY">
-      <recent name="ForgeStove.HexSync.Util.Config" />
+      <recent name="ForgeStove.HexSync.Util.Rate" />
       <recent name="ForgeStove.HexSync.Client.FileDownloader" />
+      <recent name="ForgeStove.HexSync.Util.Config" />
       <recent name="ForgeStove.HexSync.Util.Files" />
     </key>
     <key name="IntroduceConstantDialog.RECENTS_KEY">
+      <recent name="ForgeStove.HexSync.GUI.SettingsJDialog" />
       <recent name="ForgeStove.HexSync.Server.RequestHandler" />
     </key>
+    <key name="ExtractSuperBase.RECENT_KEYS">
+      <recent name="ForgeStove.HexSync.Util" />
+    </key>
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="ForgeStove.HexSync.Util" />
       <recent name="" />
+    </key>
+    <key name="MoveInnerDialog.RECENTS_KEY">
+      <recent name="ForgeStove.HexSync.Util" />
     </key>
   </component>
   <component name="RunManager" selected="应用程序.HexSync">
@@ -122,7 +151,8 @@
       <workItem from="1737823152747" duration="928000" />
       <workItem from="1737861936753" duration="1000" />
       <workItem from="1737861943872" duration="5877000" />
-      <workItem from="1737903676668" duration="5150000" />
+      <workItem from="1737903676668" duration="5435000" />
+      <workItem from="1737952084378" duration="22239000" />
     </task>
     <task id="LOCAL-00002" summary="fix(ui): 更新许可证链接并简化代码">
       <option name="closed" value="true" />
@@ -364,18 +394,61 @@
       <option name="project" value="LOCAL" />
       <updated>1737908823551</updated>
     </task>
-    <option name="localTasksCounter" value="32" />
+    <task id="LOCAL-00032" summary="refactor: 优化UI标签文本和重构导入语句与文件删除逻辑">
+      <option name="closed" value="true" />
+      <created>1737909108709</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1737909108709</updated>
+    </task>
+    <task id="LOCAL-00033" summary="fix(GUI): 将设置按钮事件改为调用静态方法">
+      <option name="closed" value="true" />
+      <created>1737952509853</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1737952509853</updated>
+    </task>
+    <task id="LOCAL-00034" summary="style: 修改控制台输出方式">
+      <option name="closed" value="true" />
+      <created>1737953103804</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1737953103804</updated>
+    </task>
+    <task id="LOCAL-00035" summary="refactor: 重构上传速率限制单位及响应码获取逻辑">
+      <option name="closed" value="true" />
+      <created>1737973941676</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1737973941676</updated>
+    </task>
+    <task id="LOCAL-00036" summary="refactor: 移除未使用的静态导入">
+      <option name="closed" value="true" />
+      <created>1737974018986</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1737974018986</updated>
+    </task>
+    <task id="LOCAL-00037" summary="fix: 修正速率输入匹配逻辑">
+      <option name="closed" value="true" />
+      <created>1737974242936</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1737974242936</updated>
+    </task>
+    <option name="localTasksCounter" value="38" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="feat(ui): 添加Swing组件默认配置&#10;refactor: 更新工作区配置和任务记录&#10;style: 调整JSON格式以提高可读性&#10;fix(Server): 修正停止服务器时的空指针检查顺序" />
-    <MESSAGE value="fix(ui): 更新许可证链接并简化代码" />
-    <MESSAGE value="fix: 窗口字体大小调整为16" />
-    <MESSAGE value="chore: 删除旧版GNU Affero General Public License" />
-    <MESSAGE value="refactor(ui): 删除.uiDesigner.xml文件中的Swing组件配置" />
     <MESSAGE value="docs: 添加服务端和客户端配置说明" />
     <MESSAGE value="refactor: 移除工作区配置文件并更新相关设置" />
     <MESSAGE value="refactor: 将启动方法名从start改为run" />
@@ -395,6 +468,12 @@
     <MESSAGE value="refactor(Client): 使用静态导入优化导入语句&#10;refactor(Client/Client.java): 替换硬编码字符串为常量&#10;refactor(Client/FileDownloader.java): 替换硬编码字符串为常量&#10;refactor(Server/RequestHandler.java): 替换硬编码字符串为常量" />
     <MESSAGE value="refactor(Client): 修复文件删除逻辑" />
     <MESSAGE value="fix(ui): 修正日志输出逻辑和格式" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix(ui): 修正日志输出逻辑和格式" />
+    <MESSAGE value="refactor: 优化UI标签文本和重构导入语句与文件删除逻辑" />
+    <MESSAGE value="fix(GUI): 将设置按钮事件改为调用静态方法" />
+    <MESSAGE value="style: 修改控制台输出方式" />
+    <MESSAGE value="refactor: 重构上传速率限制单位及响应码获取逻辑" />
+    <MESSAGE value="refactor: 移除未使用的静态导入" />
+    <MESSAGE value="fix: 修正速率输入匹配逻辑" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix: 修正速率输入匹配逻辑" />
   </component>
 </project>
