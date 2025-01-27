@@ -31,7 +31,7 @@ public class HeadlessSettings {
 				"HELP", args -> {
 					for (String message : new String[]{
 							"SP [端口]                      |设置服务端端口",
-							"SL [整型] [Bps/KBps/MBps/GBps] |设置服务端最大上传速率",
+							"SL [整型] [B/s|KB/s|MB/s|GB/s] |设置服务端最大上传速率",
 							"SD [目录]                      |设置服务端同步目录",
 							"SS [Y|N]                       |设置服务端自动启动",
 							"CP [端口]                      |设置客户端端口",
