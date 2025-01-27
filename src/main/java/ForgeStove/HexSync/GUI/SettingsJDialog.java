@@ -13,7 +13,7 @@ import static ForgeStove.HexSync.Util.Settings.*;
 import static javax.swing.BorderFactory.createEmptyBorder;
 public class SettingsJDialog {
 	// 打开设置对话框
-	public SettingsJDialog() {
+	public static void settingsJDialog() {
 		if (checkJDialog("设置")) return;
 		loadConfig();
 		// 设置对话框
