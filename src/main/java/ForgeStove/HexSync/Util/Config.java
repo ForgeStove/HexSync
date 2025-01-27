@@ -10,7 +10,6 @@ import static ForgeStove.HexSync.Util.Config.RateUnit.*;
 import static ForgeStove.HexSync.Util.Log.*;
 import static java.awt.GraphicsEnvironment.isHeadless;
 import static java.io.File.separator;
-import static java.lang.Math.pow;
 import static java.lang.System.lineSeparator;
 public class Config {
 	public static final String CONFIG_PATH = HEX_SYNC_NAME + separator + "config.properties"; // 配置文件路径
