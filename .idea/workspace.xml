@@ -9,9 +9,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="fix: 修正速率输入匹配逻辑">
+    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="fix: 修正速率输入匹配逻辑和单位描述">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/CLI/HeadlessSettings.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/CLI/HeadlessSettings.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Client/FileDownloader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Client/FileDownloader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Server/RequestHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Server/RequestHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Config.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Config.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,27 +53,27 @@
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Utils/Source/Java/HexSync/out/artifacts",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "模块",
-    "project.structure.proportion": "0.12207031",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "preferences.sourceCode.Java",
-    "vue.rearranger.settings.migration": "true",
-    "应用程序.HexSync -headless.executor": "Debug",
-    "应用程序.HexSync.executor": "Debug"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Utils/Source/Java/HexSync/out/artifacts&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;模块&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.12207031&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.sourceCode.Java&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;,
+    &quot;应用程序.HexSync -headless.executor&quot;: &quot;Debug&quot;,
+    &quot;应用程序.HexSync.executor&quot;: &quot;Debug&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Utils\Source\Java\HexSync\src" />
@@ -97,7 +99,7 @@
       <recent name="ForgeStove.HexSync.Util" />
     </key>
   </component>
-  <component name="RunManager" selected="应用程序.HexSync -headless">
+  <component name="RunManager" selected="应用程序.HexSync">
     <list>
       <item itemvalue="应用程序.HexSync" />
       <item itemvalue="应用程序.HexSync -headless" />
@@ -143,7 +145,9 @@
       <workItem from="1737861936753" duration="1000" />
       <workItem from="1737861943872" duration="5877000" />
       <workItem from="1737903676668" duration="5435000" />
-      <workItem from="1737952084378" duration="22594000" />
+      <workItem from="1737952084378" duration="23229000" />
+      <workItem from="1737994212719" duration="8000" />
+      <workItem from="1738044597311" duration="380000" />
     </task>
     <task id="LOCAL-00002" summary="fix(ui): 更新许可证链接并简化代码">
       <option name="closed" value="true" />
@@ -449,14 +453,21 @@
       <option name="project" value="LOCAL" />
       <updated>1737993224917</updated>
     </task>
-    <option name="localTasksCounter" value="40" />
+    <task id="LOCAL-00040" summary="fix: 修正速率输入匹配逻辑和单位描述">
+      <option name="closed" value="true" />
+      <created>1737993499989</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1737993499989</updated>
+    </task>
+    <option name="localTasksCounter" value="41" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="refactor: 移除工作区配置文件并更新相关设置" />
     <MESSAGE value="refactor: 将启动方法名从start改为run" />
     <MESSAGE value="feat: 新增HexSync和HexSync -headless运行配置" />
     <MESSAGE value="refactor: 移除不必要的版权信息并简化代码" />
@@ -481,6 +492,7 @@
     <MESSAGE value="refactor: 移除未使用的静态导入" />
     <MESSAGE value="refactor(core): 重构代码并修正速率单位逻辑" />
     <MESSAGE value="fix: 修正速率输入匹配逻辑" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix: 修正速率输入匹配逻辑" />
+    <MESSAGE value="fix: 修正速率输入匹配逻辑和单位描述" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix: 修正速率输入匹配逻辑和单位描述" />
   </component>
 </project>

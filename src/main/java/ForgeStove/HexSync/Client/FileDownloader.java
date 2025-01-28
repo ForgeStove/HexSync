@@ -18,7 +18,7 @@ public class FileDownloader {
 			log(INFO, "模组已经是最新版本");
 			return;
 		}
-		log(INFO, "开始下载 " + toDownloadMap.size() + " 个文件");
+		log(INFO, "开始下载 [" + toDownloadMap.size() + "] 个文件");
 		int count = 0;
 		int toDownloadMapSize = toDownloadMap.size();
 		for (Map.Entry<String, Long> entry : toDownloadMap.entrySet()) {
@@ -45,9 +45,10 @@ public class FileDownloader {
 		}
 		try {
 			int responseCode = getResponseCode(String.format(
-					"%s:%d/" + DOWNLOAD + "/%s",
+					"%s:%d/%s/%s",
 					formatHTTP(serverAddress),
 					clientPort,
+					DOWNLOAD,
 					requestCRC
 			));
 			if (responseCode != HTTP_OK) {
@@ -81,7 +82,7 @@ public class FileDownloader {
 	// 获取响应码
 	public static int getResponseCode(String requestURL) throws IOException {
 		HTTPURLConnection = (HttpURLConnection) new URL(requestURL).openConnection(); // 打开连接
-		HTTPURLConnection.setRequestMethod(GET); // 设置请求方式为GET
+		HTTPURLConnection.setRequestMethod(POST); // 设置请求方式为POST
 		HTTPURLConnection.setConnectTimeout(5000); // 设置连接超时为5秒
 		HTTPURLConnection.setReadTimeout(5000); // 设置读取超时为5秒
 		return HTTPURLConnection.getResponseCode(); // 返回响应码

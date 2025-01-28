@@ -22,9 +22,9 @@ public class Config {
 	public static final String CLIENT_SYNC_DIRECTORY = "clientSyncDirectory"; // 客户端同步文件夹路径配置项
 	public static final String CLIENT_ONLY_DIRECTORY = "clientOnlyDirectory"; // 仅客户端文件夹路径配置项
 	public static final String CLIENT_AUTO_START = "clientAutoStart"; // 客户端自动启动配置项
-	public static final String DOWNLOAD = "download"; // 构造下载URL命令
-	public static final String LIST = "list"; // 构造列出文件URL命令
-	public static final String GET = "GET"; // 下载文件命令
+	public static final String DOWNLOAD = "download"; // 构造下载URL
+	public static final String LIST = "list"; // 构造列出文件URL
+	public static final String POST = "POST"; // 下载文件命令
 	public static final boolean HEADLESS = isHeadless(); // 是否处于无头模式
 	public static String serverSyncDirectory = "mods"; // 服务端同步文件夹路径，默认值mods
 	public static String clientSyncDirectory = "mods"; // 客户端同步文件夹路径，默认值mods

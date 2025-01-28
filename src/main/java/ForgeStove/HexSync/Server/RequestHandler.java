@@ -13,7 +13,7 @@ import static java.nio.file.Files.newInputStream;
 public class RequestHandler {
 	// 处理请求
 	public static void handleRequest(HttpExchange exchange) {
-		if (!exchange.getRequestMethod().equalsIgnoreCase(GET)) return;
+		if (!exchange.getRequestMethod().equalsIgnoreCase(POST)) return;
 		String requestURI = exchange.getRequestURI().getPath();
 		if (requestURI.startsWith("/" + DOWNLOAD + "/")) {
 			long requestCRC = Long.parseLong(requestURI.substring(requestURI.lastIndexOf("/") + 1));
