@@ -9,11 +9,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="fix: 修正速率输入匹配逻辑和单位描述">
+    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="fix: 修正速率输入匹配逻辑和请求方法为POST">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Client/FileDownloader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Client/FileDownloader.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Server/RequestHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Server/RequestHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Config.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/Util/Config.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -147,7 +144,9 @@
       <workItem from="1737903676668" duration="5435000" />
       <workItem from="1737952084378" duration="23229000" />
       <workItem from="1737994212719" duration="8000" />
-      <workItem from="1738044597311" duration="380000" />
+      <workItem from="1738044597311" duration="1979000" />
+      <workItem from="1738057890084" duration="1416000" />
+      <workItem from="1738129209655" duration="7000" />
     </task>
     <task id="LOCAL-00002" summary="fix(ui): 更新许可证链接并简化代码">
       <option name="closed" value="true" />
@@ -461,14 +460,21 @@
       <option name="project" value="LOCAL" />
       <updated>1737993499989</updated>
     </task>
-    <option name="localTasksCounter" value="41" />
+    <task id="LOCAL-00041" summary="fix: 修正速率输入匹配逻辑和请求方法为POST">
+      <option name="closed" value="true" />
+      <created>1738045087958</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1738045087958</updated>
+    </task>
+    <option name="localTasksCounter" value="42" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="refactor: 将启动方法名从start改为run" />
     <MESSAGE value="feat: 新增HexSync和HexSync -headless运行配置" />
     <MESSAGE value="refactor: 移除不必要的版权信息并简化代码" />
     <MESSAGE value="refactor: 移除重复代码并简化逻辑" />
@@ -493,6 +499,7 @@
     <MESSAGE value="refactor(core): 重构代码并修正速率单位逻辑" />
     <MESSAGE value="fix: 修正速率输入匹配逻辑" />
     <MESSAGE value="fix: 修正速率输入匹配逻辑和单位描述" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix: 修正速率输入匹配逻辑和单位描述" />
+    <MESSAGE value="fix: 修正速率输入匹配逻辑和请求方法为POST" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix: 修正速率输入匹配逻辑和请求方法为POST" />
   </component>
 </project>
