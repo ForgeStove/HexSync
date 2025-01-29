@@ -9,9 +9,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="fix: 修正速率输入匹配逻辑和请求方法为POST">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="fix: 修正速率输入匹配逻辑和请求方法为POST" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -26,7 +24,13 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="ForgeStove &lt;2071948808@qq.com&gt;" />
+      </list>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="SIGN_OFF_COMMIT" value="true" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -147,6 +151,8 @@
       <workItem from="1738044597311" duration="1979000" />
       <workItem from="1738057890084" duration="1416000" />
       <workItem from="1738129209655" duration="7000" />
+      <workItem from="1738143758974" duration="332000" />
+      <workItem from="1738145670625" duration="626000" />
     </task>
     <task id="LOCAL-00002" summary="fix(ui): 更新许可证链接并简化代码">
       <option name="closed" value="true" />
@@ -468,11 +474,38 @@
       <option name="project" value="LOCAL" />
       <updated>1738045087958</updated>
     </task>
-    <option name="localTasksCounter" value="42" />
+    <task id="LOCAL-00042" summary="fix: 修正速率输入匹配逻辑和请求方法为POST">
+      <option name="closed" value="true" />
+      <created>1738143767743</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1738143767743</updated>
+    </task>
+    <task id="LOCAL-00043" summary="fix: 修正速率输入匹配逻辑和请求方法为POST">
+      <option name="closed" value="true" />
+      <created>1738145681130</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1738145681130</updated>
+    </task>
+    <option name="localTasksCounter" value="44" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="feat: 新增HexSync和HexSync -headless运行配置" />
@@ -501,5 +534,8 @@
     <MESSAGE value="fix: 修正速率输入匹配逻辑和单位描述" />
     <MESSAGE value="fix: 修正速率输入匹配逻辑和请求方法为POST" />
     <option name="LAST_COMMIT_MESSAGE" value="fix: 修正速率输入匹配逻辑和请求方法为POST" />
+    <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
 </project>
