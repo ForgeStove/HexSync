@@ -1,11 +1,11 @@
-package ForgeStove.HexSync.CLI;
-import ForgeStove.HexSync.Client.Client;
-import ForgeStove.HexSync.Server.Server;
+package com.ForgeStove.HexSync.CLI;
+import com.ForgeStove.HexSync.Client.Client;
+import com.ForgeStove.HexSync.Server.Server;
 
 import java.util.*;
 
-import static ForgeStove.HexSync.HexSync.*;
-import static ForgeStove.HexSync.Util.Log.*;
+import static com.ForgeStove.HexSync.HexSync.*;
+import static com.ForgeStove.HexSync.Util.Log.*;
 import static java.lang.System.*;
 public class CLI {
 	// 命令行界面

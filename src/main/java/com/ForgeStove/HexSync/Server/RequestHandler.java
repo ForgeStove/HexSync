@@ -1,13 +1,13 @@
-package ForgeStove.HexSync.Server;
+package com.ForgeStove.HexSync.Server;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.*;
 import java.util.Map;
 
-import static ForgeStove.HexSync.Server.ResponseSender.sendResponse;
-import static ForgeStove.HexSync.Server.Server.serverMap;
-import static ForgeStove.HexSync.Util.Config.*;
-import static ForgeStove.HexSync.Util.Log.*;
+import static com.ForgeStove.HexSync.Server.ResponseSender.sendResponse;
+import static com.ForgeStove.HexSync.Server.Server.serverMap;
+import static com.ForgeStove.HexSync.Util.Config.*;
+import static com.ForgeStove.HexSync.Util.Log.*;
 import static java.io.File.separator;
 import static java.nio.file.Files.newInputStream;
 public class RequestHandler {

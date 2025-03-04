@@ -1,13 +1,13 @@
-package ForgeStove.HexSync.Util;
+package com.ForgeStove.HexSync.Util;
 import java.io.*;
 import java.util.*;
 import java.util.zip.CRC32;
 
-import static ForgeStove.HexSync.Client.Client.errorDownload;
-import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
-import static ForgeStove.HexSync.Server.Server.serverMap;
-import static ForgeStove.HexSync.Util.Config.*;
-import static ForgeStove.HexSync.Util.Log.*;
+import static com.ForgeStove.HexSync.Client.Client.errorDownload;
+import static com.ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
+import static com.ForgeStove.HexSync.Server.Server.serverMap;
+import static com.ForgeStove.HexSync.Util.Config.*;
+import static com.ForgeStove.HexSync.Util.Log.*;
 import static java.nio.file.Files.copy;
 public class Files {
 	// 初始化文件

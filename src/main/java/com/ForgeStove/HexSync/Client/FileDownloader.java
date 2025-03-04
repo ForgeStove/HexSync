@@ -1,13 +1,13 @@
-package ForgeStove.HexSync.Client;
+package com.ForgeStove.HexSync.Client;
 import java.io.*;
 import java.net.*;
 import java.util.*;
 
-import static ForgeStove.HexSync.Client.Client.*;
-import static ForgeStove.HexSync.Util.Config.*;
-import static ForgeStove.HexSync.Util.Files.calculateCRC;
-import static ForgeStove.HexSync.Util.Log.*;
-import static ForgeStove.HexSync.Util.Settings.formatHTTP;
+import static com.ForgeStove.HexSync.Client.Client.*;
+import static com.ForgeStove.HexSync.Util.Config.*;
+import static com.ForgeStove.HexSync.Util.Files.calculateCRC;
+import static com.ForgeStove.HexSync.Util.Log.*;
+import static com.ForgeStove.HexSync.Util.Settings.formatHTTP;
 import static java.io.File.separator;
 import static java.lang.System.exit;
 import static java.net.HttpURLConnection.HTTP_OK;

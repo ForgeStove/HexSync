@@ -9,7 +9,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="fix: 修正速率输入匹配逻辑和请求方法为POST" />
+    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="fix: 修正速率输入匹配逻辑和请求方法为POST">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/CLI/HeadlessSettings.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/CLI/HeadlessSettings.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -30,13 +33,27 @@
       </list>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-    <option name="SIGN_OFF_COMMIT" value="true" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
+  &quot;history&quot;: [
+    {
+      &quot;state&quot;: &quot;CLOSED&quot;
+    }
+  ],
   &quot;lastFilter&quot;: {
-    &quot;state&quot;: &quot;OPEN&quot;,
-    &quot;assignee&quot;: &quot;ForgeStove&quot;
+    &quot;state&quot;: &quot;CLOSED&quot;
   }
+}</component>
+  <component name="GitHubPullRequestState">{
+  &quot;prStates&quot;: [
+    {
+      &quot;id&quot;: {
+        &quot;id&quot;: &quot;PR_kwDONWbiuM6GGU42&quot;,
+        &quot;number&quot;: 1
+      },
+      &quot;lastSeen&quot;: 1738954107573
+    }
+  ]
 }</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
@@ -66,7 +83,7 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;模块&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;SDK&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.12207031&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;preferences.sourceCode.Java&quot;,
@@ -152,7 +169,18 @@
       <workItem from="1738057890084" duration="1416000" />
       <workItem from="1738129209655" duration="7000" />
       <workItem from="1738143758974" duration="332000" />
-      <workItem from="1738145670625" duration="626000" />
+      <workItem from="1738145670625" duration="953000" />
+      <workItem from="1738861520628" duration="690000" />
+      <workItem from="1738948059246" duration="45000" />
+      <workItem from="1738954098799" duration="102000" />
+      <workItem from="1739811285271" duration="420000" />
+      <workItem from="1739971793642" duration="4079000" />
+      <workItem from="1740119269201" duration="1592000" />
+      <workItem from="1740155464251" duration="8000" />
+      <workItem from="1740206492508" duration="723000" />
+      <workItem from="1740304010575" duration="606000" />
+      <workItem from="1740370892400" duration="211000" />
+      <workItem from="1740371121914" duration="338000" />
     </task>
     <task id="LOCAL-00002" summary="fix(ui): 更新许可证链接并简化代码">
       <option name="closed" value="true" />
@@ -490,7 +518,15 @@
       <option name="project" value="LOCAL" />
       <updated>1738145681130</updated>
     </task>
-    <option name="localTasksCounter" value="44" />
+    <task id="LOCAL-00044" summary="fix: 修正速率输入匹配逻辑和请求方法为POST">
+      <option name="closed" value="true" />
+      <created>1738146958063</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1738146958063</updated>
+    </task>
+    <option name="localTasksCounter" value="45" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -508,7 +544,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="feat: 新增HexSync和HexSync -headless运行配置" />
     <MESSAGE value="refactor: 移除不必要的版权信息并简化代码" />
     <MESSAGE value="refactor: 移除重复代码并简化逻辑" />
     <MESSAGE value="fix: 修复CLI和GUI中的一些格式问题和逻辑错误" />
@@ -532,6 +567,7 @@
     <MESSAGE value="refactor(core): 重构代码并修正速率单位逻辑" />
     <MESSAGE value="fix: 修正速率输入匹配逻辑" />
     <MESSAGE value="fix: 修正速率输入匹配逻辑和单位描述" />
+    <MESSAGE value="fix: 修正速率输入匹配逻辑和请求方法为POST&#10;&#10;Signed-off-by: ForgeStove &lt;2071948808@qq.com&gt;" />
     <MESSAGE value="fix: 修正速率输入匹配逻辑和请求方法为POST" />
     <option name="LAST_COMMIT_MESSAGE" value="fix: 修正速率输入匹配逻辑和请求方法为POST" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />

@@ -1,12 +1,12 @@
-package ForgeStove.HexSync.CLI;
+package com.ForgeStove.HexSync.CLI;
 import java.util.*;
 import java.util.function.Consumer;
 
-import static ForgeStove.HexSync.Client.Client.clientAutoStart;
-import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
-import static ForgeStove.HexSync.Server.Server.serverAutoStart;
-import static ForgeStove.HexSync.Util.Config.*;
-import static ForgeStove.HexSync.Util.Settings.*;
+import static com.ForgeStove.HexSync.Client.Client.clientAutoStart;
+import static com.ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
+import static com.ForgeStove.HexSync.Server.Server.serverAutoStart;
+import static com.ForgeStove.HexSync.Util.Config.*;
+import static com.ForgeStove.HexSync.Util.Settings.*;
 import static java.lang.System.*;
 public class HeadlessSettings {
 	// 无头模式设置
@@ -43,7 +43,7 @@ public class HeadlessSettings {
 							"EXIT                           |退出设置而不保存",
 							"HELP                           |帮助"
 					})
-						System.out.println(message);
+						out.println(message);
 				}
 		);
 		out.println("进入设置模式,输入命令或输入HELP以获取帮助.");

@@ -1,15 +1,15 @@
-package ForgeStove.HexSync.GUI;
-import ForgeStove.HexSync.HexSync;
+package com.ForgeStove.HexSync.GUI;
+import com.ForgeStove.HexSync.HexSync;
 
 import javax.swing.*;
 import java.awt.*;
 
-import static ForgeStove.HexSync.Client.Client.*;
-import static ForgeStove.HexSync.GUI.ComponentFactory.*;
-import static ForgeStove.HexSync.GUI.SettingsJDialog.initSettingsJDialog;
-import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
-import static ForgeStove.HexSync.Server.Server.*;
-import static ForgeStove.HexSync.Util.Log.*;
+import static com.ForgeStove.HexSync.Client.Client.*;
+import static com.ForgeStove.HexSync.GUI.ComponentFactory.*;
+import static com.ForgeStove.HexSync.GUI.SettingsJDialog.initSettingsJDialog;
+import static com.ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
+import static com.ForgeStove.HexSync.Server.Server.*;
+import static com.ForgeStove.HexSync.Util.Log.*;
 import static java.awt.Toolkit.getDefaultToolkit;
 import static java.lang.Math.max;
 import static java.lang.System.exit;

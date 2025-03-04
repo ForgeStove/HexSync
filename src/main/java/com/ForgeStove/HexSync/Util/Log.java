@@ -1,14 +1,14 @@
-package ForgeStove.HexSync.Util;
+package com.ForgeStove.HexSync.Util;
 import javax.swing.text.*;
 import java.awt.Color;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.concurrent.ExecutorService;
 
-import static ForgeStove.HexSync.GUI.GUI.logPane;
-import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
-import static ForgeStove.HexSync.Util.Config.HEADLESS;
-import static ForgeStove.HexSync.Util.Files.makeDirectory;
+import static com.ForgeStove.HexSync.GUI.GUI.logPane;
+import static com.ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
+import static com.ForgeStove.HexSync.Util.Config.HEADLESS;
+import static com.ForgeStove.HexSync.Util.Files.makeDirectory;
 import static java.awt.Color.BLACK;
 import static java.io.File.separator;
 import static java.lang.System.*;

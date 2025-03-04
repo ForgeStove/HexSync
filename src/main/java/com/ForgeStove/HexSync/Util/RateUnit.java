@@ -1,4 +1,4 @@
-package ForgeStove.HexSync.Util;
+package com.ForgeStove.HexSync.Util;
 public enum RateUnit {
 	BPS("B/s", 0), KBPS("K" + BPS.unit, 1), MBPS("M" + BPS.unit, 2), GBPS("G" + BPS.unit, 3);
 	public final String unit;

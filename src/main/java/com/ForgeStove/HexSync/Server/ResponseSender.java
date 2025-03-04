@@ -1,11 +1,11 @@
-package ForgeStove.HexSync.Server;
+package com.ForgeStove.HexSync.Server;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.*;
 
-import static ForgeStove.HexSync.Server.Server.AVAILABLE_TOKENS;
-import static ForgeStove.HexSync.Util.Config.*;
-import static ForgeStove.HexSync.Util.Log.*;
+import static com.ForgeStove.HexSync.Server.Server.AVAILABLE_TOKENS;
+import static com.ForgeStove.HexSync.Util.Config.*;
+import static com.ForgeStove.HexSync.Util.Log.*;
 import static java.lang.Math.min;
 import static java.lang.System.currentTimeMillis;
 import static java.lang.Thread.sleep;

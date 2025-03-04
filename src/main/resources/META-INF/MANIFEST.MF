@@ -1,3 +1,2 @@
 Manifest-Version: 1.0
-Main-Class: ForgeStove.HexSync.HexSync
-
+Main-Class: com.ForgeStove.HexSync.HexSync

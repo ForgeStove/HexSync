@@ -1,12 +1,12 @@
-package ForgeStove.HexSync.Client;
-import java.net.*;
+package com.ForgeStove.HexSync.Client;
+import java.net.HttpURLConnection;
 import java.util.Map;
 
-import static ForgeStove.HexSync.Client.FileDownloader.*;
-import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
-import static ForgeStove.HexSync.Util.Config.*;
-import static ForgeStove.HexSync.Util.Files.*;
-import static ForgeStove.HexSync.Util.Log.*;
+import static com.ForgeStove.HexSync.Client.FileDownloader.*;
+import static com.ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
+import static com.ForgeStove.HexSync.Util.Config.*;
+import static com.ForgeStove.HexSync.Util.Files.*;
+import static com.ForgeStove.HexSync.Util.Log.*;
 import static java.lang.System.exit;
 public class Client {
 	public static Thread clientThread; // 客户端线程

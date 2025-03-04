@@ -1,14 +1,14 @@
-package ForgeStove.HexSync.Server;
+package com.ForgeStove.HexSync.Server;
 import com.sun.net.httpserver.HttpServer;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
-import static ForgeStove.HexSync.Util.Config.serverSyncDirectory;
-import static ForgeStove.HexSync.Util.Files.initFiles;
-import static ForgeStove.HexSync.Util.Log.*;
+import static com.ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
+import static com.ForgeStove.HexSync.Util.Config.serverSyncDirectory;
+import static com.ForgeStove.HexSync.Util.Files.initFiles;
+import static com.ForgeStove.HexSync.Util.Log.*;
 import static com.sun.net.httpserver.HttpServer.create;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 public class Server {

@@ -1,16 +1,16 @@
-package ForgeStove.HexSync.GUI;
+package com.ForgeStove.HexSync.GUI;
 import javax.swing.*;
 import java.awt.*;
 
-import static ForgeStove.HexSync.Client.Client.*;
-import static ForgeStove.HexSync.GUI.AboutJDialog.initAboutJDialog;
-import static ForgeStove.HexSync.GUI.ComponentFactory.*;
-import static ForgeStove.HexSync.GUI.GUI.*;
-import static ForgeStove.HexSync.Server.Server.*;
-import static ForgeStove.HexSync.Util.Config.*;
-import static ForgeStove.HexSync.Util.Log.*;
-import static ForgeStove.HexSync.Util.RateUnit.*;
-import static ForgeStove.HexSync.Util.Settings.*;
+import static com.ForgeStove.HexSync.Client.Client.*;
+import static com.ForgeStove.HexSync.GUI.AboutJDialog.initAboutJDialog;
+import static com.ForgeStove.HexSync.GUI.ComponentFactory.*;
+import static com.ForgeStove.HexSync.GUI.GUI.*;
+import static com.ForgeStove.HexSync.Server.Server.*;
+import static com.ForgeStove.HexSync.Util.Config.*;
+import static com.ForgeStove.HexSync.Util.Log.*;
+import static com.ForgeStove.HexSync.Util.RateUnit.*;
+import static com.ForgeStove.HexSync.Util.Settings.*;
 import static javax.swing.BorderFactory.createEmptyBorder;
 public class SettingsJDialog {
 	// 打开设置对话框

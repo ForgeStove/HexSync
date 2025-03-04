@@ -1,11 +1,11 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="HexSync" type="Application" factoryName="Application" nameIsGenerated="true">
-    <option name="MAIN_CLASS_NAME" value="ForgeStove.HexSync.HexSync" />
+    <option name="MAIN_CLASS_NAME" value="com.ForgeStove.HexSync.HexSync" />
     <module name="HexSync" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/out/artifacts" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="ForgeStove.HexSync.HexSync" />
+        <option name="PATTERN" value="com.ForgeStove.HexSync.HexSync" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>

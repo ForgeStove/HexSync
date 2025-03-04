@@ -1,9 +1,9 @@
-package ForgeStove.HexSync.GUI;
+package com.ForgeStove.HexSync.GUI;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
-import static ForgeStove.HexSync.GUI.GUI.*;
+import static com.ForgeStove.HexSync.GUI.GUI.*;
 import static java.awt.Font.PLAIN;
 import static java.awt.Window.getWindows;
 public class ComponentFactory {

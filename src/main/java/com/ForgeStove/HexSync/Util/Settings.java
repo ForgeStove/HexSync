@@ -1,12 +1,12 @@
-package ForgeStove.HexSync.Util;
+package com.ForgeStove.HexSync.Util;
 import java.util.function.Consumer;
 
-import static ForgeStove.HexSync.Client.Client.clientPort;
-import static ForgeStove.HexSync.Server.Server.*;
-import static ForgeStove.HexSync.Util.Config.*;
-import static ForgeStove.HexSync.Util.Log.log;
-import static ForgeStove.HexSync.Util.Log.*;
-import static ForgeStove.HexSync.Util.RateUnit.*;
+import static com.ForgeStove.HexSync.Client.Client.clientPort;
+import static com.ForgeStove.HexSync.Server.Server.*;
+import static com.ForgeStove.HexSync.Util.Config.*;
+import static com.ForgeStove.HexSync.Util.Log.log;
+import static com.ForgeStove.HexSync.Util.Log.*;
+import static com.ForgeStove.HexSync.Util.RateUnit.*;
 import static java.io.File.separator;
 import static java.lang.Math.*;
 import static java.lang.System.*;

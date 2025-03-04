@@ -1,10 +1,10 @@
-package ForgeStove.HexSync;
-import static ForgeStove.HexSync.CLI.CLI.initCLI;
-import static ForgeStove.HexSync.Client.Client.*;
-import static ForgeStove.HexSync.GUI.GUI.initGUI;
-import static ForgeStove.HexSync.Server.Server.*;
-import static ForgeStove.HexSync.Util.Config.*;
-import static ForgeStove.HexSync.Util.Log.initLog;
+package com.ForgeStove.HexSync;
+import static com.ForgeStove.HexSync.CLI.CLI.initCLI;
+import static com.ForgeStove.HexSync.Client.Client.*;
+import static com.ForgeStove.HexSync.GUI.GUI.initGUI;
+import static com.ForgeStove.HexSync.Server.Server.*;
+import static com.ForgeStove.HexSync.Util.Config.*;
+import static com.ForgeStove.HexSync.Util.Log.initLog;
 public class HexSync {
 	public static final String HEX_SYNC_NAME = "HexSync"; // 程序名称
 	public static final String GITHUB_URL = "https://github.com/ForgeStove/HexSync"; // 项目GitHub地址
