@@ -9,10 +9,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="fix: 修正速率输入匹配逻辑和请求方法为POST">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/CLI/HeadlessSettings.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ForgeStove/HexSync/CLI/HeadlessSettings.java" afterDir="false" />
-    </list>
+    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="refactor(core): 更新包路径为com.ForgeStove.HexSync" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -181,6 +178,7 @@
       <workItem from="1740304010575" duration="606000" />
       <workItem from="1740370892400" duration="211000" />
       <workItem from="1740371121914" duration="338000" />
+      <workItem from="1741113134521" duration="134000" />
     </task>
     <task id="LOCAL-00002" summary="fix(ui): 更新许可证链接并简化代码">
       <option name="closed" value="true" />
@@ -526,7 +524,15 @@
       <option name="project" value="LOCAL" />
       <updated>1738146958063</updated>
     </task>
-    <option name="localTasksCounter" value="45" />
+    <task id="LOCAL-00045" summary="refactor(core): 更新包路径为com.ForgeStove.HexSync">
+      <option name="closed" value="true" />
+      <created>1741113246763</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1741113246763</updated>
+    </task>
+    <option name="localTasksCounter" value="46" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -544,7 +550,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="refactor: 移除不必要的版权信息并简化代码" />
     <MESSAGE value="refactor: 移除重复代码并简化逻辑" />
     <MESSAGE value="fix: 修复CLI和GUI中的一些格式问题和逻辑错误" />
     <MESSAGE value="refactor: 更新包名并简化导入语句" />
@@ -569,7 +574,8 @@
     <MESSAGE value="fix: 修正速率输入匹配逻辑和单位描述" />
     <MESSAGE value="fix: 修正速率输入匹配逻辑和请求方法为POST&#10;&#10;Signed-off-by: ForgeStove &lt;2071948808@qq.com&gt;" />
     <MESSAGE value="fix: 修正速率输入匹配逻辑和请求方法为POST" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix: 修正速率输入匹配逻辑和请求方法为POST" />
+    <MESSAGE value="refactor(core): 更新包路径为com.ForgeStove.HexSync" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor(core): 更新包路径为com.ForgeStove.HexSync" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
