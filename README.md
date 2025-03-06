@@ -87,9 +87,6 @@ HexSync
 [download-url]: https://github.com/ForgeStove/HexSync/releases "下载"
 [download-image]: https://img.shields.io/github/downloads/ForgeStove/HexSync/total?style=flat&logo=markdown&label=总下载数
 
-[stars-url]: https://github.com/ForgeStove/HexSync/stargazers "星标"
-[stars-image]: https://img.shields.io/github/stars/ForgeStove/HexSync?style=flat&logo=github&label=星标
-
 [issues-url]: https://github.com/ForgeStove/HexSync/issues "议题"
 [issues-image]: https://img.shields.io/github/issues/ForgeStove/HexSync?style=flat&logo=github&label=议题
 
