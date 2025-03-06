@@ -61,19 +61,6 @@ HexSync
 - 服务端:把需要同步的文件放入同步文件夹内(默认为软件所在的目录中的`mods`文件夹)，点击"启动服务端"。
 - 客户端:配置设置好后，把仅客户端模组放入`clientOnlyMods`文件夹(或者是你自定义的文件夹路径)，点击"启动客户端"。
 
-## 开发与贡献
-
-- 欢迎贡献代码或者提出问题。`Pull Request`或者提交`Issue`，我将尽快回复。
-
-## 星标历史
-<a href="https://star-history.com/#ForgeStove/HexSync&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=ForgeStove/HexSync&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=ForgeStove/HexSync&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=ForgeStove/HexSync&type=Date" />
- </picture>
-</a>
-
 ## 贡献者
 <h1>
 <a href="https://github.com/ForgeStove/HexSync/graphs/contributors">
@@ -86,6 +73,9 @@ HexSync
 
 [download-url]: https://github.com/ForgeStove/HexSync/releases "下载"
 [download-image]: https://img.shields.io/github/downloads/ForgeStove/HexSync/total?style=flat&logo=markdown&label=总下载数
+
+[stars-url]: https://github.com/ForgeStove/HexSync/stargazers "星标"
+[stars-image]: https://img.shields.io/github/stars/ForgeStove/HexSync?style=flat&logo=github&label=星标
 
 [issues-url]: https://github.com/ForgeStove/HexSync/issues "议题"
 [issues-image]: https://img.shields.io/github/issues/ForgeStove/HexSync?style=flat&logo=github&label=议题
