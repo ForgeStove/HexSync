@@ -27,9 +27,9 @@ public class GUI {
 			try {
 				icon = getDefaultToolkit().getImage(HexSync.class.getClassLoader().getResource("icon.png"));
 				setLookAndFeel(getSystemLookAndFeelClassName());
-				Dimension size = getDefaultToolkit().getScreenSize();
+				var size = getDefaultToolkit().getScreenSize();
 				screenLength = max(size.width, size.height);
-				JPanel panel = new JPanel(); // 主面板
+				var panel = new JPanel(); // 主面板
 				panel.setBorder(createEmptyBorder(5, 5, 5, 5));
 				panel.setLayout(new BorderLayout(5, 5));
 				logPane = new JTextPane(); // 日志面板
@@ -38,7 +38,7 @@ public class GUI {
 				panel.add(new JScrollPane(logPane), BorderLayout.CENTER);
 				frame = new JFrame(HEX_SYNC_NAME); // 主窗口
 				frame.setAlwaysOnTop(true);
-				JPanel buttonPanel = new JPanel(new GridLayout(2, 3));
+				var buttonPanel = new JPanel(new GridLayout(2, 3));
 				newJButton(buttonPanel, "启动服务端", event -> runServer());
 				newJButton(buttonPanel, "启动客户端", event -> runClient());
 				newJButton(buttonPanel, "设置", event -> initSettingsJDialog());

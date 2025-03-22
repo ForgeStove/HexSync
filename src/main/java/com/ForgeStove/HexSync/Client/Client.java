@@ -1,6 +1,5 @@
 package com.ForgeStove.HexSync.Client;
 import java.net.HttpURLConnection;
-import java.util.Map;
 
 import static com.ForgeStove.HexSync.Client.FileDownloader.*;
 import static com.ForgeStove.HexSync.HexSync.HEX_SYNC_NAME;
@@ -20,10 +19,10 @@ public class Client {
 		clientThread = new Thread(() -> {
 			log(INFO, HEX_SYNC_NAME + "Client正在启动...");
 			initFiles(false);
-			Map<String, Long> requestMap = fetchFileCRCList();
+			var requestMap = fetchFileCRCList();
 			if (!requestMap.isEmpty()) {
 				deleteFilesNotInMaps(requestMap, initMap(clientOnlyDirectory)); // 删除多余文件
-				Map<String, Long> clientMap = initMap(clientSyncDirectory); // 初始化客户端文件列表
+				var clientMap = initMap(clientSyncDirectory); // 初始化客户端文件列表
 				requestMap.entrySet().removeIf(entry -> clientMap.containsValue(entry.getValue())); // 循环并删除已存在文件
 				downloadMissingFiles(requestMap);// 下载文件
 				copyDirectory(clientOnlyDirectory, clientSyncDirectory);// 复制仅客户端模组文件夹中的文件到客户端同步文件夹

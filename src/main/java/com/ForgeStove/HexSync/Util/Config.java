@@ -35,12 +35,12 @@ public class Config {
 	public static long maxUploadRateInBytes; // 上传速率限制值对应的字节数
 	// 加载配置
 	public static void loadConfig() {
-		File configFile = new File(CONFIG_PATH);
+		var configFile = new File(CONFIG_PATH);
 		if (!configFile.isFile()) {
 			saveConfig();
 			return;
 		}
-		try (BufferedReader bufferedReader = new BufferedReader(new FileReader(configFile))) {
+		try (var bufferedReader = new BufferedReader(new FileReader(configFile))) {
 			Map<String, Consumer<String>> configMap = new HashMap<>();
 			configMap.put(SERVER_PORT, input -> serverPort = Integer.parseInt(input));
 			configMap.put(SERVER_UPLOAD_RATE_LIMIT, Settings::setRate);
@@ -54,12 +54,12 @@ public class Config {
 			String line;
 			while ((line = bufferedReader.readLine()) != null) {
 				if (!line.matches("^[a-zA-Z].*")) continue; // 仅当首字符不是字母时跳过
-				String[] parts = line.trim().split("=");
+				var parts = line.trim().split("=");
 				if (parts.length != 2) {
 					log(WARNING, "配置格式错误: " + line);
 					continue;
 				}
-				Consumer<String> action = configMap.get(parts[0]);
+				var action = configMap.get(parts[0]);
 				if (action != null) action.accept(parts[1]);
 				else log(WARNING, "配置项错误: " + line);
 			}
@@ -69,7 +69,7 @@ public class Config {
 	}
 	// 保存配置
 	public static void saveConfig() {
-		Object[][] configEntries = {
+		var configEntries = new Object[][]{
 				{"# 服务端配置"},
 				{SERVER_PORT, serverPort},
 				{SERVER_UPLOAD_RATE_LIMIT, serverUploadRateLimit + " " + serverUploadRateLimitUnit.unit},
@@ -82,14 +82,14 @@ public class Config {
 				{CLIENT_ONLY_DIRECTORY, clientOnlyDirectory},
 				{CLIENT_AUTO_START, clientAutoStart}
 		};
-		StringBuilder configContent = new StringBuilder();
-		for (Object[] config : configEntries) {
+		var configContent = new StringBuilder();
+		for (var config : configEntries) {
 			if (config[0].toString().startsWith("#")) configContent.append(config[0]).append(lineSeparator());
 			else configContent.append(String.format("%s=%s%n", config[0], config.length > 1 ? config[1] : ""));
 		}
 		configContent.deleteCharAt(configContent.length() - 1); // 去除末尾的换行符
-		File configFile = new File(CONFIG_PATH);
-		try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(configFile))) {
+		var configFile = new File(CONFIG_PATH);
+		try (var bufferedWriter = new BufferedWriter(new FileWriter(configFile))) {
 			bufferedWriter.write(configContent.toString()); // 写入配置文件
 			log(INFO, "配置已保存: " + lineSeparator() + configContent);
 		} catch (IOException error) {

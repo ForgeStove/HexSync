@@ -9,7 +9,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="refactor(core): 更新包路径为com.ForgeStove.HexSync" />
+    <list default="true" id="34569f8d-7eee-480d-8e51-de037a864dfc" name="更改" comment="refactor(core): 更新包路径为com.ForgeStove.HexSync">
+      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/HexSync.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations/HexSync.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/HexSync__headless.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations/HexSync__headless.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ForgeStove/HexSync/Client/FileDownloader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ForgeStove/HexSync/Client/FileDownloader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ForgeStove/HexSync/GUI/ComponentFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ForgeStove/HexSync/GUI/ComponentFactory.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ForgeStove/HexSync/Server/RequestHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ForgeStove/HexSync/Server/RequestHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ForgeStove/HexSync/Util/Files.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ForgeStove/HexSync/Util/Files.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ForgeStove/HexSync/Util/RateUnit.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ForgeStove/HexSync/Util/RateUnit.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ForgeStove/HexSync/Util/Settings.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ForgeStove/HexSync/Util/Settings.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -52,12 +62,12 @@
     }
   ]
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/ForgeStove/HexSync.git&quot;,
-    &quot;accountId&quot;: &quot;363630b6-f298-4778-b2fa-54fe1bbda4c8&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/ForgeStove/HexSync.git",
+    "accountId": "73d38352-6b86-4629-b0bf-bcabff905ecb"
   }
-}</component>
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;f69e973a&quot;
 }</component>
@@ -68,28 +78,35 @@
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Utils/Source/Java/HexSync/out/artifacts&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;SDK&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.12207031&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.sourceCode.Java&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;,
-    &quot;应用程序.HexSync -headless.executor&quot;: &quot;Debug&quot;,
-    &quot;应用程序.HexSync.executor&quot;: &quot;Debug&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Downloaded.Files.Path.Enabled": "false",
+    "Repository.Attach.Annotations": "true",
+    "Repository.Attach.JavaDocs": "true",
+    "Repository.Attach.Sources": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Utils/Source/Java/HexSync/lib/annotations-24.0.0-sources.jar",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "SDK",
+    "project.structure.proportion": "0.12207031",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.sourceCode.Java",
+    "vue.rearranger.settings.migration": "true",
+    "应用程序.HexSync -headless.executor": "Debug",
+    "应用程序.HexSync.executor": "Run"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Utils\Source\Java\HexSync" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Utils\Source\Java\HexSync\src" />
     </key>
@@ -179,6 +196,10 @@
       <workItem from="1740370892400" duration="211000" />
       <workItem from="1740371121914" duration="338000" />
       <workItem from="1741113134521" duration="134000" />
+      <workItem from="1741190948706" duration="55000" />
+      <workItem from="1741254978700" duration="124000" />
+      <workItem from="1741409933478" duration="29000" />
+      <workItem from="1742625021320" duration="1121000" />
     </task>
     <task id="LOCAL-00002" summary="fix(ui): 更新许可证链接并简化代码">
       <option name="closed" value="true" />
@@ -532,7 +553,23 @@
       <option name="project" value="LOCAL" />
       <updated>1741113246763</updated>
     </task>
-    <option name="localTasksCounter" value="46" />
+    <task id="LOCAL-00046" summary="refactor(license): 将许可证从GNU AGPLv3更改为MIT">
+      <option name="closed" value="true" />
+      <created>1741190980616</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1741190980616</updated>
+    </task>
+    <task id="LOCAL-00047" summary="refactor(core): 更新包路径为com.ForgeStove.HexSync">
+      <option name="closed" value="true" />
+      <created>1741190986465</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1741190986465</updated>
+    </task>
+    <option name="localTasksCounter" value="48" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -550,7 +587,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="refactor: 移除重复代码并简化逻辑" />
     <MESSAGE value="fix: 修复CLI和GUI中的一些格式问题和逻辑错误" />
     <MESSAGE value="refactor: 更新包名并简化导入语句" />
     <MESSAGE value="fix: 修复转换单位名称错误" />
@@ -574,6 +610,7 @@
     <MESSAGE value="fix: 修正速率输入匹配逻辑和单位描述" />
     <MESSAGE value="fix: 修正速率输入匹配逻辑和请求方法为POST&#10;&#10;Signed-off-by: ForgeStove &lt;2071948808@qq.com&gt;" />
     <MESSAGE value="fix: 修正速率输入匹配逻辑和请求方法为POST" />
+    <MESSAGE value="refactor(license): 将许可证从GNU AGPLv3更改为MIT" />
     <MESSAGE value="refactor(core): 更新包路径为com.ForgeStove.HexSync" />
     <option name="LAST_COMMIT_MESSAGE" value="refactor(core): 更新包路径为com.ForgeStove.HexSync" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />

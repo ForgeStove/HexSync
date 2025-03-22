@@ -29,7 +29,7 @@ public class HeadlessSettings {
 		map.put("SAVE", args -> saveConfig());
 		map.put(
 				"HELP", args -> {
-					for (String message : new String[]{
+					for (var message : new String[]{
 							"SP [端口]                      |设置服务端端口",
 							"SL [整型] [B/s|KB/s|MB/s|GB/s] |设置服务端最大上传速率",
 							"SD [目录]                      |设置服务端同步目录",
@@ -47,10 +47,10 @@ public class HeadlessSettings {
 				}
 		);
 		out.println("进入设置模式,输入命令或输入HELP以获取帮助.");
-		Scanner scanner = new Scanner(in);
+		var scanner = new Scanner(in);
 		while (true) try {
 			out.print(HEX_SYNC_NAME + "Settings>");
-			String[] parts = scanner.nextLine().split("\\s+");
+			var parts = scanner.nextLine().split("\\s+");
 			if (parts.length == 0) continue;
 			if (parts[0].equalsIgnoreCase("EXIT")) break;
 			map.getOrDefault(parts[0].toUpperCase(), args -> err.println("无效命令,输入HELP以获取帮助.")).accept(parts);

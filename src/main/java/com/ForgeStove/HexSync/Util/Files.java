@@ -1,4 +1,6 @@
 package com.ForgeStove.HexSync.Util;
+import org.jetbrains.annotations.NotNull;
+
 import java.io.*;
 import java.util.*;
 import java.util.zip.CRC32;
@@ -22,18 +24,18 @@ public class Files {
 		}
 	}
 	// 初始化文件名校验码键值对表
-	public static Map<String, Long> initMap(String directory) {
+	public static @NotNull Map<String, Long> initMap(String directory) {
 		Map<String, Long> map = new HashMap<>();
-		File[] fileList = new File(directory).listFiles(); // 获取文件夹下的所有文件
-		if (fileList != null) for (File file : fileList)
+		var fileList = new File(directory).listFiles(); // 获取文件夹下的所有文件
+		if (fileList != null) for (var file : fileList)
 			if (file.isFile()) map.put(file.getName(), calculateCRC(file));
 		return map;
 	}
 	// 计算文件校验码
 	public static long calculateCRC(File file) {
-		CRC32 crc = new CRC32();
-		try (FileInputStream fileInputStream = new FileInputStream(file)) {
-			byte[] buffer = new byte[16384];
+		var crc = new CRC32();
+		try (var fileInputStream = new FileInputStream(file)) {
+			var buffer = new byte[16384];
 			int bytesRead;
 			while ((bytesRead = fileInputStream.read(buffer)) != -1) crc.update(buffer, 0, bytesRead);
 		} catch (IOException error) {
@@ -44,17 +46,17 @@ public class Files {
 	}
 	// 创建文件夹
 	public static void makeDirectory(String directoryPath) {
-		File directory = new File(directoryPath);
+		var directory = new File(directoryPath);
 		if (directory.isDirectory()) return;
 		if (directory.mkdirs()) log(INFO, "文件夹已创建: " + directoryPath);
 		else log(SEVERE, "无法创建文件夹: " + directoryPath);
 	}
 	// 删除指定路径下的文件
 	public static void deleteFilesNotInMaps(Map<String, Long> requestMap, Map<String, Long> clientOnlyMap) {
-		File[] fileList = new File(clientSyncDirectory).listFiles();
-		if (fileList != null) for (File file : fileList)
+		var fileList = new File(clientSyncDirectory).listFiles();
+		if (fileList != null) for (var file : fileList)
 			if (file.isFile()) {
-				long CRC = calculateCRC(file);
+				var CRC = calculateCRC(file);
 				if (requestMap.containsValue(CRC) || clientOnlyMap.containsValue(CRC)) continue;
 				if (file.delete()) log(INFO, "已删除文件: " + file);
 				else log(SEVERE, "删除文件失败: " + file);
@@ -63,12 +65,12 @@ public class Files {
 	// 复制文件夹
 	public static void copyDirectory(String source, String target) {
 		makeDirectory(target);
-		File[] fileList = new File(source).listFiles();
+		var fileList = new File(source).listFiles();
 		if (fileList == null) return;
 		try {
-			for (File file : fileList) {
-				String targetFileName = file.getName();
-				File targetFile = new File(target, targetFileName);
+			for (var file : fileList) {
+				var targetFileName = file.getName();
+				var targetFile = new File(target, targetFileName);
 				if (new File(target, targetFileName + ".disable").exists()) continue; // 跳过此文件
 				if (file.isDirectory()) {
 					copyDirectory(String.valueOf(file), String.valueOf(targetFile));

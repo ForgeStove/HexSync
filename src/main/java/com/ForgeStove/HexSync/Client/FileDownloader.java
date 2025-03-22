@@ -1,4 +1,6 @@
 package com.ForgeStove.HexSync.Client;
+import org.jetbrains.annotations.NotNull;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -13,16 +15,16 @@ import static java.lang.System.exit;
 import static java.net.HttpURLConnection.HTTP_OK;
 public class FileDownloader {
 	// 从服务端同步文件夹下载客户端缺少的文件
-	public static void downloadMissingFiles(Map<String, Long> toDownloadMap) {
+	public static void downloadMissingFiles(@NotNull Map<String, Long> toDownloadMap) {
 		if (toDownloadMap.isEmpty()) {
 			log(INFO, "模组已经是最新版本");
 			return;
 		}
 		log(INFO, "开始下载 [" + toDownloadMap.size() + "] 个文件");
-		int count = 0;
-		int toDownloadMapSize = toDownloadMap.size();
-		for (Map.Entry<String, Long> entry : toDownloadMap.entrySet()) {
-			String filePath = clientSyncDirectory + separator + entry.getKey(); // 设置下载路径
+		var count = 0;
+		var toDownloadMapSize = toDownloadMap.size();
+		for (var entry : toDownloadMap.entrySet()) {
+			var filePath = clientSyncDirectory + separator + entry.getKey(); // 设置下载路径
 			if (hasDownloadedFile(filePath, toDownloadMap)) {
 				count++; // 成功下载时增加计数
 				log(INFO, "已下载: [" + count + "/" + toDownloadMapSize + "] " + filePath);
@@ -37,14 +39,14 @@ public class FileDownloader {
 	// 从服务器下载文件
 	public static boolean hasDownloadedFile(String filePath, Map<String, Long> toDownloadMap) {
 		if (clientThread == null) return false; // 客户端线程已关闭
-		File clientFile = new File(filePath); // 目标本地文件
-		Long requestCRC = toDownloadMap.get(filePath.substring(clientSyncDirectory.length() + 1));
+		var clientFile = new File(filePath); // 目标本地文件
+		var requestCRC = toDownloadMap.get(filePath.substring(clientSyncDirectory.length() + 1));
 		if (requestCRC == null) {
 			log(SEVERE, "无法获取请求的校验码: " + clientFile);
 			return false;
 		}
 		try {
-			int responseCode = getResponseCode(String.format(
+			var responseCode = getResponseCode(String.format(
 					"%s:%d/%s/%s",
 					formatHTTP(serverAddress),
 					clientPort,
@@ -61,10 +63,10 @@ public class FileDownloader {
 		}
 		// 读取输入流并写入本地文件
 		try (
-				InputStream inputStream = HTTPURLConnection.getInputStream();
-				FileOutputStream outputStream = new FileOutputStream(clientFile)
+				var inputStream = HTTPURLConnection.getInputStream();
+				var outputStream = new FileOutputStream(clientFile)
 		) {
-			byte[] buffer = new byte[16384];
+			var buffer = new byte[16384];
 			int bytesRead;
 			while ((bytesRead = inputStream.read(buffer)) != -1) outputStream.write(buffer, 0, bytesRead);
 		} catch (IOException error) {
@@ -89,11 +91,11 @@ public class FileDownloader {
 	}
 	// 从服务器获取文件名和校验码列表
 	public static Map<String, Long> fetchFileCRCList() {
-		String URL = String.format("%s:%d/%s", formatHTTP(serverAddress), clientPort, LIST); // 服务器地址
+		var URL = String.format("%s:%d/%s", formatHTTP(serverAddress), clientPort, LIST); // 服务器地址
 		log(INFO, "正在连接到: " + URL); // 记录请求开始日志
 		Map<String, Long> requestMap = new HashMap<>(); // 复制请求列表
 		try {
-			int responseCode = getResponseCode(URL);
+			var responseCode = getResponseCode(URL);
 			if (responseCode != HTTP_OK) {
 				if (clientThread != null) log(SEVERE, "请求列表失败,错误代码: " + responseCode);
 				errorDownload = true;
@@ -104,14 +106,11 @@ public class FileDownloader {
 			errorDownload = true;
 			return requestMap;
 		}
-		try (
-				BufferedReader bufferedReader =
-						new BufferedReader(new InputStreamReader(HTTPURLConnection.getInputStream()))
-		) {
+		try (var bufferedReader = new BufferedReader(new InputStreamReader(HTTPURLConnection.getInputStream()))) {
 			String fileName;
-			while ((fileName = bufferedReader.readLine()) != null) { // 读取文件名
+			// 读取文件名
+			while ((fileName = bufferedReader.readLine()) != null)
 				requestMap.put(fileName, Long.parseLong(bufferedReader.readLine())); // 将文件名与校验码放入Map
-			}
 		} catch (IOException error) {
 			log(SEVERE, "读取响应时出错: " + error.getMessage());
 			errorDownload = true;

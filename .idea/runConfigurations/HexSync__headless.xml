@@ -6,7 +6,7 @@
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/out/artifacts" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="com.ForgeStove.HexSync.HexSync" />
+        <option name="PATTERN" value="com.ForgeStove.HexSync" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>

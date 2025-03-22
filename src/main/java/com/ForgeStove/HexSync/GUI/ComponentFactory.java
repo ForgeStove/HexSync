@@ -1,4 +1,6 @@
 package com.ForgeStove.HexSync.GUI;
+import org.jetbrains.annotations.NotNull;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -8,22 +10,21 @@ import static java.awt.Font.PLAIN;
 import static java.awt.Window.getWindows;
 public class ComponentFactory {
 	// 聚焦并全选输入框
-	public static void selectAndFocus(JTextField textField) {
+	public static void selectAndFocus(@NotNull JTextField textField) {
 		textField.requestFocus(); // 聚焦输入框
 		textField.selectAll(); // 选中输入框
 	}
 	// 设置字体的通用方法
-	public static void setFont(Container container, Font font) {
-		for (Component component : container.getComponents()) {
+	public static void setFont(@NotNull Container container, Font font) {
+		for (var component : container.getComponents()) {
 			if (component instanceof Container) setFont((Container) component, font); // 递归设置子组件的字体
 			component.setFont(font); // 设置字体
 		}
 	}
 	// 检测是否有同名窗口并显示
 	public static boolean checkJDialog(String title) {
-		for (Window window : getWindows()) {
-			if (!(window instanceof JDialog)) continue;
-			JDialog dialog = (JDialog) window;
+		for (var window : getWindows()) {
+			if (!(window instanceof JDialog dialog)) continue;
 			if (!dialog.getTitle().equals(title)) continue;
 			dialog.setVisible(true);
 			dialog.toFront();
@@ -32,16 +33,16 @@ public class ComponentFactory {
 		return false;
 	}
 	// 基础复选框框架
-	public static JCheckBox newJCheckBox(JPanel panel, String text, boolean selected) {
-		JCheckBox checkBox = new JCheckBox(text);
+	public static @NotNull JCheckBox newJCheckBox(@NotNull JPanel panel, String text, boolean selected) {
+		var checkBox = new JCheckBox(text);
 		checkBox.setFocusPainted(false);
 		checkBox.setSelected(selected);
 		panel.add(checkBox);
 		return checkBox;
 	}
 	// 基础按钮框架
-	public static void newJButton(JPanel panel, String text, ActionListener actionListener) {
-		JButton button = new JButton("<html>" + text);
+	public static void newJButton(@NotNull JPanel panel, String text, ActionListener actionListener) {
+		var button = new JButton("<html>" + text);
 		button.setFocusPainted(false);
 		button.setPreferredSize(new Dimension(0, screenLength / 55));
 		button.addActionListener(actionListener);

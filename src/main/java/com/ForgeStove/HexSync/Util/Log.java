@@ -1,5 +1,5 @@
 package com.ForgeStove.HexSync.Util;
-import javax.swing.text.*;
+import javax.swing.text.SimpleAttributeSet;
 import java.awt.Color;
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -28,7 +28,7 @@ public class Log {
 	public static void log(String level, String message) {
 		if (LOG && logWriter != null && logExecutor != null) logExecutor.submit(() -> {
 			try {
-				String formattedLog = String.format(
+				var formattedLog = String.format(
 						"[%s] [%s] %s%n",
 						new SimpleDateFormat("HH:mm:ss").format(currentTimeMillis()),
 						level,
@@ -36,9 +36,9 @@ public class Log {
 				);
 				logWriter.write(formattedLog);
 				logWriter.flush();
-				boolean info = level.equals(INFO);
-				boolean warning = level.equals(WARNING);
-				boolean severe = level.equals(SEVERE);
+				var info = level.equals(INFO);
+				var warning = level.equals(WARNING);
+				var severe = level.equals(SEVERE);
 				if (HEADLESS) {
 					if (ANSI) out.print(formattedLog);
 					else out.printf(
@@ -47,7 +47,7 @@ public class Log {
 							formattedLog
 					);
 				} else invokeLater(() -> {
-					SimpleAttributeSet attributeSet = new SimpleAttributeSet();
+					var attributeSet = new SimpleAttributeSet();
 					setForeground(
 							attributeSet,
 							info
@@ -55,10 +55,10 @@ public class Log {
 									: warning ? new Color(255, 165, 0) : severe ? new Color(255, 0, 0) : BLACK
 					);
 					if (logPane != null) try {
-						Document document = logPane.getDocument();
+						var document = logPane.getDocument();
 						while (document.getDefaultRootElement().getElementCount() > 128) {
-							Element element = document.getDefaultRootElement().getElement(0);
-							int lineStart = element.getStartOffset();
+							var element = document.getDefaultRootElement().getElement(0);
+							var lineStart = element.getStartOffset();
 							document.remove(lineStart, element.getEndOffset() - lineStart); // 删除第一行
 						}
 						document.insertString(document.getLength(), formattedLog, attributeSet);

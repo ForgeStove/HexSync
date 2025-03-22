@@ -12,8 +12,8 @@ public class AboutJDialog {
 	// 关于
 	public static void initAboutJDialog(Window parent) {
 		if (checkJDialog("关于")) return;
-		JDialog aboutDialog = new JDialog(parent, "关于");
-		JTextPane aboutTextPane = new JTextPane();
+		var aboutDialog = new JDialog(parent, "关于");
+		var aboutTextPane = new JTextPane();
 		aboutTextPane.setBorder(createEmptyBorder(5, 5, 5, 5));
 		aboutTextPane.setContentType("text/html");
 		aboutTextPane.setEditable(false);

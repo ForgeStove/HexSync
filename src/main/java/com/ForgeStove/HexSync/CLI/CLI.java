@@ -21,7 +21,7 @@ public class CLI {
 		map.put("GITHUB", () -> out.println(GITHUB_URL));
 		map.put(
 				"HELP", () -> {
-					for (String message : new String[]{
+					for (var message : new String[]{
 							"RS     |启动服务端",
 							"RC     |启动客户端",
 							"SS     |停止服务端",
@@ -35,10 +35,10 @@ public class CLI {
 				}
 		);
 		map.put("EXIT", () -> exit(0));
-		Scanner scanner = new Scanner(in);
+		var scanner = new Scanner(in);
 		while (true) try {
 			out.print(HEX_SYNC_NAME + ">");
-			String line = scanner.nextLine().toUpperCase();
+			var line = scanner.nextLine().toUpperCase();
 			if (line.isEmpty()) continue;
 			map.getOrDefault(line, () -> err.println("无效命令,输入HELP以获取帮助.")).run();
 		} catch (Exception error) {
