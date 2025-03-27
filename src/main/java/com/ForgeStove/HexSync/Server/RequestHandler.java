@@ -17,20 +17,17 @@ public class RequestHandler {
 		var requestURI = exchange.getRequestURI().getPath();
 		if (requestURI.startsWith("/" + DOWNLOAD + "/")) {
 			var requestCRC = Long.parseLong(requestURI.substring(requestURI.lastIndexOf("/") + 1));
-			String filePath = null;
 			for (var entry : serverMap.entrySet())
 				if (entry.getValue() == requestCRC) {
-					filePath = String.format("%s%s%s", serverSyncDirectory, separator, entry.getKey());
+					var file = new File(String.format("%s%s%s", serverSyncDirectory, separator, entry.getKey()));
+					try (var inputStream = new BufferedInputStream(newInputStream(file.toPath()))) {
+						sendResponse(exchange, inputStream, file.length());
+						log(INFO, "发送文件: " + file);
+					} catch (IOException error) {
+						log(SEVERE, "发送文件时出错: " + error.getMessage());
+					}
 					break;
 				}
-			if (filePath == null) return;
-			var file = new File(filePath);
-			try (var inputStream = new BufferedInputStream(newInputStream(file.toPath()))) {
-				sendResponse(exchange, inputStream, file.length());
-				log(INFO, "发送文件: " + file);
-			} catch (IOException error) {
-				log(SEVERE, "发送文件时出错: " + error.getMessage());
-			}
 		} else if (requestURI.startsWith("/" + LIST)) {
 			var responseBuilder = new StringBuilder();
 			for (var entry : serverMap.entrySet())
