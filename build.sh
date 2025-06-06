@@ -6,15 +6,11 @@ JAR="HexSync.jar"
 MAIN_CLASS="com.forgestove.hexsync.HexSync"
 OUT_DIR="out/package"
 ICON="icon.ico"
-RUNTIME_DIR="out/runtime/release"
+RUNTIME_DIR="out/runtime"
 JAR_PATH="out/artifacts/$JAR"
 
 if [ -d "$OUT_DIR" ]; then
   rm -rf "$OUT_DIR"
-fi
-
-if [ -d "$RUNTIME_DIR" ]; then
-  rm -rf "$RUNTIME_DIR"
 fi
 
 MODULES=$("$JAVA_HOME"/bin/jdeps --multi-release 17 --print-module-deps --ignore-missing-deps "$JAR_PATH")
@@ -42,4 +38,5 @@ MODULES=$("$JAVA_HOME"/bin/jdeps --multi-release 17 --print-module-deps --ignore
   --copyright "Copyright (c) 2025 ForgeStove" \
   --app-version "1.0.0"
 
+rm -rf "$RUNTIME_DIR"
 rm -f "$OUT_DIR/HexSync/HexSync.ico"
