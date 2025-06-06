@@ -2,7 +2,7 @@
   <configuration default="false" name="HexSync" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="com.forgestove.hexsync.HexSync" />
     <module name="HexSync" />
-    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/out/artifacts" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/run" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="com.ForgeStove.HexSync" />
