@@ -5,6 +5,15 @@ if [[ "$(java -version 2>&1)" == *"17."* ]]; then
   echo "已检测到 JDK 17，跳过设置 JAVA_HOME"
 else
   JAVA_HOME="C:/Utils/Java/JDK 17"
+  if [ -d "$JAVA_HOME" ]; then
+    echo "设置 JAVA_HOME 为 $JAVA_HOME"
+    export JAVA_HOME
+    export PATH="$JAVA_HOME/bin:$PATH"
+  else
+    echo "错误: JDK 17 路径不存在: $JAVA_HOME"
+    read -n 1 -s -r -p "按任意键退出..."
+    exit 1
+  fi
 fi
 JAR="HexSync.jar"
 MAIN_CLASS="com.forgestove.hexsync.HexSync"
@@ -58,3 +67,4 @@ echo "已删除 $RUNTIME_DIR"
 echo "删除多余的图标文件..."
 rm -f "$ICON_PATH"
 echo "已删除 $ICON_PATH"
+read -n 1 -s -r -p "按任意键退出..."
