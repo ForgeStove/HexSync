@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="HexSync -headless" type="Application" factoryName="Application">
-    <option name="MAIN_CLASS_NAME" value="com.ForgeStove.HexSync.HexSync" />
+    <option name="MAIN_CLASS_NAME" value="com.forgestove.hexsync.HexSync" />
     <module name="HexSync" />
     <option name="VM_PARAMETERS" value="-Djava.awt.headless=true" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/out/artifacts" />

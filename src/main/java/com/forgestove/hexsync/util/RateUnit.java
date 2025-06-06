@@ -1,7 +1,10 @@
-package com.ForgeStove.HexSync.Util;
+package com.forgestove.hexsync.util;
 import org.jetbrains.annotations.NotNull;
 public enum RateUnit {
-	BPS("B/s", 0), KBPS("K" + BPS.unit, 1), MBPS("M" + BPS.unit, 2), GBPS("G" + BPS.unit, 3);
+	BPS("B/s", 0),
+	KBPS("K" + BPS.unit, 1),
+	MBPS("M" + BPS.unit, 2),
+	GBPS("G" + BPS.unit, 3);
 	public final String unit;
 	public final int exponent;
 	RateUnit(String unit, int exponent) {

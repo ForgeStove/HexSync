@@ -1,14 +1,10 @@
-package com.ForgeStove.HexSync.GUI;
+package com.forgestove.hexsync.gui;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
-
-import static com.ForgeStove.HexSync.GUI.GUI.*;
-import static java.awt.Font.PLAIN;
-import static java.awt.Window.getWindows;
-public class ComponentFactory {
+public class CComponent {
 	// 聚焦并全选输入框
 	public static void selectAndFocus(@NotNull JTextField textField) {
 		textField.requestFocus(); // 聚焦输入框
@@ -23,7 +19,7 @@ public class ComponentFactory {
 	}
 	// 检测是否有同名窗口并显示
 	public static boolean checkJDialog(String title) {
-		for (var window : getWindows()) {
+		for (var window : Window.getWindows()) {
 			if (!(window instanceof JDialog dialog)) continue;
 			if (!dialog.getTitle().equals(title)) continue;
 			dialog.setVisible(true);
@@ -44,14 +40,14 @@ public class ComponentFactory {
 	public static void newJButton(@NotNull JPanel panel, String text, ActionListener actionListener) {
 		var button = new JButton("<html>" + text);
 		button.setFocusPainted(false);
-		button.setPreferredSize(new Dimension(0, screenLength / 55));
+		button.setPreferredSize(new Dimension(0, GUI.screenLength / 55));
 		button.addActionListener(actionListener);
 		panel.add(button);
 	}
 	// 设置窗口属性
 	public static void setWindow(Window window) {
-		setFont(window, new Font("Arial", PLAIN, 16));
-		window.setIconImage(icon);
+		setFont(window, new Font("Arial", Font.BOLD, 14));
+		window.setIconImage(GUI.icon);
 		window.setLocationRelativeTo(null);
 		window.setVisible(true);
 	}

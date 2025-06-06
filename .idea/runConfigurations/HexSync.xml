@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="HexSync" type="Application" factoryName="Application">
-    <option name="MAIN_CLASS_NAME" value="com.ForgeStove.HexSync.HexSync" />
+    <option name="MAIN_CLASS_NAME" value="com.forgestove.hexsync.HexSync" />
     <module name="HexSync" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/out/artifacts" />
     <extension name="coverage">
