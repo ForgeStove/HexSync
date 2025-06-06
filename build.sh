@@ -5,7 +5,7 @@ JAVA_HOME="C:/Utils/Java/JDK 17"
 JAR="HexSync.jar"
 MAIN_CLASS="com.forgestove.hexsync.HexSync"
 OUT_DIR="out/package"
-ICON="src/main/resources/icon.ico"
+ICON="icon.ico"
 RUNTIME_DIR="out/runtime/release"
 JAR_PATH="out/artifacts/$JAR"
 
