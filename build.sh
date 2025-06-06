@@ -1,11 +1,16 @@
 #!/bin/bash
 set -e
 
-JAVA_HOME="C:/Utils/Java/JDK 17"
+if [[ "$(java -version 2>&1)" == *"17."* ]]; then
+  echo "已检测到 JDK 17，跳过设置 JAVA_HOME"
+else
+  JAVA_HOME="C:/Utils/Java/JDK 17"
+fi
 JAR="HexSync.jar"
 MAIN_CLASS="com.forgestove.hexsync.HexSync"
 OUT_DIR="out/package"
 ICON="icon.ico"
+ICON_PATH="$OUT_DIR/HexSync/$ICON"
 RUNTIME_DIR="out/runtime"
 JAR_PATH="out/artifacts/$JAR"
 
@@ -51,5 +56,5 @@ rm -rf "$RUNTIME_DIR"
 echo "已删除 $RUNTIME_DIR"
 
 echo "删除多余的图标文件..."
-rm -f "$OUT_DIR/HexSync/HexSync.ico"
-echo "已删除 $OUT_DIR/HexSync/HexSync.ico"
+rm -f "$ICON_PATH"
+echo "已删除 $ICON_PATH"
