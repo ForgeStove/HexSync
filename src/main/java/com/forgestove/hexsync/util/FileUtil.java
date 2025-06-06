@@ -11,7 +11,7 @@ public class FileUtil {
 	// 初始化文件
 	public static void initFiles(boolean isServer) {
 		makeDirectory(isServer ? Config.serverSyncDirectory : Config.clientSyncDirectory);
-		makeDirectory(HexSync.HEX_SYNC);
+		makeDirectory(HexSync.NAME);
 		Config.loadConfig();
 		if (isServer) Server.serverMap = initMap(Config.serverSyncDirectory);
 		else {

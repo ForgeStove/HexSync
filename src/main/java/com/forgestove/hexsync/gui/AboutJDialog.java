@@ -14,8 +14,7 @@ public class AboutJDialog {
 		aboutTextPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		aboutTextPane.setContentType("text/html");
 		aboutTextPane.setEditable(false);
-		aboutTextPane.setText("<span style=\"font-weight: bold;font-family: Arial;\">"
-			+ HexSync.HEX_SYNC
+		aboutTextPane.setText("<span style=\"font-weight: bold;font-family: Arial;\">" + HexSync.NAME
 			+ "<br>By: ForgeStove<br>GitHub: <a href=\""
 			+ HexSync.GITHUB_URL
 			+ "\">"

@@ -8,7 +8,7 @@ import java.util.*;
 public class CLI {
 	// 命令行界面
 	public static void initCLI() {
-		System.out.println("欢迎使用" + HexSync.HEX_SYNC + "!\n输入HELP以获取帮助.");
+		System.out.println("欢迎使用" + HexSync.NAME + "!\n输入HELP以获取帮助.");
 		System.out.println();
 		Map<String, Runnable> map = new HashMap<>();
 		map.put("RS", Server::runServer);
@@ -35,7 +35,7 @@ public class CLI {
 		map.put("EXIT", () -> System.exit(0));
 		var scanner = new Scanner(System.in);
 		while (true) try {
-			System.out.print(HexSync.HEX_SYNC + ">");
+			System.out.print(HexSync.NAME + ">");
 			var line = scanner.nextLine().toUpperCase();
 			if (line.isEmpty()) continue;
 			map.getOrDefault(line, () -> System.err.println("无效命令,输入HELP以获取帮助.")).run();

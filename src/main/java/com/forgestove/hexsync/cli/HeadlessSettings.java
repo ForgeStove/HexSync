@@ -47,7 +47,7 @@ public class HeadlessSettings {
 		System.out.println("进入设置模式,输入命令或输入HELP以获取帮助.");
 		var scanner = new Scanner(System.in);
 		while (true) try {
-			System.out.print(HexSync.HEX_SYNC + "Settings>");
+			System.out.print(HexSync.NAME + "Settings>");
 			var parts = scanner.nextLine().split("\\s+");
 			if (parts.length == 0) continue;
 			if (parts[0].equalsIgnoreCase("EXIT")) break;

@@ -10,7 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.concurrent.*;
 @SuppressWarnings("unused")
 public class Log {
-	public static final String LOG_PATH = HexSync.HEX_SYNC + File.separator + "latest.log"; // 日志文件路径
+	public static final String LOG_PATH = HexSync.NAME + File.separator + "latest.log"; // 日志文件路径
 	public static final boolean ANSI = System.getProperty("ansi", "true").equalsIgnoreCase("false"); // 是否启用ANSI控制台输出
 	public static final boolean LOG = System.getProperty("log", "true").equalsIgnoreCase("true"); // 是否记录日志
 	public static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss");
@@ -86,7 +86,7 @@ public class Log {
 	// 初始化日志
 	public static void initLog() {
 		try {
-			FileUtil.makeDirectory(HexSync.HEX_SYNC);
+			FileUtil.makeDirectory(HexSync.NAME);
 			logWriter = new FileWriter(LOG_PATH, false);
 		} catch (IOException error) {
 			System.err.println("日志初始化失败: " + error.getMessage());

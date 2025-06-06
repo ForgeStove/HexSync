@@ -8,7 +8,7 @@ import java.io.*;
 import java.util.*;
 import java.util.function.Consumer;
 public class Config {
-	public static final String CONFIG_PATH = HexSync.HEX_SYNC + File.separator + "config.properties"; // 配置文件路径
+	public static final String CONFIG_PATH = HexSync.NAME + File.separator + "config.properties"; // 配置文件路径
 	public static final String SERVER_PORT = "serverPort"; // 服务端端口配置项
 	public static final String SERVER_SYNC_DIRECTORY = "serverSyncDirectory"; // 服务端同步文件夹路径配置项
 	public static final String SERVER_UPLOAD_RATE_LIMIT = "serverUploadRateLimit"; // 上传速率限制配置项

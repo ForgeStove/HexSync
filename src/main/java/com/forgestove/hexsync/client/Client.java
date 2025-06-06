@@ -10,7 +10,7 @@ public class Client {
 	public static void runClient() {
 		if (clientThread != null) return;
 		clientThread = new Thread(() -> {
-			Log.info(HexSync.HEX_SYNC + "Client正在启动...");
+			Log.info(HexSync.NAME + "Client正在启动...");
 			FileUtil.initFiles(false);
 			var requestMap = Downloader.fetchFileSHA1List();
 			if (!requestMap.isEmpty()) {
@@ -28,7 +28,7 @@ public class Client {
 	public static void stopClient() {
 		if (clientThread == null) return;
 		clientThread = null;
-		Log.info(HexSync.HEX_SYNC + "Client已关闭");
+		Log.info(HexSync.NAME + "Client已关闭");
 		if (clientAutoStart && !errorDownload) System.exit(0);
 	}
 }

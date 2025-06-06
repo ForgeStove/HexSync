@@ -18,7 +18,7 @@ public class Server {
 	public static void runServer() {
 		if (serverThread != null) return;
 		serverThread = new Thread(() -> {
-			Log.info(HexSync.HEX_SYNC + "Server正在启动...");
+			Log.info(HexSync.NAME + "Server正在启动...");
 			FileUtil.initFiles(true);
 			if (serverMap.isEmpty()) {
 				Log.warn(Config.serverSyncDirectory + "没有文件,无法启动服务器");
@@ -31,10 +31,10 @@ public class Server {
 				HTTPServer.createContext("/", RequestHandler::handleRequest);
 				HTTPServer.start();
 			} catch (Exception error) {
-				Log.error("%sServer无法启动: %s", HexSync.HEX_SYNC, error.getMessage());
+				Log.error("%sServer无法启动: %s", HexSync.NAME, error.getMessage());
 				return;
 			}
-			Log.info("%sServer正在运行...端口号为: %d", HexSync.HEX_SYNC, serverPort);
+			Log.info("%sServer正在运行...端口号为: %d", HexSync.NAME, serverPort);
 		});
 		serverThread.start();
 	}
@@ -43,6 +43,6 @@ public class Server {
 		if (serverMap != null) serverMap.clear();
 		if (serverThread != null) serverThread = null;
 		if (HTTPServer != null) HTTPServer.stop(0);
-		Log.info(HexSync.HEX_SYNC + "Server已关闭");
+		Log.info(HexSync.NAME + "Server已关闭");
 	}
 }
