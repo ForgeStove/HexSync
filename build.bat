@@ -5,7 +5,7 @@ REM 设置变量
 set JAVA_HOME=C:\Utils\Java\JDK 17
 set JAR=HexSync.jar
 set MAIN_CLASS=com.forgestove.hexsync.HexSync
-set OUT_DIR=out\HexSync
+set OUT_DIR=out\package\HexSync
 set ICON=src\main\resources\icon.ico
 set RUNTIME_DIR=out\runtime\release
 set JAR_PATH=out\artifacts\%JAR%
