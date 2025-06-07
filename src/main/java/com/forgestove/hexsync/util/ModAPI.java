@@ -8,7 +8,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
-public record ModAPI(String downloadUrl) {
+public class ModAPI {
 	private static final Map<String, String> CACHE = new ConcurrentHashMap<>(); // SHA1 -> URL 缓存
 	public static @Nullable String getURL(@NotNull String SHA1) {
 		// 缓存命中直接返回

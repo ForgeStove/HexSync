@@ -3,7 +3,7 @@ import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.util.Log;
 
 import javax.swing.*;
-import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkEvent.EventType;
 import java.awt.*;
 public class AboutJDialog {
 	// 关于
@@ -20,10 +20,9 @@ public class AboutJDialog {
 			+ "\">"
 			+ HexSync.GITHUB_URL
 			+ "</a><br>开源许可: <a href=\""
-			+ HexSync.GITHUB_URL
-			+ "/blob/main/LICENSE\">GNU General Public License v3.0</a></span>");
+			+ HexSync.GITHUB_URL + "/blob/main/LICENSE\">MIT</a></span>");
 		aboutTextPane.addHyperlinkListener(event -> {
-			if (HyperlinkEvent.EventType.ACTIVATED.equals(event.getEventType())) try {
+			if (EventType.ACTIVATED.equals(event.getEventType())) try {
 				Desktop.getDesktop().browse(event.getURL().toURI());
 			} catch (Exception error) {
 				Log.warn("无法打开超链接: " + error.getMessage());
