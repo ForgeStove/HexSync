@@ -5,6 +5,7 @@ import com.forgestove.hexsync.server.Server;
 import org.jetbrains.annotations.*;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.util.*;
 public class FileUtil {
@@ -27,18 +28,21 @@ public class FileUtil {
 			if (file.isFile()) map.put(file.getName(), calculateSHA1(file));
 		return map;
 	}
-	// 计算文件SHA1哈希值
+	// 计算文件SHA1哈希值（带缓存）
 	public static @Nullable String calculateSHA1(File file) {
+		var cache = HashCache.getSHA1(file);
+		if (cache != null) return cache;
 		try (var fileInputStream = new FileInputStream(file)) {
 			var digest = MessageDigest.getInstance("SHA-1");
 			var buffer = new byte[16384];
 			int bytesRead;
 			while ((bytesRead = fileInputStream.read(buffer)) != -1) digest.update(buffer, 0, bytesRead);
 			var hashBytes = digest.digest();
-			// 将字节数组转换为十六进制字符串
 			var hexString = new StringBuilder();
 			for (var b : hashBytes) hexString.append(String.format("%02x", b));
-			return hexString.toString();
+			var sha1 = hexString.toString();
+			HashCache.putSHA1(file, sha1); // 写入缓存
+			return sha1;
 		} catch (Exception error) {
 			Log.error("SHA1计算错误: " + error.getMessage());
 			return null;
@@ -76,30 +80,29 @@ public class FileUtil {
 		makeDirectory(target);
 		var fileList = new File(source).listFiles();
 		if (fileList == null) return;
-		try {
-			for (var file : fileList) {
-				var targetFileName = file.getName();
-				var targetFile = new File(target, targetFileName);
-				if (new File(target, targetFileName + ".disable").exists()) continue; // 跳过此文件
-				if (file.isDirectory()) {
-					copyDirectory(String.valueOf(file), String.valueOf(targetFile));
-				} else if (!targetFile.exists()) {
-					java.nio.file.Files.copy(file.toPath(), targetFile.toPath());
-					Log.info("已复制: " + file + " -> " + target);
-				}
+		for (var file : fileList) {
+			var targetFileName = file.getName();
+			var targetFile = new File(target, targetFileName);
+			if (new File(target, targetFileName + ".disable").exists()) continue; // 跳过此文件
+			if (file.isDirectory()) {
+				copyDirectory(String.valueOf(file), String.valueOf(targetFile));
+			} else if (!targetFile.exists()) try {
+				Files.copy(file.toPath(), targetFile.toPath());
+				Log.info("已复制: " + file + " -> " + target);
+			} catch (IOException error) {
+				Log.error("复制失败: " + error.getMessage());
 			}
-		} catch (IOException error) {
-			Log.error("复制失败: " + error.getMessage());
 		}
 	}
+	// 将输入流写入文件
 	public static boolean writeToFile(@NotNull InputStream inputStream, File targetFile) {
 		try (var outputStream = new BufferedOutputStream(new FileOutputStream(targetFile))) {
 			var buffer = new byte[16384];
 			int bytesRead;
 			while ((bytesRead = inputStream.read(buffer)) != -1) outputStream.write(buffer, 0, bytesRead);
 			return true;
-		} catch (IOException e) {
-			Log.error("写入文件失败: " + targetFile + " " + e.getMessage());
+		} catch (IOException error) {
+			Log.error("写入文件失败: %s %s", targetFile, error.getMessage());
 			return false;
 		}
 	}

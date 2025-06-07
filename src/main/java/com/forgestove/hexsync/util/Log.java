@@ -1,6 +1,7 @@
 package com.forgestove.hexsync.util;
 import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.gui.GUI;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
@@ -70,7 +71,7 @@ public enum Log {
 			System.err.println("日志输出失败: " + error.getMessage());
 		}
 	}
-	private static SimpleAttributeSet createSet(Color color) {
+	private static @NotNull SimpleAttributeSet createSet(Color color) {
 		var attributeSet = new SimpleAttributeSet();
 		StyleConstants.setForeground(attributeSet, color);
 		return attributeSet;
@@ -80,7 +81,7 @@ public enum Log {
 		try {
 			FileUtil.makeDirectory(HexSync.NAME);
 			logWriter = new FileWriter(LOG_PATH, false);
-		} catch (Exception error) {
+		} catch (IOException error) {
 			System.err.println("日志初始化失败: " + error.getMessage());
 		}
 		if (LOG) logExecutor = Executors.newSingleThreadExecutor();

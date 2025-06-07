@@ -46,7 +46,7 @@ public class CComponent {
 	}
 	// 设置窗口属性
 	public static void setWindow(Window window) {
-		setFont(window, new Font("Arial", Font.BOLD, 14));
+		setFont(window, new Font("Microsoft YaHei", Font.PLAIN, 14));
 		window.setIconImage(GUI.icon);
 		window.setLocationRelativeTo(null);
 		window.setVisible(true);

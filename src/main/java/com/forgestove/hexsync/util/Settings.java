@@ -37,8 +37,7 @@ public class Settings {
 			Config.serverUploadRateLimit = Long.parseLong(parts[0]);
 			Config.serverUploadRateLimitUnit = RateUnit.fromUnit(parts[1]);
 			if (Server.serverThread != null) Config.maxUploadRateInBytes = Math.multiplyExact(
-				Config.serverUploadRateLimit,
-				(long) Math.pow(1024, Config.serverUploadRateLimitUnit.exponent)
+				Config.serverUploadRateLimit, (long) Math.pow(1024, Config.serverUploadRateLimitUnit.ordinal())
 			);
 		} else if (Config.HEADLESS) System.err.println("速率格式错误");
 	}

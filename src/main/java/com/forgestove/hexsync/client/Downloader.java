@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,7 +38,7 @@ public class Downloader {
 		if (Client.clientAutoStart) System.exit(0);
 	}
 	private static boolean downloadAndCheckFile(String filePath, String requestSHA1) {
-		if (Client.clientThread == null) return false;
+		if (Client.clientThread.get() == null) return false;
 		var clientFile = new File(filePath);
 		if (requestSHA1 == null) {
 			Log.error("无法获取请求的校验码: " + clientFile);
@@ -54,14 +55,14 @@ public class Downloader {
 			);
 		}
 		try {
-			var response = HttpUtil.sendGetStream(downloadURL);
+			var response = HttpUtil.sendGet(downloadURL, BodyHandlers.ofInputStream());
 			if (response.statusCode() != HttpURLConnection.HTTP_OK) {
 				Log.error("下载失败,错误代码: " + response.statusCode());
 				return false;
 			}
 			if (!FileUtil.writeToFile(response.body(), clientFile)) return false;
-		} catch (Exception e) {
-			Log.error("下载失败: %s %s", filePath, e.getMessage());
+		} catch (Exception error) {
+			Log.error("下载失败: %s %s", filePath, error.getMessage());
 			return false;
 		}
 		if (!requestSHA1.equals(FileUtil.calculateSHA1(clientFile))) {
@@ -77,9 +78,9 @@ public class Downloader {
 		Log.info("正在连接到: " + url);
 		Map<String, String> requestMap = new HashMap<>();
 		try {
-			var response = HttpUtil.sendPost(url);
+			var response = HttpUtil.sendGet(url, BodyHandlers.ofString());
 			if (response.statusCode() != HttpURLConnection.HTTP_OK) {
-				if (Client.clientThread != null) Log.error("请求列表失败,错误代码: " + response.statusCode());
+				if (Client.clientThread.get() != null) Log.error("请求列表失败,错误代码: " + response.statusCode());
 				Client.errorDownload = true;
 				return requestMap;
 			}

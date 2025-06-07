@@ -6,7 +6,6 @@ import javax.swing.*;
 import javax.swing.event.HyperlinkEvent.EventType;
 import java.awt.*;
 public class AboutJDialog {
-	// 关于
 	public static void initAboutJDialog(Window parent) {
 		if (CComponent.checkJDialog("关于")) return;
 		var aboutDialog = new JDialog(parent, "关于");
@@ -14,13 +13,12 @@ public class AboutJDialog {
 		aboutTextPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		aboutTextPane.setContentType("text/html");
 		aboutTextPane.setEditable(false);
-		aboutTextPane.setText("<span style=\"font-weight: bold;font-family: Arial;\">" + HexSync.NAME
-			+ "<br>By: ForgeStove<br>GitHub: <a href=\""
-			+ HexSync.GITHUB_URL
-			+ "\">"
-			+ HexSync.GITHUB_URL
-			+ "</a><br>开源许可: <a href=\""
-			+ HexSync.GITHUB_URL + "/blob/main/LICENSE\">MIT</a></span>");
+		aboutTextPane.setText("""
+			<span style="font-family:Microsoft YaHei;">%s<br>
+			By: ForgeStove<br>
+			GitHub: <a href="%s">%s</a><br>
+			开源许可: <a href="%s/blob/main/LICENSE">MIT</a></span>
+			""".formatted(HexSync.NAME, HexSync.GITHUB_URL, HexSync.GITHUB_URL, HexSync.GITHUB_URL));
 		aboutTextPane.addHyperlinkListener(event -> {
 			if (EventType.ACTIVATED.equals(event.getEventType())) try {
 				Desktop.getDesktop().browse(event.getURL().toURI());
