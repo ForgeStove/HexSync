@@ -1,17 +1,7 @@
-HexSync
-=
+# HexSync
 
-[![Github Downloads][download-image]][download-url]
-[![GitHub stars][stars-image]][stars-url]
-[![GitHub issues][issues-image]][issues-url]
-[![Github Pulls][pulls-image]][pulls-url]
-[![GitHub forks][forks-image]][forks-url]
-[![repo-size][repo-size-image]][repo-url]
-[![license][license-image]][license-url]
-
-## 下载
-
-- [下载][download-url]最新的`HexSync.jar`。
+[![License](https://img.shields.io/github/license/ForgeStove/HexSync?style=flat&color=900c3f)](https://github.com/ForgeStove/HexSync?tab=readme-ov-file#MIT-1-ov-file)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ForgeStove/HexSync)
 
 ## 项目简介
 
@@ -60,35 +50,3 @@ HexSync
 - 通过 "设置" 按钮进入设置界面，配置服务端和客户端的相关参数。
 - 服务端:把需要同步的文件放入同步文件夹内(默认为软件所在的目录中的`mods`文件夹)，点击"启动服务端"。
 - 客户端:配置设置好后，把仅客户端模组放入`clientOnlyMods`文件夹(或者是你自定义的文件夹路径)，点击"启动客户端"。
-
-## 贡献者
-<h1>
-<a href="https://github.com/ForgeStove/HexSync/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=ForgeStove/HexSync"  alt=""/>
-</a>
-<a href="https://github.com/donywang922/HexSyncReborn/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=donywang922/HexSyncReborn"  alt=""/>
-</a>
-</h1>
-
-[download-url]: https://github.com/ForgeStove/HexSync/releases "下载"
-[download-image]: https://img.shields.io/github/downloads/ForgeStove/HexSync/total?style=flat&logo=markdown&label=总下载数
-
-[stars-url]: https://github.com/ForgeStove/HexSync/stargazers "星标"
-[stars-image]: https://img.shields.io/github/stars/ForgeStove/HexSync?style=flat&logo=github&label=星标
-
-[issues-url]: https://github.com/ForgeStove/HexSync/issues "议题"
-[issues-image]: https://img.shields.io/github/issues/ForgeStove/HexSync?style=flat&logo=github&label=议题
-
-[pulls-url]: https://github.com/ForgeStove/HexSync/pulls "拉取请求"
-[pulls-image]: https://custom-icon-badges.demolab.com/github/issues-pr-raw/ForgeStove/HexSync?style=flat&logo=git-pull-request&label=拉取请求
-
-
-[forks-url]: https://github.com/ForgeStove/HexSync/fork "复刻"
-[forks-image]: https://img.shields.io/github/forks/ForgeStove/HexSync?style=flat&logo=github&label=复刻
-
-[repo-url]: https://github.com/ForgeStove/HexSync "仓库"
-[repo-size-image]:https://img.shields.io/github/repo-size/ForgeStove/HexSync?style=flat&logo=github&label=仓库
-
-[license-url]: https://github.com/ForgeStove/HexSync/blob/main/LICENSE "许可证"
-[license-image]: https://custom-icon-badges.demolab.com/github/license/ForgeStove/HexSync?style=flat&logo=law&label=许可证
