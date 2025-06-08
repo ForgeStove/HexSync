@@ -16,7 +16,7 @@ public class ModAPI {
 		try {
 			var requestUrl = ("https://api.modrinth.com/v2/version_file/" + SHA1).replaceAll("\"", "%22");
 			var request = HttpRequest.newBuilder().uri(URI.create(requestUrl)).timeout(Duration.ofSeconds(5)).GET().build();
-			var response = HttpUtil.HTTP_CLIENT.send(request, BodyHandlers.ofString());
+			var response = HttpUtil.CLIENT.send(request, BodyHandlers.ofString());
 			if (response.statusCode() != HttpURLConnection.HTTP_OK) return null;
 			var pattern = Pattern.compile("\"url\":\"(https://cdn\\.modrinth\\.com/[^\"]+)\""); // 简单提取 url 字段
 			var matcher = pattern.matcher(response.body());

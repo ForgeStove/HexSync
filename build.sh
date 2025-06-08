@@ -28,6 +28,12 @@ if [ -d "$OUT_DIR" ]; then
   echo "已删除 $OUT_DIR"
 fi
 
+if [ -d "$RUNTIME_DIR" ]; then
+  echo "删除旧的运行时目录 $RUNTIME_DIR..."
+  rm -rf "$RUNTIME_DIR"
+  echo "已删除 $RUNTIME_DIR"
+fi
+
 echo "正在分析依赖模块..."
 MODULES=$("$JAVA_HOME"/bin/jdeps --multi-release 17 --print-module-deps --ignore-missing-deps "$JAR_PATH")
 echo "依赖模块: $MODULES"

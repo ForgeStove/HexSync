@@ -6,8 +6,7 @@ import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicReference;
 public class Client {
 	public static final AtomicReference<Thread> clientThread = new AtomicReference<>();
-	public static boolean errorDownload;
-	public static boolean clientAutoStart;
+	public static boolean errorDownload, clientAutoStart;
 	public static int clientPort = 65535;
 	// 启动客户端
 	public static void runClient() {

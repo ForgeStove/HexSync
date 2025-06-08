@@ -9,8 +9,8 @@ public class RequestHandler {
 	// 处理请求
 	public static void handleRequest(@NotNull HttpExchange exchange) {
 		var requestURI = exchange.getRequestURI().getPath();
-		if (requestURI.startsWith("/" + Config.DOWNLOAD + "/")) sendFile(exchange, requestURI);
-		else if (requestURI.startsWith("/" + Config.LIST)) sendList(exchange);
+		if (requestURI.startsWith("/" + HttpUtil.DOWNLOAD + "/")) sendFile(exchange, requestURI);
+		else if (requestURI.startsWith("/" + HttpUtil.LIST)) sendList(exchange);
 	}
 	public static void sendFile(HttpExchange exchange, @NotNull String requestURI) {
 		var requestSHA1 = requestURI.substring(requestURI.lastIndexOf("/") + 1);
@@ -33,9 +33,9 @@ public class RequestHandler {
 		var bytes = responseBuilder.toString().getBytes();
 		try (var inputStream = new ByteArrayInputStream(bytes)) {
 			ResponseSender.sendResponse(exchange, inputStream, bytes.length);
-			Log.info("发送列表");
+			Log.info("发送列表至: " + exchange.getRemoteAddress().getAddress().getHostAddress());
 		} catch (IOException error) {
-			Log.error("发送列表时出错: " + error.getMessage());
+			Log.error("发送列表至 %s 时出错: %s", exchange.getRemoteAddress().getAddress().getHostAddress(), error.getMessage());
 		}
 	}
 }

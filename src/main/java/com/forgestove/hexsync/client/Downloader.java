@@ -49,8 +49,7 @@ public class Downloader {
 			downloadURL = String.format(
 				"%s:%d/%s/%s",
 				Settings.formatHTTP(Config.serverAddress),
-				Client.clientPort,
-				Config.DOWNLOAD,
+				Client.clientPort, HttpUtil.DOWNLOAD,
 				requestSHA1
 			);
 		}
@@ -74,7 +73,7 @@ public class Downloader {
 	}
 	// 从服务器获取文件名和校验码列表
 	public static Map<String, String> fetchFileSHA1List() {
-		var url = String.format("%s:%d/%s", Settings.formatHTTP(Config.serverAddress), Client.clientPort, Config.LIST);
+		var url = String.format("%s:%d/%s", Settings.formatHTTP(Config.serverAddress), Client.clientPort, HttpUtil.LIST);
 		Log.info("正在连接到: " + url);
 		Map<String, String> requestMap = new HashMap<>();
 		try {
@@ -92,7 +91,7 @@ public class Downloader {
 				}
 			}
 		} catch (Exception error) {
-			Log.error("读取响应时出错: " + error.getMessage());
+			Log.error("读取响应时出错: " + (error.getMessage() != null ? error.getMessage() : "无响应内容"));
 			Client.errorDownload = true;
 		}
 		Log.info("获取到 [%d] 个文件", requestMap.size());
