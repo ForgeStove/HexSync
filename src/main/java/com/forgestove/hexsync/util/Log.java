@@ -19,22 +19,14 @@ public enum Log {
 	public static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss");
 	public static final String[] ANSI_COLORS = {"\u001B[32m", "\u001B[33m", "\u001B[31m", "\u001B[0m"};
 	public static final Color[] LEVEL_COLORS = {new Color(0x8000), new Color(0xffa500), new Color(0xff0000)};
-	private static final SimpleAttributeSet[] ATTR_SETS = {
-		createSet(LEVEL_COLORS[0]), createSet(LEVEL_COLORS[1]), createSet(LEVEL_COLORS[2])
-	};
+	private static final SimpleAttributeSet[] ATTR_SETS = createAttrSets();
 	public static ExecutorService logExecutor; // 日志记录线程池
 	public static FileWriter logWriter; // 日志记录器
-	// 日志方法
-	public static void info(String format, Object... args) {
-		log(INFO, format, args);
-	}
-	public static void warn(String format, Object... args) {
-		log(WARN, format, args);
-	}
-	public static void error(String format, Object... args) {
-		log(ERROR, format, args);
-	}
-	// 记录日志
+	// 日志记录方法
+	public static void info(String format, Object... args) {log(INFO, format, args);}
+	public static void warn(String format, Object... args) {log(WARN, format, args);}
+	public static void error(String format, Object... args) {log(ERROR, format, args);}
+	// 日志核心方法
 	private static void log(Log level, String message, Object... args) {
 		if (!(LOG && logWriter != null && logExecutor != null)) return;
 		logExecutor.submit(() -> {
@@ -71,11 +63,6 @@ public enum Log {
 			System.err.println("日志输出失败: " + error.getMessage());
 		}
 	}
-	private static @NotNull SimpleAttributeSet createSet(Color color) {
-		var attributeSet = new SimpleAttributeSet();
-		StyleConstants.setForeground(attributeSet, color);
-		return attributeSet;
-	}
 	// 初始化日志
 	public static void initLog() {
 		try {
@@ -85,5 +72,15 @@ public enum Log {
 			System.err.println("日志初始化失败: " + error.getMessage());
 		}
 		if (LOG) logExecutor = Executors.newSingleThreadExecutor();
+	}
+	// 创建日志属性集
+	private static SimpleAttributeSet @NotNull [] createAttrSets() {
+		var attributeSets = new SimpleAttributeSet[LEVEL_COLORS.length];
+		for (var i = 0; i < LEVEL_COLORS.length; i++) {
+			var attributeSet = new SimpleAttributeSet();
+			StyleConstants.setForeground(attributeSet, LEVEL_COLORS[i]);
+			attributeSets[i] = attributeSet;
+		}
+		return attributeSets;
 	}
 }
