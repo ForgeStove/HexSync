@@ -24,8 +24,10 @@ public class FileUtil {
 	public static @NotNull Map<String, String> initMap(String directory) {
 		Map<String, String> map = new HashMap<>();
 		var fileList = new File(directory).listFiles(); // 获取文件夹下的所有文件
-		if (fileList != null) for (var file : fileList)
-			if (file.isFile()) map.put(file.getName(), calculateSHA1(file));
+		if (fileList != null) for (var file : fileList) {
+			if (!file.isFile()) continue;
+			map.put(file.getName(), calculateSHA1(file));
+		}
 		return map;
 	}
 	// 计算文件SHA1哈希值（带缓存）
