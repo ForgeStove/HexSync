@@ -15,16 +15,19 @@ public class RequestHandler {
 	}
 	public static void sendFile(HttpExchange exchange, @NotNull String requestURI) {
 		var requestSHA1 = requestURI.substring(requestURI.lastIndexOf("/") + 1);
+		String fileName = null;
 		for (var entry : Server.serverMap.entrySet()) {
 			if (!entry.getValue().equals(requestSHA1)) continue;
-			var file = new File("%s%s%s".formatted(Config.serverSyncDirectory, File.separator, entry.getKey()));
-			try (var inputStream = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
-				ResponseSender.sendResponse(exchange, inputStream, file.length());
-				Log.info("发送文件: " + file);
-			} catch (IOException error) {
-				Log.error("发送文件时出错: " + error.getMessage());
-			}
+			fileName = entry.getKey();
 			break;
+		}
+		if (fileName == null) return;
+		var file = new File("%s%s%s".formatted(Config.serverSyncDirectory, File.separator, fileName));
+		try (var inputStream = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
+			ResponseSender.sendResponse(exchange, inputStream, file.length());
+			Log.info("发送文件: " + file);
+		} catch (IOException error) {
+			Log.error("发送文件时出错: " + error.getMessage());
 		}
 	}
 	public static void sendList(@NotNull HttpExchange exchange) {
