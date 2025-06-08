@@ -25,7 +25,7 @@ public class RequestHandler {
 		var file = new File("%s%s%s".formatted(Config.serverSyncDirectory, File.separator, fileName));
 		try (var inputStream = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
 			ResponseSender.sendResponse(exchange, inputStream, file.length());
-			Log.info("发送文件: " + file);
+			Log.info("发送文件: %s 至: %s", file, HttpUtil.getHostAddress(exchange));
 		} catch (IOException error) {
 			Log.error("发送文件时出错: " + error.getMessage());
 		}
@@ -37,9 +37,9 @@ public class RequestHandler {
 		var bytes = joiner.toString().getBytes();
 		try (var inputStream = new ByteArrayInputStream(bytes)) {
 			ResponseSender.sendResponse(exchange, inputStream, bytes.length);
-			Log.info("发送列表至: " + exchange.getRemoteAddress().getAddress().getHostAddress());
+			Log.info("发送列表至: " + HttpUtil.getHostAddress(exchange));
 		} catch (IOException error) {
-			Log.error("发送列表至 %s 时出错: %s", exchange.getRemoteAddress().getAddress().getHostAddress(), error.getMessage());
+			Log.error("发送列表至 %s 时出错: %s", HttpUtil.getHostAddress(exchange), error.getMessage());
 		}
 	}
 }

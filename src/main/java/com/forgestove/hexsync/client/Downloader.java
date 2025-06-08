@@ -45,13 +45,12 @@ public class Downloader {
 			return false;
 		}
 		var downloadURL = ModAPI.getURL(requestSHA1);
-		if (downloadURL == null) {
-			downloadURL = String.format(
-				"%s:%d/%s/%s",
-				Settings.formatHTTP(Config.serverAddress), Client.clientPort, HttpUtil.DOWNLOAD,
-				requestSHA1
-			);
-		}
+		if (downloadURL == null) downloadURL = "%s:%d/%s/%s".formatted(
+			Settings.formatHTTP(Config.serverAddress),
+			Client.clientPort,
+			HttpUtil.DOWNLOAD,
+			requestSHA1
+		);
 		try {
 			var response = HttpUtil.sendGet(downloadURL, BodyHandlers.ofInputStream());
 			if (response.statusCode() != HttpURLConnection.HTTP_OK) {
@@ -82,12 +81,11 @@ public class Downloader {
 				Client.errorDownload = true;
 				return requestMap;
 			}
-			try (var bufferedReader = new BufferedReader(new StringReader(response.body()))) {
-				String fileName;
-				while ((fileName = bufferedReader.readLine()) != null) {
-					var sha1 = bufferedReader.readLine();
-					if (sha1 != null) requestMap.put(fileName, sha1);
-				}
+			var bufferedReader = new BufferedReader(new StringReader(response.body()));
+			String fileName;
+			while ((fileName = bufferedReader.readLine()) != null) {
+				var sha1 = bufferedReader.readLine();
+				if (sha1 != null && sha1.matches("^[a-fA-F0-9]{40}$")) requestMap.put(fileName, sha1);
 			}
 		} catch (Exception error) {
 			Log.error("读取响应时出错: " + (error.getMessage() != null ? error.getMessage() : "无响应内容"));
