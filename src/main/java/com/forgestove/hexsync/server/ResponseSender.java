@@ -4,7 +4,9 @@ import com.sun.net.httpserver.HttpExchange;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.util.concurrent.atomic.AtomicLong;
 public class ResponseSender {
+	public static final AtomicLong AVAILABLE_TOKENS = new AtomicLong(0); // 当前可用令牌数量
 	// 发送数据
 	public static void sendResponse(HttpExchange exchange, InputStream inputStream, long responseBytesLength) {
 		try (var outputStream = exchange.getResponseBody()) {
@@ -24,8 +26,8 @@ public class ResponseSender {
 			while (totalBytesSent < responseBytesLength) {
 				var bytesToSend = (int) Math.min(16384, responseBytesLength - totalBytesSent);
 				refillTokens(lastFillTime);
-				if (Server.AVAILABLE_TOKENS.get() < bytesToSend) {
-					var sleepMillis = (bytesToSend - Server.AVAILABLE_TOKENS.get()) * 1000L / Config.maxUploadRateInBytes;
+				if (AVAILABLE_TOKENS.get() < bytesToSend) {
+					var sleepMillis = (bytesToSend - AVAILABLE_TOKENS.get()) * 1000L / Config.maxUploadRateInBytes;
 					try {
 						Thread.sleep(Math.max(sleepMillis, 1));
 					} catch (InterruptedException error) {
@@ -40,7 +42,7 @@ public class ResponseSender {
 				outputStream.write(buffer, 0, bytesRead); // 写入数据
 				outputStream.flush();
 				totalBytesSent += bytesRead; // 更新已发送字节数
-				Server.AVAILABLE_TOKENS.addAndGet(-bytesRead); // 减少可用令牌
+				AVAILABLE_TOKENS.addAndGet(-bytesRead); // 减少可用令牌
 				lastFillTime = System.currentTimeMillis(); // 仅在有速率限制时更新
 			}
 		} catch (Exception error) {
@@ -52,7 +54,7 @@ public class ResponseSender {
 		var tokensToAdd = (System.currentTimeMillis() - lastFillTime) * Config.maxUploadRateInBytes / 1000;
 		if (tokensToAdd <= 0) return;
 		var maxTokens = Config.maxUploadRateInBytes * 2L; // 令牌最大值为带宽2秒
-		var newTokens = Math.min(Server.AVAILABLE_TOKENS.get() + tokensToAdd, maxTokens);
-		Server.AVAILABLE_TOKENS.set(newTokens);
+		var newTokens = Math.min(AVAILABLE_TOKENS.get() + tokensToAdd, maxTokens);
+		AVAILABLE_TOKENS.set(newTokens);
 	}
 }

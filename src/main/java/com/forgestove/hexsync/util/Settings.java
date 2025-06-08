@@ -28,18 +28,19 @@ public class Settings {
 	// 设置最大上传速率
 	public static void setRate(@NotNull String input) {
 		var parts = input.split("\\s+", 2);
-		if (input.matches("\\d+(\\s+(%s|%s|%s|%s))".formatted(
-			RateUnit.BPS.unit,
-			RateUnit.KBPS.unit,
-			RateUnit.MBPS.unit,
-			RateUnit.GBPS.unit
-		)) && !isInvalidLong(parts[0])) {
-			Config.serverUploadRateLimit = Long.parseLong(parts[0]);
-			Config.serverUploadRateLimitUnit = RateUnit.fromUnit(parts[1]);
-			if (Server.serverThread != null) Config.maxUploadRateInBytes = Math.multiplyExact(
-				Config.serverUploadRateLimit, (long) Math.pow(1024, Config.serverUploadRateLimitUnit.ordinal())
-			);
-		} else if (Config.HEADLESS) System.err.println("速率格式错误");
+		if (parts.length != 2) {
+			if (Config.HEADLESS) System.err.println("速率格式错误，应为: <数字> <单位>");
+			return;
+		}
+		var rateUnit = RateUnit.fromUnit(parts[1]);
+		if (!parts[0].matches("\\d+") || isInvalidLong(parts[0]) || rateUnit == null) {
+			if (Config.HEADLESS) System.err.println("速率格式错误，应为: <数字> <单位>");
+			return;
+		}
+		Config.serverUploadRateLimit = Long.parseLong(parts[0]);
+		Config.serverUploadRateLimitUnit = rateUnit;
+		if (Server.serverThread == null) return;
+		Config.maxUploadRateInBytes = Config.serverUploadRateLimit * (long) Math.pow(1000, rateUnit.ordinal()) / 8;
 	}
 	// 检测数字输入是否不在Long范围内
 	public static boolean isInvalidLong(@NotNull String input) {

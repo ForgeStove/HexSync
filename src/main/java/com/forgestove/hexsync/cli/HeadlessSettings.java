@@ -68,7 +68,7 @@ public class HeadlessSettings {
 			"HELP", args -> System.out.println("""
 				可用命令:
 				SP <端口>\t|设置服务端端口
-				SL <上传限速> <下载限速>\t|设置限速
+				SL <数字> <单位>\t|设置限速
 				SD <目录>\t|设置服务端同步目录
 				SS <true/false>\t|设置服务端自动启动
 				CP <端口>\t|设置客户端端口

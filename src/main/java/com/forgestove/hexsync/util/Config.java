@@ -64,8 +64,7 @@ public class Config {
 	public static void saveConfig() {
 		var configEntries = new Object[][]{
 			{"# 服务端配置"},
-			{SERVER_PORT, Server.serverPort},
-			{SERVER_UPLOAD_RATE_LIMIT, serverUploadRateLimit + " " + serverUploadRateLimitUnit.unit},
+			{SERVER_PORT, Server.serverPort}, {SERVER_UPLOAD_RATE_LIMIT, serverUploadRateLimit + " " + serverUploadRateLimitUnit.name()},
 			{SERVER_SYNC_DIRECTORY, serverSyncDirectory},
 			{SERVER_AUTO_START, Server.serverAutoStart},
 			{"# 客户端配置"},

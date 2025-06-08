@@ -48,8 +48,7 @@ public class Downloader {
 		if (downloadURL == null) {
 			downloadURL = String.format(
 				"%s:%d/%s/%s",
-				Settings.formatHTTP(Config.serverAddress),
-				Client.clientPort, HttpUtil.DOWNLOAD,
+				Settings.formatHTTP(Config.serverAddress), Client.clientPort, HttpUtil.DOWNLOAD,
 				requestSHA1
 			);
 		}

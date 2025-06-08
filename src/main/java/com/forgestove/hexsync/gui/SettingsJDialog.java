@@ -28,10 +28,10 @@ public class SettingsJDialog {
 		serverPanel.add(serverUploadRateLimitField);
 		serverPanel.add(new JLabel("<html>上传速率单位:"));
 		var serverUploadRateLimitUnitBox = new JComboBox<>(new String[]{
-			RateUnit.BPS.unit, RateUnit.KBPS.unit, RateUnit.MBPS.unit, RateUnit.GBPS.unit
+			RateUnit.BPS.name(), RateUnit.KBPS.name(), RateUnit.MBPS.name(), RateUnit.GBPS.name()
 		});
 		serverUploadRateLimitUnitBox.setFocusable(false);
-		serverUploadRateLimitUnitBox.setSelectedItem(Config.serverUploadRateLimitUnit.unit);
+		serverUploadRateLimitUnitBox.setSelectedItem(Config.serverUploadRateLimitUnit.name());
 		serverPanel.add(serverUploadRateLimitUnitBox);
 		serverPanel.add(new JLabel("<html>服务端同步路径:"));
 		var serverSyncDirectoryField = new JTextField(Config.serverSyncDirectory);

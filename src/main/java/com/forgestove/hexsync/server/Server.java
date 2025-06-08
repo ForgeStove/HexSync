@@ -6,9 +6,7 @@ import com.sun.net.httpserver.HttpServer;
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicLong;
 public class Server {
-	public static final AtomicLong AVAILABLE_TOKENS = new AtomicLong(0); // 当前可用令牌数量
 	public static Thread serverThread; // 服务器线程
 	public static HttpServer HTTPServer; // 存储服务器实例
 	public static Map<String, String> serverMap; // 存储服务端文件名和对应的校验码数据
