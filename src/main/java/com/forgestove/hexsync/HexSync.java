@@ -8,7 +8,7 @@ public class HexSync {
 	public static final String NAME = "HexSync"; // 程序名称
 	public static final String GITHUB_URL = "https://github.com/ForgeStove/HexSync"; // 项目GitHub地址
 	public static void main(String[] args) {
-		Log.initLog();
+		if (Config.LOG) Log.initLog();
 		Config.loadConfig();
 		if (Server.serverAutoStart) Server.runServer();
 		if (Client.clientAutoStart) Client.runClient();

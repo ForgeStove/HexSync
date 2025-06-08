@@ -19,6 +19,9 @@ public class Config {
 	public static final String CLIENT_ONLY_DIRECTORY = "clientOnlyDirectory"; // 仅客户端文件夹路径配置项
 	public static final String CLIENT_AUTO_START = "clientAutoStart"; // 客户端自动启动配置项
 	public static final boolean HEADLESS = GraphicsEnvironment.isHeadless(); // 是否处于无头模式
+	public static final boolean ANSI = System.getProperty("ansi", "true").equalsIgnoreCase("false"); // 是否启用ANSI控制台输出
+	public static final boolean LOG = System.getProperty("log", "true").equalsIgnoreCase("true"); // 是否记录日志
+	public static final String LOG_PATH = HexSync.NAME + File.separator + "latest.log"; // 日志文件路径
 	public static String serverSyncDirectory = "mods"; // 服务端同步文件夹路径，默认值mods
 	public static String clientSyncDirectory = "mods"; // 客户端同步文件夹路径，默认值mods
 	public static String clientOnlyDirectory = "clientOnlyMods"; // 仅客户端文件夹路径，默认值clientOnlyMods
