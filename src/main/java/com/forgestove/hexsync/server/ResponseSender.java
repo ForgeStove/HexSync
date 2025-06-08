@@ -10,7 +10,8 @@ public class ResponseSender {
 	// 发送数据
 	public static void sendResponse(HttpExchange exchange, InputStream inputStream, long responseBytesLength) {
 		try (var outputStream = exchange.getResponseBody()) {
-			exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytesLength); // 设置响应头
+			exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=UTF-8");
+			exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytesLength);
 			var buffer = new byte[16384];
 			long totalBytesSent = 0; // 记录已发送字节数
 			if (Config.serverUploadRateLimit == 0) { // 无限制
