@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.util.StringJoiner;
 public class RequestHandler {
 	// 处理请求
 	public static void handleRequest(@NotNull HttpExchange exchange) {
@@ -27,10 +28,10 @@ public class RequestHandler {
 		}
 	}
 	public static void sendList(@NotNull HttpExchange exchange) {
-		var responseBuilder = new StringBuilder();
-		for (var entry : Server.serverMap.entrySet())
-			responseBuilder.append(String.format("%s%n%s%n", entry.getKey(), entry.getValue()));
-		var bytes = responseBuilder.toString().getBytes();
+		var separator = System.lineSeparator();
+		var joiner = new StringJoiner(separator);
+		for (var entry : Server.serverMap.entrySet()) joiner.add(entry.getKey() + separator + entry.getValue());
+		var bytes = joiner.toString().getBytes();
 		try (var inputStream = new ByteArrayInputStream(bytes)) {
 			ResponseSender.sendResponse(exchange, inputStream, bytes.length);
 			Log.info("发送列表至: " + exchange.getRemoteAddress().getAddress().getHostAddress());
