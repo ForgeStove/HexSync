@@ -86,9 +86,8 @@ public class FileUtil {
 			var targetFileName = file.getName();
 			var targetFile = new File(target, targetFileName);
 			if (new File(target, targetFileName + ".disable").exists()) continue; // 跳过此文件
-			if (file.isDirectory()) {
-				copyDirectory(String.valueOf(file), String.valueOf(targetFile));
-			} else if (!targetFile.exists()) try {
+			if (file.isDirectory()) copyDirectory(String.valueOf(file), String.valueOf(targetFile));
+			else if (!targetFile.exists()) try {
 				Files.copy(file.toPath(), targetFile.toPath());
 				Log.info("已复制: %s -> %s", file, target);
 			} catch (IOException error) {
