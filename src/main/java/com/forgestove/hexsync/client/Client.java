@@ -29,8 +29,7 @@ public class Client {
 	}
 	// 停止客户端
 	public static void stopClient() {
-		var thread = clientThread.getAndSet(null);
-		if (thread == null) return;
+		if (clientThread.getAndSet(null) == null) return;
 		Log.info(HexSync.NAME + "Client已关闭");
 		if (clientAutoStart && !errorDownload) System.exit(0);
 	}

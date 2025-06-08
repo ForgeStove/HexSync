@@ -88,7 +88,7 @@ public class FileUtil {
 				copyDirectory(String.valueOf(file), String.valueOf(targetFile));
 			} else if (!targetFile.exists()) try {
 				Files.copy(file.toPath(), targetFile.toPath());
-				Log.info("已复制: " + file + " -> " + target);
+				Log.info("已复制: %s -> %s", file, target);
 			} catch (IOException error) {
 				Log.error("复制失败: " + error.getMessage());
 			}

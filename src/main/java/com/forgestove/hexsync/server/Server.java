@@ -38,9 +38,13 @@ public class Server {
 	}
 	// 停止服务端
 	public static void stopServer() {
+		if (serverThread == null && HTTPServer == null) return;
 		if (serverMap != null) serverMap.clear();
 		if (serverThread != null) serverThread = null;
-		if (HTTPServer != null) HTTPServer.stop(0);
+		if (HTTPServer != null) {
+			HTTPServer.stop(0);
+			HTTPServer = null;
+		}
 		Log.info(HexSync.NAME + "Server已关闭");
 	}
 }

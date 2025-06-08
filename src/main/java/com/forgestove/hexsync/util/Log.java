@@ -19,14 +19,7 @@ public enum Log {
 	public static final SimpleAttributeSet[] ATTR_SETS = createAttrSets(); // 日志属性集
 	public static final ExecutorService logExecutor = Executors.newSingleThreadExecutor(); // 日志记录线程池
 	public static final ScheduledExecutorService flushScheduler = Executors.newSingleThreadScheduledExecutor(); // 定时flush调度器
-	public static final BufferedWriter logWriter; // 日志记录器
-	static {
-		try {
-			logWriter = new BufferedWriter(new FileWriter(Config.LOG_PATH, false));
-		} catch (IOException error) {
-			throw new RuntimeException("无法创建日志文件", error);
-		}
-	}
+	public static BufferedWriter logWriter; // 日志记录器
 	// 日志记录方法
 	public static void info(String format, Object... args) {log(INFO, format, args);}
 	public static void warn(String format, Object... args) {log(WARN, format, args);}
@@ -66,6 +59,11 @@ public enum Log {
 	// 初始化日志
 	public static void initLog() {
 		FileUtil.makeDirectory(HexSync.NAME);
+		try {
+			logWriter = new BufferedWriter(new FileWriter(Config.LOG_PATH, false));
+		} catch (IOException error) {
+			System.err.println("无法创建日志文件: " + error.getMessage());
+		}
 		flushScheduler.scheduleAtFixedRate(
 			() -> {
 				try {
