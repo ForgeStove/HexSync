@@ -73,7 +73,7 @@ public class Downloader {
 	// 从服务器获取文件名和校验码列表
 	public static Map<String, String> fetchFileSHA1List() {
 		var url = String.format("%s:%d/%s", Settings.formatHTTP(Config.serverAddress), Client.clientPort, HttpUtil.LIST);
-		Log.info("正在连接到: " + url);
+		Log.info("正在连接至: " + url);
 		Map<String, String> requestMap = new HashMap<>();
 		try {
 			var response = HttpUtil.sendGet(url, BodyHandlers.ofString());
