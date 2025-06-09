@@ -28,7 +28,7 @@ public class Config {
 	public static String //
 		serverSyncDirectory = "mods", // 服务端同步文件夹路径，默认值mods
 		clientSyncDirectory = "mods", // 客户端同步文件夹路径，默认值mods
-		clientOnlyDirectory = "clientOnlyMods", // 仅客户端文件夹路径，默认值clientOnlyMods
+		clientOnlyDirectory = "clientMods", // 仅客户端文件夹路径，默认值clientMods
 		serverAddress = "localhost"; // 服务器地址，默认值localhost
 	public static RateUnit serverUploadRateLimitUnit = RateUnit.MBPS; // 上传速率限制单位，默认MBps
 	public static long serverUploadRateLimit = 1, maxUploadRateInBytes; // 上传速率限制值以及对应的字节数
