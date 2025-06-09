@@ -25,7 +25,7 @@ public class Server {
 			}
 			try {
 				HTTPServer = HttpServer.create(new InetSocketAddress(serverPort), 0);
-				HTTPServer.setExecutor(Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2));
+				HTTPServer.setExecutor(Executors.newCachedThreadPool());
 				HTTPServer.createContext("/", RequestHandler::handleRequest);
 				HTTPServer.start();
 			} catch (Exception error) {

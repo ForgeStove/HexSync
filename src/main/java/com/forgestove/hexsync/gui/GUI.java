@@ -27,7 +27,6 @@ public class GUI {
 				logPane.setOpaque(false);
 				panel.add(new JScrollPane(logPane), BorderLayout.CENTER);
 				frame = new JFrame(HexSync.NAME); // 主窗口
-				frame.setAlwaysOnTop(true);
 				var buttonPanel = new JPanel(new GridLayout(2, 3));
 				CComponent.newJButton(buttonPanel, "启动服务端", event -> Server.runServer());
 				CComponent.newJButton(buttonPanel, "启动客户端", event -> Client.runClient());

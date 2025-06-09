@@ -17,16 +17,14 @@ public class Downloader {
 		}
 		Log.info("开始下载 [%d] 个文件", toDownloadMap.size());
 		var count = new AtomicInteger(0);
-		var threadCount = Math.min(8, toDownloadMap.size());
-		var executor = Executors.newFixedThreadPool(threadCount);
+		var executor = Executors.newFixedThreadPool(4);
 		var futures = new ArrayList<Future<?>>();
 		for (var entry : toDownloadMap.entrySet()) {
 			var filePath = Config.clientSyncDirectory + File.separator + entry.getKey();
 			futures.add(executor.submit(() -> {
-				if (downloadAndCheckFile(filePath, entry.getValue())) {
-					var finished = count.incrementAndGet();
-					Log.info("已下载: [%d/%d] %s", finished, toDownloadMap.size(), filePath);
-				} else {
+				if (downloadAndCheckFile(filePath, entry.getValue()))
+					Log.info("已下载: [%d/%d] %s", count.incrementAndGet(), toDownloadMap.size(), filePath);
+				else {
 					Log.error("下载失败: " + filePath);
 					Client.errorDownload = true;
 				}
