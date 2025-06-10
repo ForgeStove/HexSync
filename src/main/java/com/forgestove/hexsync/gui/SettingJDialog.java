@@ -6,19 +6,20 @@ import com.forgestove.hexsync.util.*;
 
 import javax.swing.*;
 import java.awt.*;
-public class SettingsJDialog {
+import java.awt.Dialog.ModalityType;
+public class SettingJDialog {
 	// 打开设置对话框
-	public SettingsJDialog() {
+	public static void setting() {
 		if (ComponentUtil.checkJDialog("设置")) return;
 		Config.loadConfig();
 		// 设置对话框
-		var settingsJDialog = new JDialog(GUI.frame, "设置");
-		var settingsPanel = new JPanel(new BorderLayout());
-		settingsPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		var settingJDialog = new JDialog(GUI.frame, "设置", ModalityType.MODELESS);
+		var settingPanel = new JPanel(new BorderLayout());
+		settingPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		// 选项卡面板
 		var tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
 		tabbedPane.setFocusable(false);
-		settingsPanel.add(tabbedPane, BorderLayout.CENTER);
+		settingPanel.add(tabbedPane, BorderLayout.CENTER);
 		// 服务端选项卡
 		var serverPanel = new JPanel(new GridLayout(5, 2));
 		serverPanel.add(new JLabel("<html>端口号:"));
@@ -79,11 +80,11 @@ public class SettingsJDialog {
 						}
 					}
 				// 检测输入框是否为数字且在合法范围内并尝试转换
-				if (!Settings.canSetPort(serverPortField.getText().trim(), true)) ComponentUtil.selectAndFocus(serverPortField);
-				if (!Settings.canSetPort(clientPortField.getText().trim(), false)) ComponentUtil.selectAndFocus(clientPortField);
+				if (!SettingUtil.canSetPort(serverPortField.getText().trim(), true)) ComponentUtil.selectAndFocus(serverPortField);
+				if (!SettingUtil.canSetPort(clientPortField.getText().trim(), false)) ComponentUtil.selectAndFocus(clientPortField);
 				// 检测最大上传速率
 				var uploadRateLimitText = serverUploadRateLimitField.getText().trim();
-				if (Settings.isInvalidLong(uploadRateLimitText) || Long.parseLong(uploadRateLimitText) < 0) {
+				if (SettingUtil.isInvalidLong(uploadRateLimitText) || Long.parseLong(uploadRateLimitText) < 0) {
 					Log.warn("最大上传速率格式错误: " + uploadRateLimitText);
 					tabbedPane.setSelectedIndex(0);
 					ComponentUtil.selectAndFocus(serverUploadRateLimitField);
@@ -98,15 +99,14 @@ public class SettingsJDialog {
 				Config.clientSyncDirectory = clientSyncDirectoryField.getText().trim();
 				Config.clientOnlyDirectory = clientOnlyDirectoryField.getText().trim();
 				Config.saveConfig(); // 保存配置
-				settingsJDialog.dispose(); // 关闭对话框
+				settingJDialog.dispose(); // 关闭对话框
 			}
 		);
-		ComponentUtil.newJButton(buttonPanel, "取消", event -> settingsJDialog.dispose());
-		ComponentUtil.newJButton(buttonPanel, "关于", event -> new AboutJDialog(GUI.frame, "关于"));
-		settingsPanel.add(buttonPanel, BorderLayout.SOUTH);
-		settingsJDialog.add(settingsPanel);
-		settingsJDialog.setMinimumSize(new Dimension(320, 240));
-		settingsJDialog.pack();
-		ComponentUtil.setWindow(settingsJDialog);
+		ComponentUtil.newJButton(buttonPanel, "取消", event -> settingJDialog.dispose());
+		ComponentUtil.newJButton(buttonPanel, "关于", event -> AboutJDialog.about(GUI.frame, "关于"));
+		settingPanel.add(buttonPanel, BorderLayout.SOUTH);
+		settingJDialog.add(settingPanel);
+		settingJDialog.setMinimumSize(new Dimension(320, 0));
+		ComponentUtil.setWindow(settingJDialog);
 	}
 }

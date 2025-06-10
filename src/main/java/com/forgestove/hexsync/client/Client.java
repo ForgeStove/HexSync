@@ -18,8 +18,7 @@ public class Client {
 			var requestMap = Downloader.fetchFileSHA1List();
 			if (!requestMap.isEmpty()) {
 				FileUtil.deleteFilesNotInMaps(requestMap, FileUtil.initMap(Config.clientOnlyDirectory));
-				var clientMap = FileUtil.initMap(Config.clientSyncDirectory);
-				var clientSHA1Set = new HashSet<>(clientMap.values());
+				var clientSHA1Set = new HashSet<>(FileUtil.initMap(Config.clientSyncDirectory).values());
 				requestMap.entrySet().removeIf(entry -> clientSHA1Set.contains(entry.getValue()));
 				Downloader.downloadMissingFiles(requestMap);
 				FileUtil.copyDirectory(Config.clientOnlyDirectory, Config.clientSyncDirectory);

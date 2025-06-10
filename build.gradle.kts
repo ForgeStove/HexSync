@@ -11,10 +11,9 @@ repositories {
 }
 dependencies {
 	compileOnly("org.jetbrains:annotations:+")
-	implementation("com.formdev:flatlaf:+")
+	implementation("com.formdev:flatlaf:1.1.1")
 	implementation("info.picocli:picocli:+")
 }
-tasks.jar { from("LICENSE") }
 tasks.shadowJar {
 	archiveClassifier.set("")
 	manifest { attributes(mapOf("Main-Class" to "com.forgestove.hexsync.HexSync")) }
@@ -22,5 +21,6 @@ tasks.shadowJar {
 	minimize {
 		exclude(dependency("com.formdev:flatlaf"))
 	}
+	from("LICENSE")
 }
 tasks.build { dependsOn(tasks.shadowJar) }

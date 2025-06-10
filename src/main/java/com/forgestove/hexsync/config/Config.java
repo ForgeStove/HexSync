@@ -5,7 +5,6 @@ import com.forgestove.hexsync.server.Server;
 import com.forgestove.hexsync.util.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.GraphicsEnvironment;
 import java.io.*;
 import java.util.*;
 import java.util.function.Consumer;
@@ -22,10 +21,6 @@ public class Config {
 		CLIENT_SYNC_DIRECTORY = "clientSyncDirectory", // 客户端同步文件夹路径配置项
 		CLIENT_ONLY_DIRECTORY = "clientOnlyDirectory", // 仅客户端文件夹路径配置项
 		CLIENT_AUTO_START = "clientAutoStart"; // 客户端自动启动配置项
-	public static final boolean //
-		HEADLESS = GraphicsEnvironment.isHeadless(), // 是否处于无头模式
-		ANSI = System.getProperty("ansi", "true").equalsIgnoreCase("false"), // 是否启用ANSI控制台输出
-		LOG = System.getProperty("log", "true").equalsIgnoreCase("true"); // 是否记录日志
 	public static String //
 		serverSyncDirectory = "mods", // 服务端同步文件夹路径，默认值mods
 		clientSyncDirectory = "mods", // 客户端同步文件夹路径，默认值mods
@@ -62,7 +57,7 @@ public class Config {
 	public static @NotNull Map<String, Consumer<String>> createConfigMap() {
 		Map<String, Consumer<String>> configMap = new HashMap<>();
 		configMap.put(SERVER_PORT, input -> Server.serverPort = Integer.parseInt(input));
-		configMap.put(SERVER_UPLOAD_RATE_LIMIT, Settings::setRate);
+		configMap.put(SERVER_UPLOAD_RATE_LIMIT, SettingUtil::setRate);
 		configMap.put(SERVER_SYNC_DIRECTORY, input -> serverSyncDirectory = input);
 		configMap.put(SERVER_AUTO_START, input -> Server.serverAutoStart = Boolean.parseBoolean(input));
 		configMap.put(CLIENT_PORT, input -> Client.clientPort = Integer.parseInt(input));

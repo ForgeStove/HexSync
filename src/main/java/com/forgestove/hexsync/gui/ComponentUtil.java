@@ -1,4 +1,5 @@
 package com.forgestove.hexsync.gui;
+import com.forgestove.hexsync.util.Log;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -40,7 +41,7 @@ public class ComponentUtil {
 	public static void newJButton(@NotNull JPanel panel, String text, ActionListener actionListener) {
 		var button = new JButton("<html>" + text);
 		button.setFocusPainted(false);
-		button.setPreferredSize(new Dimension(0, GUI.screenLength / 55));
+		button.setMinimumSize(new Dimension(96, 32));
 		button.addActionListener(actionListener);
 		panel.add(button);
 	}
@@ -48,7 +49,16 @@ public class ComponentUtil {
 	public static void setWindow(@NotNull Window window) {
 		setFont(window, new Font("Microsoft YaHei", Font.PLAIN, 14));
 		window.setIconImage(GUI.icon);
-		window.setLocationRelativeTo(null);
+		window.pack();
+		window.setLocationRelativeTo(window.getOwner());
 		window.setVisible(true);
+	}
+	// 设置主题
+	public static void setTheme(LookAndFeel lookAndFeel) {
+		try {
+			UIManager.setLookAndFeel(lookAndFeel);
+		} catch (UnsupportedLookAndFeelException error) {
+			Log.error("设置主题时出错: " + error.getMessage());
+		}
 	}
 }
