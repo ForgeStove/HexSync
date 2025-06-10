@@ -15,6 +15,7 @@ public class ComponentUtil {
 	public static void setFont(@NotNull Container container, Font font) {
 		for (var component : container.getComponents()) {
 			if (component instanceof Container) setFont((Container) component, font); // 递归设置子组件的字体
+			if (font.equals(component.getFont())) continue;
 			component.setFont(font); // 设置字体
 		}
 	}
