@@ -1,6 +1,4 @@
 #!/bin/bash
-set -e
-
 if [[ "$(java -version 2>&1)" == *"17."* ]]; then
   echo "已检测到 JDK 17，跳过设置 JAVA_HOME"
 else
@@ -17,10 +15,11 @@ else
 fi
 JAR="HexSync.jar"
 MAIN_CLASS="com.forgestove.hexsync.HexSync"
-OUT_DIR="out/package"
+INPUT_DIR="build/libs"
+OUT_DIR="build/package"
 ICON="icon.ico"
-RUNTIME_DIR="out/runtime"
-JAR_PATH="out/artifacts/$JAR"
+RUNTIME_DIR="build/runtime"
+JAR_PATH="$INPUT_DIR/$JAR"
 
 if [ -d "$OUT_DIR" ]; then
   echo "删除旧的输出目录 $OUT_DIR..."
@@ -51,7 +50,7 @@ echo "自定义运行时已生成: $RUNTIME_DIR"
 
 echo "正在使用 jpackage 打包应用..."
 "$JAVA_HOME"/bin/jpackage \
-  --input out/artifacts \
+  --input $INPUT_DIR \
   --name HexSync \
   --main-jar "$JAR" \
   --main-class "$MAIN_CLASS" \

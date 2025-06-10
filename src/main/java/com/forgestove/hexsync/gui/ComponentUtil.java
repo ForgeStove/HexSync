@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
-public class CComponent {
+public class ComponentUtil {
 	// 聚焦并全选输入框
 	public static void selectAndFocus(@NotNull JTextField textField) {
 		textField.requestFocus(); // 聚焦输入框
@@ -45,7 +45,7 @@ public class CComponent {
 		panel.add(button);
 	}
 	// 设置窗口属性
-	public static void setWindow(Window window) {
+	public static void setWindow(@NotNull Window window) {
 		setFont(window, new Font("Microsoft YaHei", Font.PLAIN, 14));
 		window.setIconImage(GUI.icon);
 		window.setLocationRelativeTo(null);

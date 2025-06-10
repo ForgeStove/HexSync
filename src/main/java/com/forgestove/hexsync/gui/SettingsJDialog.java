@@ -1,5 +1,6 @@
 package com.forgestove.hexsync.gui;
 import com.forgestove.hexsync.client.Client;
+import com.forgestove.hexsync.config.Config;
 import com.forgestove.hexsync.server.Server;
 import com.forgestove.hexsync.util.*;
 
@@ -7,8 +8,8 @@ import javax.swing.*;
 import java.awt.*;
 public class SettingsJDialog {
 	// 打开设置对话框
-	public static void initSettingsJDialog() {
-		if (CComponent.checkJDialog("设置")) return;
+	public SettingsJDialog() {
+		if (ComponentUtil.checkJDialog("设置")) return;
 		Config.loadConfig();
 		// 设置对话框
 		var settingsJDialog = new JDialog(GUI.frame, "设置");
@@ -36,7 +37,7 @@ public class SettingsJDialog {
 		serverPanel.add(new JLabel("<html>服务端同步路径:"));
 		var serverSyncDirectoryField = new JTextField(Config.serverSyncDirectory);
 		serverPanel.add(serverSyncDirectoryField);
-		var serverAutoStartBox = CComponent.newJCheckBox(serverPanel, "<html>自动启动服务端", Server.serverAutoStart);
+		var serverAutoStartBox = ComponentUtil.newJCheckBox(serverPanel, "<html>自动启动服务端", Server.serverAutoStart);
 		tabbedPane.addTab("<html>服务端设置", serverPanel);
 		// 客户端选项卡
 		var clientPanel = new JPanel(new GridLayout(5, 2));
@@ -52,11 +53,11 @@ public class SettingsJDialog {
 		clientPanel.add(new JLabel("<html>仅客户端模组路径:"));
 		var clientOnlyDirectoryField = new JTextField(Config.clientOnlyDirectory);
 		clientPanel.add(clientOnlyDirectoryField);
-		var clientAutoStartBox = CComponent.newJCheckBox(clientPanel, "<html>自动启动客户端", Client.clientAutoStart);
+		var clientAutoStartBox = ComponentUtil.newJCheckBox(clientPanel, "<html>自动启动客户端", Client.clientAutoStart);
 		tabbedPane.addTab("<html>客户端设置", clientPanel);
 		// 按钮面板
 		var buttonPanel = new JPanel(new GridLayout(1, 3, 5, 0));
-		CComponent.newJButton(
+		ComponentUtil.newJButton(
 			buttonPanel, "保存", event -> {
 				// 定义输入框数组及其对应的提示信息和选项卡索引，并检查输入框是否为空
 				for (var input : new Object[][]{
@@ -72,20 +73,20 @@ public class SettingsJDialog {
 					if (input[1] instanceof JTextField textField) {
 						if (textField.getText().trim().isEmpty()) {
 							tabbedPane.setSelectedIndex((int) input[2]); // 跳转到对应的选项卡
-							CComponent.selectAndFocus(textField);
-							Log.warn(input[0] + "不能为空");
+							ComponentUtil.selectAndFocus(textField);
+							Log.warn("%s不能为空", input[0]);
 							return;
 						}
 					}
 				// 检测输入框是否为数字且在合法范围内并尝试转换
-				if (!Settings.canSetPort(serverPortField.getText().trim(), true)) CComponent.selectAndFocus(serverPortField);
-				if (!Settings.canSetPort(clientPortField.getText().trim(), false)) CComponent.selectAndFocus(clientPortField);
+				if (!Settings.canSetPort(serverPortField.getText().trim(), true)) ComponentUtil.selectAndFocus(serverPortField);
+				if (!Settings.canSetPort(clientPortField.getText().trim(), false)) ComponentUtil.selectAndFocus(clientPortField);
 				// 检测最大上传速率
 				var uploadRateLimitText = serverUploadRateLimitField.getText().trim();
 				if (Settings.isInvalidLong(uploadRateLimitText) || Long.parseLong(uploadRateLimitText) < 0) {
 					Log.warn("最大上传速率格式错误: " + uploadRateLimitText);
 					tabbedPane.setSelectedIndex(0);
-					CComponent.selectAndFocus(serverUploadRateLimitField);
+					ComponentUtil.selectAndFocus(serverUploadRateLimitField);
 					return;
 				}
 				Server.serverAutoStart = serverAutoStartBox.isSelected();
@@ -100,11 +101,12 @@ public class SettingsJDialog {
 				settingsJDialog.dispose(); // 关闭对话框
 			}
 		);
-		CComponent.newJButton(buttonPanel, "取消", event -> settingsJDialog.dispose());
-		CComponent.newJButton(buttonPanel, "关于", event -> AboutJDialog.initAboutJDialog(settingsJDialog));
+		ComponentUtil.newJButton(buttonPanel, "取消", event -> settingsJDialog.dispose());
+		ComponentUtil.newJButton(buttonPanel, "关于", event -> new AboutJDialog(GUI.frame, "关于"));
 		settingsPanel.add(buttonPanel, BorderLayout.SOUTH);
 		settingsJDialog.add(settingsPanel);
-		settingsJDialog.setSize(GUI.screenLength / 5, GUI.screenLength / 8);
-		CComponent.setWindow(settingsJDialog);
+		settingsJDialog.setMinimumSize(new Dimension(320, 240));
+		settingsJDialog.pack();
+		ComponentUtil.setWindow(settingsJDialog);
 	}
 }

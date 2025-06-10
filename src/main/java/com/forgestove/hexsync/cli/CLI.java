@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 public class CLI {
 	// 命令行界面
-	public static void initCLI() {
+	public static void runCLI() {
 		System.out.printf("欢迎使用%s!\n输入 HELP 或 ? 以获取帮助%n", HexSync.NAME);
 		var map = createCommandMap();
 		var scanner = new Scanner(System.in);

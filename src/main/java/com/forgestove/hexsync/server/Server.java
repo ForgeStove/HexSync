@@ -1,5 +1,6 @@
 package com.forgestove.hexsync.server;
 import com.forgestove.hexsync.HexSync;
+import com.forgestove.hexsync.config.Config;
 import com.forgestove.hexsync.util.*;
 import com.sun.net.httpserver.HttpServer;
 

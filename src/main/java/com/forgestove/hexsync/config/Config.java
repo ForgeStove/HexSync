@@ -1,7 +1,8 @@
-package com.forgestove.hexsync.util;
+package com.forgestove.hexsync.config;
 import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.client.Client;
 import com.forgestove.hexsync.server.Server;
+import com.forgestove.hexsync.util.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.GraphicsEnvironment;

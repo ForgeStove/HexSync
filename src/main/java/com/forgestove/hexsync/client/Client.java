@@ -1,5 +1,6 @@
 package com.forgestove.hexsync.client;
 import com.forgestove.hexsync.HexSync;
+import com.forgestove.hexsync.config.Config;
 import com.forgestove.hexsync.util.*;
 
 import java.util.HashSet;

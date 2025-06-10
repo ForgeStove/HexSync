@@ -13,9 +13,7 @@
     <option name="EXECUTE_SCRIPT_FILE" value="true" />
     <envs />
     <method v="2">
-      <option name="BuildArtifacts" enabled="true">
-        <artifact name="HexSync:jar" />
-      </option>
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="HexSync [build]" run_configuration_type="GradleRunConfiguration" />
     </method>
   </configuration>
 </component>

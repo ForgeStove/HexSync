@@ -1,5 +1,6 @@
 package com.forgestove.hexsync.util;
 import com.forgestove.hexsync.client.Client;
+import com.forgestove.hexsync.config.Config;
 import com.forgestove.hexsync.server.Server;
 import org.jetbrains.annotations.NotNull;
 

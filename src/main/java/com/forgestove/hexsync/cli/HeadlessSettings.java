@@ -1,8 +1,9 @@
 package com.forgestove.hexsync.cli;
 import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.client.Client;
+import com.forgestove.hexsync.config.Config;
 import com.forgestove.hexsync.server.Server;
-import com.forgestove.hexsync.util.*;
+import com.forgestove.hexsync.util.Settings;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
