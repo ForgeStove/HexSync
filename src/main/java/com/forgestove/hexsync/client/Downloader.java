@@ -34,7 +34,7 @@ public class Downloader {
 		for (var future : futures) try {future.get();} catch (Exception ignored) {} // 等待所有任务完成
 		executor.shutdown();
 		Log.info("%s: [%d/%d]", Client.errorDownload ? "下载失败" : "下载完成", count.get(), toDownloadMap.size());
-		if (Client.clientAutoStart) System.exit(0);
+		if (Config.clientAutoStart) System.exit(0);
 	}
 	private static boolean downloadAndCheckFile(String filePath, String requestSHA1) {
 		if (Client.clientThread.get() == null) return false;
@@ -45,8 +45,7 @@ public class Downloader {
 		}
 		var downloadURL = ModAPI.getURL(requestSHA1);
 		if (downloadURL == null) downloadURL = "%s:%d/%s/%s".formatted(
-			HttpUtil.formatHTTP(Config.remoteAddress),
-			Client.clientPort,
+			HttpUtil.formatHTTP(Config.remoteAddress), Config.clientPort,
 			HttpUtil.DOWNLOAD,
 			requestSHA1
 		);
@@ -70,7 +69,7 @@ public class Downloader {
 	}
 	// 从服务器获取文件名和校验码列表
 	public static Map<String, String> fetchFileSHA1List() {
-		var url = String.format("%s:%d/%s", HttpUtil.formatHTTP(Config.remoteAddress), Client.clientPort, HttpUtil.LIST);
+		var url = String.format("%s:%d/%s", HttpUtil.formatHTTP(Config.remoteAddress), Config.clientPort, HttpUtil.LIST);
 		Log.info("正在连接至: " + url);
 		Map<String, String> requestMap = new HashMap<>();
 		try {

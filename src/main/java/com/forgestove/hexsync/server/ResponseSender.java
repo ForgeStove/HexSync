@@ -15,7 +15,7 @@ public class ResponseSender {
 			exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytesLength);
 			var buffer = new byte[16384];
 			long totalBytesSent = 0; // 记录已发送字节数
-			if (Config.serverUploadRateLimit == 0) { // 无限制
+			if (Config.serverUploadRate.value == 0) { // 无限制
 				int bytesRead;
 				while ((bytesRead = inputStream.read(buffer)) != -1 && totalBytesSent < responseBytesLength) {
 					outputStream.write(buffer, 0, bytesRead); // 写入数据
@@ -29,7 +29,7 @@ public class ResponseSender {
 				var bytesToSend = (int) Math.min(16384, responseBytesLength - totalBytesSent);
 				refillTokens(lastFillTime);
 				if (AVAILABLE_TOKENS.get() < bytesToSend) {
-					var sleepMillis = (bytesToSend - AVAILABLE_TOKENS.get()) * 1000L / Config.maxUploadRateInBytes;
+					var sleepMillis = (bytesToSend - AVAILABLE_TOKENS.get()) * 1000L / Config.serverUploadRate.bps;
 					try {
 						Thread.sleep(Math.max(sleepMillis, 1));
 					} catch (InterruptedException error) {
@@ -53,10 +53,9 @@ public class ResponseSender {
 	}
 	// 令牌桶补充逻辑，带最大值限制
 	private static void refillTokens(long lastFillTime) {
-		var tokensToAdd = (System.currentTimeMillis() - lastFillTime) * Config.maxUploadRateInBytes / 1000;
+		var tokensToAdd = (System.currentTimeMillis() - lastFillTime) * Config.serverUploadRate.bps / 1000;
 		if (tokensToAdd <= 0) return;
-		var maxTokens = Config.maxUploadRateInBytes * 2L; // 令牌最大值为带宽2秒
-		var newTokens = Math.min(AVAILABLE_TOKENS.get() + tokensToAdd, maxTokens);
-		AVAILABLE_TOKENS.set(newTokens);
+		var maxTokens = Config.serverUploadRate.bps * 2L; // 令牌最大值为带宽2秒
+		AVAILABLE_TOKENS.set(Math.min(AVAILABLE_TOKENS.get() + tokensToAdd, maxTokens));
 	}
 }

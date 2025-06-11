@@ -1,8 +1,7 @@
 package com.forgestove.hexsync.util;
 import com.forgestove.hexsync.HexSync;
-import com.forgestove.hexsync.client.Client;
 import com.forgestove.hexsync.config.Config;
-import com.forgestove.hexsync.server.Server;
+import com.forgestove.hexsync.util.Rate.Unit;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -14,9 +13,9 @@ public class SettingUtil {
 		try {
 			var port = Integer.parseInt(portInput);
 			if (port > 0 && port < 65536) {
-				if (isServer) Server.serverPort = port;
-				else Client.clientPort = port;
-				if (HexSync.HEADLESS) System.out.println(side + "端口已设置为: " + port);
+				if (isServer) Config.serverPort = port;
+				else Config.clientPort = port;
+				if (HexSync.HEADLESS) System.out.printf("%s端口已设置为: %d%n", side, port);
 				return true;
 			} else {
 				if (HexSync.HEADLESS) System.err.println(side + "端口号必须在0~65535之间.");
@@ -34,15 +33,12 @@ public class SettingUtil {
 			if (HexSync.HEADLESS) System.err.println("速率格式错误，应为: <数字> <单位>");
 			return;
 		}
-		var rateUnit = RateUnit.fromUnit(parts[1]);
+		var rateUnit = Unit.fromString(parts[1]);
 		if (!parts[0].matches("\\d+") || isInvalidLong(parts[0]) || rateUnit == null) {
 			if (HexSync.HEADLESS) System.err.println("速率格式错误，应为: <数字> <单位>");
 			return;
 		}
-		Config.serverUploadRateLimit = Long.parseLong(parts[0]);
-		Config.serverUploadRateLimitUnit = rateUnit;
-		if (Server.serverThread == null) return;
-		Config.maxUploadRateInBytes = Config.serverUploadRateLimit * (long) Math.pow(1000, rateUnit.ordinal()) / 8;
+		Config.serverUploadRate = new Rate(Long.parseLong(parts[0]), rateUnit);
 	}
 	// 检测数字输入是否不在Long范围内
 	public static boolean isInvalidLong(@NotNull String input) {

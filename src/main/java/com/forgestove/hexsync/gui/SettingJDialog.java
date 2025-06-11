@@ -1,8 +1,7 @@
 package com.forgestove.hexsync.gui;
-import com.forgestove.hexsync.client.Client;
-import com.forgestove.hexsync.config.Config;
-import com.forgestove.hexsync.server.Server;
+import com.forgestove.hexsync.config.*;
 import com.forgestove.hexsync.util.*;
+import com.forgestove.hexsync.util.Rate.Unit;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,7 +10,7 @@ public class SettingJDialog {
 	// 打开设置对话框
 	public static void setting() {
 		if (ComponentUtil.checkJDialog("设置")) return;
-		Config.loadConfig();
+		ConfigUtil.loadConfig();
 		// 设置对话框
 		var settingJDialog = new JDialog(GUI.frame, "设置", ModalityType.MODELESS);
 		var settingPanel = new JPanel(new BorderLayout());
@@ -23,27 +22,25 @@ public class SettingJDialog {
 		// 服务端选项卡
 		var serverPanel = new JPanel(new GridLayout(5, 2));
 		serverPanel.add(new JLabel("<html>端口号:"));
-		var serverPortField = new JTextField(String.valueOf(Server.serverPort));
+		var serverPortField = new JTextField(String.valueOf(Config.serverPort));
 		serverPanel.add(serverPortField);
 		serverPanel.add(new JLabel("<html>最大上传速率:"));
-		var serverUploadRateLimitField = new JTextField(String.valueOf(Config.serverUploadRateLimit));
+		var serverUploadRateLimitField = new JTextField(String.valueOf(Config.serverUploadRate.value));
 		serverPanel.add(serverUploadRateLimitField);
 		serverPanel.add(new JLabel("<html>上传速率单位:"));
-		var serverUploadRateLimitUnitBox = new JComboBox<>(new String[]{
-			RateUnit.bps.name(), RateUnit.Kbps.name(), RateUnit.Mbps.name(), RateUnit.Gbps.name()
-		});
+		var serverUploadRateLimitUnitBox = new JComboBox<>(new Unit[]{Unit.bps, Unit.Kbps, Unit.Mbps, Unit.Gbps});
 		serverUploadRateLimitUnitBox.setFocusable(false);
-		serverUploadRateLimitUnitBox.setSelectedItem(Config.serverUploadRateLimitUnit.name());
+		serverUploadRateLimitUnitBox.setSelectedItem(Config.serverUploadRate.unit);
 		serverPanel.add(serverUploadRateLimitUnitBox);
 		serverPanel.add(new JLabel("<html>服务端同步路径:"));
 		var serverSyncDirectoryField = new JTextField(Config.serverSyncDirectory);
 		serverPanel.add(serverSyncDirectoryField);
-		var serverAutoStartBox = ComponentUtil.newJCheckBox(serverPanel, "<html>自动启动服务端", Server.serverAutoStart);
+		var serverAutoStartBox = ComponentUtil.newJCheckBox(serverPanel, "<html>自动启动服务端", Config.serverAutoStart);
 		tabbedPane.addTab("<html>服务端设置", serverPanel);
 		// 客户端选项卡
 		var clientPanel = new JPanel(new GridLayout(5, 2));
 		clientPanel.add(new JLabel("<html>端口号:"));
-		var clientPortField = new JTextField(String.valueOf(Client.clientPort));
+		var clientPortField = new JTextField(String.valueOf(Config.clientPort));
 		clientPanel.add(clientPortField);
 		clientPanel.add(new JLabel("<html>服务器地址:"));
 		var serverAddressField = new JTextField(Config.remoteAddress);
@@ -54,7 +51,7 @@ public class SettingJDialog {
 		clientPanel.add(new JLabel("<html>仅客户端模组路径:"));
 		var clientOnlyDirectoryField = new JTextField(Config.clientOnlyDirectory);
 		clientPanel.add(clientOnlyDirectoryField);
-		var clientAutoStartBox = ComponentUtil.newJCheckBox(clientPanel, "<html>自动启动客户端", Client.clientAutoStart);
+		var clientAutoStartBox = ComponentUtil.newJCheckBox(clientPanel, "<html>自动启动客户端", Config.clientAutoStart);
 		tabbedPane.addTab("<html>客户端设置", clientPanel);
 		// 按钮面板
 		var buttonPanel = new JPanel(new GridLayout(1, 3, 5, 0));
@@ -90,15 +87,17 @@ public class SettingJDialog {
 					ComponentUtil.selectAndFocus(serverUploadRateLimitField);
 					return;
 				}
-				Server.serverAutoStart = serverAutoStartBox.isSelected();
-				Config.serverUploadRateLimit = Long.parseLong(uploadRateLimitText);
-				Config.serverUploadRateLimitUnit = RateUnit.fromUnit((String) serverUploadRateLimitUnitBox.getSelectedItem());
+				Config.serverAutoStart = serverAutoStartBox.isSelected();
+				Config.serverUploadRate = new Rate(
+					Long.parseLong(uploadRateLimitText),
+					(Unit) serverUploadRateLimitUnitBox.getSelectedItem()
+				);
 				Config.serverSyncDirectory = serverSyncDirectoryField.getText().trim();
-				Client.clientAutoStart = clientAutoStartBox.isSelected();
+				Config.clientAutoStart = clientAutoStartBox.isSelected();
 				Config.remoteAddress = serverAddressField.getText().trim();
 				Config.clientSyncDirectory = clientSyncDirectoryField.getText().trim();
 				Config.clientOnlyDirectory = clientOnlyDirectoryField.getText().trim();
-				Config.saveConfig(); // 保存配置
+				ConfigUtil.saveConfig(); // 保存配置
 				settingJDialog.dispose(); // 关闭对话框
 			}
 		);

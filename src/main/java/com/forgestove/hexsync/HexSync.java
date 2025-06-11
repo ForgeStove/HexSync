@@ -1,7 +1,7 @@
 package com.forgestove.hexsync;
 import com.forgestove.hexsync.cli.CLI;
 import com.forgestove.hexsync.client.Client;
-import com.forgestove.hexsync.config.Config;
+import com.forgestove.hexsync.config.*;
 import com.forgestove.hexsync.gui.GUI;
 import com.forgestove.hexsync.server.Server;
 import com.forgestove.hexsync.util.Log;
@@ -21,9 +21,9 @@ public class HexSync {
 		LOG = System.getProperty("log", "true").equalsIgnoreCase("true"); // 是否记录日志
 	public static void main(String[] args) {
 		if (LOG) Log.initLog();
-		Config.loadConfig();
-		if (Server.serverAutoStart) Server.runServer();
-		if (Client.clientAutoStart) Client.runClient();
+		ConfigUtil.loadConfig();
+		if (Config.serverAutoStart) Server.runServer();
+		if (Config.clientAutoStart) Client.runClient();
 		if (HEADLESS) new CLI().run();
 		else GUI.runGUI();
 	}

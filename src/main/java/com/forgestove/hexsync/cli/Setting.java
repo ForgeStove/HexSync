@@ -1,8 +1,6 @@
 package com.forgestove.hexsync.cli;
 import com.forgestove.hexsync.cli.Setting.*;
-import com.forgestove.hexsync.client.Client;
-import com.forgestove.hexsync.config.Config;
-import com.forgestove.hexsync.server.Server;
+import com.forgestove.hexsync.config.*;
 import com.forgestove.hexsync.util.SettingUtil;
 import picocli.CommandLine;
 import picocli.CommandLine.*;
@@ -41,7 +39,7 @@ public class Setting implements Runnable {
 	@Command(name = "ss", description = "设置服务端自动启动")
 	static class ServerAutoStart implements Runnable {
 		@Parameters(description = "true/false") String auto;
-		public void run() {SettingUtil.setAutoStart(auto, true, value -> Server.serverAutoStart = value);}
+		public void run() {SettingUtil.setAutoStart(auto, true, value -> Config.serverAutoStart = value);}
 	}
 	@Command(name = "cp", description = "设置客户端端口")
 	static class ClientPort implements Runnable {
@@ -69,11 +67,11 @@ public class Setting implements Runnable {
 	@Command(name = "cs", description = "设置客户端自动启动")
 	static class ClientAutoStart implements Runnable {
 		@Parameters(description = "true/false") String auto;
-		public void run() {SettingUtil.setAutoStart(auto, false, value -> Client.clientAutoStart = value);}
+		public void run() {SettingUtil.setAutoStart(auto, false, value -> Config.clientAutoStart = value);}
 	}
 	@Command(name = "save", description = "保存设置")
 	static class Save implements Runnable {
-		public void run() {Config.saveConfig();}
+		public void run() {ConfigUtil.saveConfig();}
 	}
 }
 

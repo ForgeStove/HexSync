@@ -1,7 +1,7 @@
 package com.forgestove.hexsync.util;
 import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.client.Client;
-import com.forgestove.hexsync.config.Config;
+import com.forgestove.hexsync.config.*;
 import com.forgestove.hexsync.server.Server;
 import org.jetbrains.annotations.*;
 
@@ -14,7 +14,7 @@ public class FileUtil {
 	public static void initFiles(boolean isServer) {
 		makeDirectory(isServer ? Config.serverSyncDirectory : Config.clientSyncDirectory);
 		makeDirectory(HexSync.NAME);
-		Config.loadConfig();
+		ConfigUtil.loadConfig();
 		if (isServer) Server.serverMap = initMap(Config.serverSyncDirectory);
 		else {
 			makeDirectory(Config.clientOnlyDirectory);

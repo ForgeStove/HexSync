@@ -11,8 +11,6 @@ public class Server {
 	public static Thread serverThread; // 服务器线程
 	public static HttpServer HTTPServer; // 存储服务器实例
 	public static Map<String, String> serverMap; // 存储服务端文件名和对应的校验码数据
-	public static boolean serverAutoStart; // 服务端自动启动，默认不自动启动
-	public static int serverPort = 65535; // 服务端端口，默认值65535
 	// 启动服务端
 	public static void runServer() {
 		if (serverThread != null) return;
@@ -25,7 +23,7 @@ public class Server {
 				return;
 			}
 			try {
-				HTTPServer = HttpServer.create(new InetSocketAddress(serverPort), 0);
+				HTTPServer = HttpServer.create(new InetSocketAddress(Config.serverPort), 0);
 				HTTPServer.setExecutor(Executors.newCachedThreadPool());
 				HTTPServer.createContext("/", RequestHandler::handleRequest);
 				HTTPServer.start();
@@ -33,7 +31,7 @@ public class Server {
 				Log.error("%sServer无法启动: %s", HexSync.NAME, error.getMessage());
 				return;
 			}
-			Log.info("%sServer正在运行...端口号为: %d", HexSync.NAME, serverPort);
+			Log.info("%sServer正在运行...端口号为: %d", HexSync.NAME, Config.serverPort);
 		});
 		serverThread.start();
 	}

@@ -7,8 +7,7 @@ import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicReference;
 public class Client {
 	public static final AtomicReference<Thread> clientThread = new AtomicReference<>();
-	public static boolean errorDownload, clientAutoStart;
-	public static int clientPort = 65535;
+	public static boolean errorDownload;
 	// 启动客户端
 	public static void runClient() {
 		if (clientThread.get() != null) return;
@@ -31,6 +30,6 @@ public class Client {
 	public static void stopClient() {
 		if (clientThread.getAndSet(null) == null) return;
 		Log.info(HexSync.NAME + "Client已关闭");
-		if (clientAutoStart && !errorDownload) System.exit(0);
+		if (Config.clientAutoStart && !errorDownload) System.exit(0);
 	}
 }

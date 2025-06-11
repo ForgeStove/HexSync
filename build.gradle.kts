@@ -13,6 +13,7 @@ dependencies {
 	compileOnly("org.jetbrains:annotations:+")
 	implementation("com.formdev:flatlaf:1.1.1")
 	implementation("info.picocli:picocli:+")
+	implementation("org.aeonbits.owner:owner:+")
 }
 tasks.shadowJar {
 	archiveClassifier.set("")
