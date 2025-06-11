@@ -18,15 +18,15 @@ public class Data {
 	public static final Config<Port> serverPort = new Config<>(new Port(65535)); // 服务端端口
 	public static final Config<Port> clientPort = new Config<>(new Port(65535)); // 客户端端口
 	// 配置文件结构
-	public static final List<ConfigEntry> CONFIG_ENTRIES = List.of(
-		new HeaderEntry("# 服务端配置"), ValueEntry.value("serverPort", serverPort, Port::new),
+	public static final List<ConfigEntry> CONFIG_ENTRIES = List.of(new HeaderEntry("# 服务端配置"),
+		ValueEntry.value("serverPort", serverPort, Port::new),
 		ValueEntry.value("serverUploadRate", serverUploadRate, Rate::fromString),
 		ValueEntry.value("serverSyncDirectory", serverSyncDirectory),
 		ValueEntry.value("serverAutoStart", serverAutoStart, Boolean::parseBoolean),
-		new HeaderEntry("# 客户端配置"), ValueEntry.value("clientPort", clientPort, Port::new),
+		new HeaderEntry("# 客户端配置"),
+		ValueEntry.value("clientPort", clientPort, Port::new),
 		ValueEntry.value("remoteAddress", remoteAddress),
 		ValueEntry.value("clientSyncDirectory", clientSyncDirectory),
 		ValueEntry.value("clientOnlyDirectory", clientOnlyDirectory),
-		ValueEntry.value("clientAutoStart", clientAutoStart, Boolean::parseBoolean)
-	);
+		ValueEntry.value("clientAutoStart", clientAutoStart, Boolean::parseBoolean));
 }

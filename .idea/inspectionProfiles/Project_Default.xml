@@ -44,6 +44,8 @@
       <option name="onlyWarnOnBaseMethods" value="true" />
     </inspection_tool>
     <inspection_tool class="RedundantExplicitVariableType" enabled="true" level="TEXT ATTRIBUTES" enabled_by_default="true" editorAttributes="INFO_ATTRIBUTES" />
+    <inspection_tool class="SameReturnValue" enabled="true" level="WARNING" enabled_by_default="true" editorAttributes="WARNING_ATTRIBUTES" />
+    <inspection_tool class="SingleStatementInBlock" enabled="true" level="TEXT ATTRIBUTES" enabled_by_default="true" editorAttributes="NOT_USED_ELEMENT_ATTRIBUTES" />
     <inspection_tool class="UnnecessarilyQualifiedInnerClassAccess" enabled="true" level="WEAK WARNING" enabled_by_default="true" editorAttributes="INFO_ATTRIBUTES">
       <option name="ignoreReferencesNeedingImport" value="false" />
     </inspection_tool>
@@ -60,5 +62,6 @@
     <inspection_tool class="UnnecessaryQualifierForThis" enabled="true" level="WEAK WARNING" enabled_by_default="true" editorAttributes="INFO_ATTRIBUTES" />
     <inspection_tool class="UnnecessarySuperQualifier" enabled="true" level="WEAK WARNING" enabled_by_default="true" editorAttributes="INFO_ATTRIBUTES" />
     <inspection_tool class="UnnecessaryThis" enabled="true" level="WEAK WARNING" enabled_by_default="true" editorAttributes="INFO_ATTRIBUTES" />
+    <inspection_tool class="UnusedReturnValue" enabled="true" level="WEAK WARNING" enabled_by_default="true" editorAttributes="INFO_ATTRIBUTES" />
   </profile>
 </component>

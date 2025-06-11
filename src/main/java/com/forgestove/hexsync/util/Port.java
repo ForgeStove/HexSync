@@ -5,7 +5,7 @@ public class Port {
 	@Contract(pure = true)
 	public Port(int value) {
 		if (value >= 0 && value <= 65535) this.value = (short) value;
-		else throw new IllegalArgumentException("Port value must be between 0 and 65535");
+		else this.value = (short) 65535; // 默认端口值
 	}
 	@Contract(pure = true)
 	public Port(String value) {
@@ -13,7 +13,7 @@ public class Port {
 	}
 	private static int getValue(String value) {
 		try {return Integer.parseInt(value);} catch (Exception error) {
-			throw new IllegalArgumentException("Port value must be an integer", error);
+			return 65535;
 		}
 	}
 	public int getValue() {

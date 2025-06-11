@@ -3,12 +3,13 @@ import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.client.Client;
 import com.forgestove.hexsync.config.*;
 import com.forgestove.hexsync.server.Server;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.nio.file.*;
-import java.security.MessageDigest;
 import java.util.*;
+import java.util.function.*;
+import java.util.stream.Collectors;
 public class FileUtil {
 	// 初始化文件
 	public static void initFiles(boolean isServer) {
@@ -23,31 +24,12 @@ public class FileUtil {
 	}
 	// 初始化文件名校验码键值对表
 	public static @NotNull Map<String, String> initMap(String directory) {
-		Map<String, String> map = new HashMap<>();
-		var fileList = new File(directory).listFiles(); // 获取文件夹下的所有文件
-		if (fileList != null) for (var file : fileList) {
-			if (!file.isFile()) continue;
-			map.put(file.getName(), calculateSHA1(file));
-		}
-		return map;
-	}
-	// 计算文件SHA1哈希值（带缓存）
-	public static @Nullable String calculateSHA1(File file) {
-		var cache = HashCache.getSHA1(file);
-		if (cache != null) return cache;
-		try (var fileInputStream = new FileInputStream(file)) {
-			var digest = MessageDigest.getInstance("SHA-1");
-			var buffer = new byte[16384];
-			int bytesRead;
-			while ((bytesRead = fileInputStream.read(buffer)) != -1) digest.update(buffer, 0, bytesRead);
-			var hashBytes = digest.digest();
-			var sha1 = HexFormat.of().formatHex(hashBytes);
-			HashCache.putSHA1(file, sha1); // 写入缓存
-			return sha1;
-		} catch (Exception error) {
-			Log.error("SHA1计算错误: " + error.getMessage());
-			return null;
-		}
+		var fileList = new File(directory).listFiles();
+		if (fileList == null) return new HashMap<>();
+		return Arrays.stream(fileList)
+			.parallel()
+			.filter(File::isFile)
+			.collect(Collectors.toConcurrentMap(File::getName, HashUtil::calculateSHA1, (existing, replacement) -> existing));
 	}
 	// 创建文件夹
 	public static void makeDirectory(String directoryPath) {
@@ -60,12 +42,11 @@ public class FileUtil {
 	public static void deleteFilesNotInMaps(Map<String, String> requestMap, Map<String, String> clientOnlyMap) {
 		var fileList = new File(Data.clientSyncDirectory.get()).listFiles();
 		if (fileList == null) return;
-		for (var file : fileList) {
-			if (!file.isFile()) continue;
-			var SHA1 = calculateSHA1(file);
-			if (requestMap.containsValue(SHA1) || clientOnlyMap.containsValue(SHA1)) continue;
+		Arrays.stream(fileList).parallel().filter(File::isFile).forEach(file -> {
+			var SHA1 = HashUtil.calculateSHA1(file);
+			if (requestMap.containsValue(SHA1) || clientOnlyMap.containsValue(SHA1)) return;
 			deleteFile(file);
-		}
+		});
 	}
 	// 删除指定文件
 	public static void deleteFile(@NotNull File file) {
@@ -81,10 +62,10 @@ public class FileUtil {
 		makeDirectory(target);
 		var fileList = new File(source).listFiles();
 		if (fileList == null) return;
-		for (var file : fileList) {
+		Arrays.stream(fileList).parallel().forEach(file -> {
 			var targetFileName = file.getName();
 			var targetFile = new File(target, targetFileName);
-			if (new File(target, targetFileName + ".disable").exists()) continue; // 跳过此文件
+			if (new File(target, targetFileName + ".disable").exists()) return; // 跳过此文件
 			if (file.isDirectory()) copyDirectory(String.valueOf(file), String.valueOf(targetFile));
 			else if (!targetFile.exists()) try {
 				Files.copy(file.toPath(), targetFile.toPath());
@@ -92,7 +73,7 @@ public class FileUtil {
 			} catch (IOException error) {
 				Log.error("复制失败: " + error.getMessage());
 			}
-		}
+		});
 	}
 	// 将输入流写入文件
 	public static boolean writeToFile(@NotNull InputStream inputStream, File targetFile) {
@@ -114,5 +95,79 @@ public class FileUtil {
 	 */
 	public static @NotNull String path(String... parts) {
 		return Path.of("", parts).toString();
+	}
+	/**
+	 * 按行处理文件内容
+	 *
+	 * @param file          要读取的文件
+	 * @param lineProcessor 处理每一行的函数
+	 */
+	public static void readLines(@NotNull File file, @NotNull Consumer<String> lineProcessor) {
+		try (var reader = Files.newBufferedReader(file.toPath())) {
+			String line;
+			while ((line = reader.readLine()) != null) lineProcessor.accept(line);
+		} catch (IOException error) {Log.error("文件读取失败: " + error.getMessage());}
+	}
+	/**
+	 * 将字符串内容写入文件
+	 *
+	 * @param file    目标文件
+	 * @param content 要写入的内容
+	 */
+	public static void writeFile(@NotNull File file, @NotNull String content) {
+		try {Files.writeString(file.toPath(), content);} catch (IOException error) {Log.error("文件写入失败: " + error.getMessage());}
+	}
+	/**
+	 * 使用转换器将对象写入文件
+	 * 将单个对象转换为字符串并写入文件
+	 *
+	 * @param file        目标文件
+	 * @param object      要写入的对象
+	 * @param transformer 对象到字符串的转换器
+	 * @param <T>         对象类型
+	 * @return 是否写入成功
+	 */
+	public static <T> boolean writeObject(@NotNull File file, @NotNull T object, @NotNull Function<T, String> transformer) {
+		try {
+			var content = transformer.apply(object);
+			Files.writeString(file.toPath(), content);
+			return true;
+		} catch (IOException error) {
+			Log.error("文件写入失败: " + error.getMessage());
+			return false;
+		}
+	}
+	/**
+	 * 使用转换器将对象集合写入文件
+	 * 将集合中的每个对象转换为一行并写入文件
+	 *
+	 * @param file        目标文件
+	 * @param objects     要写入的对象集合
+	 * @param transformer 对象到字符串的转换器，结果将作为单独一行写入
+	 * @param <T>         对象类型
+	 * @return 是否写入成功
+	 */
+	public static <T> boolean writeObjects(@NotNull File file, @NotNull Collection<T> objects, @NotNull Function<T, String> transformer) {
+		try (var writer = Files.newBufferedWriter(file.toPath())) {
+			for (var object : objects) {
+				writer.write(transformer.apply(object));
+				writer.newLine();
+			}
+			return true;
+		} catch (IOException error) {
+			Log.error("文件写入失败: " + error.getMessage());
+			return false;
+		}
+	}
+	/**
+	 * 向文件末尾追加内容
+	 *
+	 * @param file    目标文件
+	 * @param content 追加内容
+	 */
+	public static void appendLine(@NotNull File file, @NotNull String content) {
+		try {
+			Files.writeString(file.toPath(), content, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+		} catch (IOException error) {Log.error("文件写入失败: " + error.getMessage());}
 	}
 }
