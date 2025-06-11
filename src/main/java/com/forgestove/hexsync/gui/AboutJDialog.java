@@ -13,10 +13,9 @@ public class AboutJDialog extends JDialog {
 		aboutTextPane.setContentType("text/html");
 		aboutTextPane.setEditable(false);
 		aboutTextPane.setText("""
-			<span style="font-family:Microsoft YaHei;">%s<br>
-			By: ForgeStove<br>
+			<span style="font-family:Microsoft YaHei;"><b>%s<br>
 			License: <a href="%s">%s</a><br>
-			Repository: <a href="%s">%s</a></span>
+			Repository: <a href="%s">%s</a><br></span>
 			""".formatted(HexSync.NAME, HexSync.LICENSE_URL, HexSync.LICENSE, HexSync.GITHUB_URL, HexSync.GITHUB_URL));
 		aboutTextPane.addHyperlinkListener(event -> {
 			if (EventType.ACTIVATED.equals(event.getEventType())) try {
@@ -26,7 +25,6 @@ public class AboutJDialog extends JDialog {
 			}
 		});
 		add(new JScrollPane(aboutTextPane));
-		setMinimumSize(new Dimension(400, 150));
 		ComponentUtil.setWindow(this);
 	}
 }
