@@ -10,14 +10,14 @@ import java.util.*;
 import java.util.function.Consumer;
 public class Config {
 	public static final String //
-		CONFIG_PATH = HexSync.NAME + File.separator + "config.properties", // 配置文件路径
-		LOG_PATH = HexSync.NAME + File.separator + "latest.log", // 日志文件路径
+		CONFIG_PATH = FileUtil.path(HexSync.NAME, "config.properties"), // 配置文件路径
+		LOG_PATH = FileUtil.path(HexSync.NAME, "latest.log"), // 日志文件路径
 		SERVER_PORT = "serverPort", // 服务端端口配置项
 		SERVER_SYNC_DIRECTORY = "serverSyncDirectory", // 服务端同步文件夹路径配置项
 		SERVER_UPLOAD_RATE_LIMIT = "serverUploadRateLimit", // 上传速率限制配置项
 		SERVER_AUTO_START = "serverAutoStart", // 服务端自动启动配置项
 		CLIENT_PORT = "clientPort", // 客户端端口配置项
-		SERVER_ADDRESS = "serverAddress", // 服务器地址配置项
+		REMOTE_ADDRESS = "remoteAddress", // 服务器地址配置项
 		CLIENT_SYNC_DIRECTORY = "clientSyncDirectory", // 客户端同步文件夹路径配置项
 		CLIENT_ONLY_DIRECTORY = "clientOnlyDirectory", // 仅客户端文件夹路径配置项
 		CLIENT_AUTO_START = "clientAutoStart"; // 客户端自动启动配置项
@@ -25,8 +25,8 @@ public class Config {
 		serverSyncDirectory = "mods", // 服务端同步文件夹路径，默认值mods
 		clientSyncDirectory = "mods", // 客户端同步文件夹路径，默认值mods
 		clientOnlyDirectory = "clientMods", // 仅客户端文件夹路径，默认值clientMods
-		serverAddress = "localhost"; // 服务器地址，默认值localhost
-	public static RateUnit serverUploadRateLimitUnit = RateUnit.MBPS; // 上传速率限制单位，默认MBps
+		remoteAddress = "localhost"; // 服务器地址，默认值localhost
+	public static RateUnit serverUploadRateLimitUnit = RateUnit.Mbps; // 上传速率限制单位，默认Mbps
 	public static long serverUploadRateLimit = 1, maxUploadRateInBytes; // 上传速率限制值以及对应的字节数
 	// 加载配置
 	public static void loadConfig() {
@@ -61,7 +61,7 @@ public class Config {
 		configMap.put(SERVER_SYNC_DIRECTORY, input -> serverSyncDirectory = input);
 		configMap.put(SERVER_AUTO_START, input -> Server.serverAutoStart = Boolean.parseBoolean(input));
 		configMap.put(CLIENT_PORT, input -> Client.clientPort = Integer.parseInt(input));
-		configMap.put(SERVER_ADDRESS, input -> serverAddress = input);
+		configMap.put(REMOTE_ADDRESS, input -> remoteAddress = input);
 		configMap.put(CLIENT_SYNC_DIRECTORY, input -> clientSyncDirectory = input);
 		configMap.put(CLIENT_ONLY_DIRECTORY, input -> clientOnlyDirectory = input);
 		configMap.put(CLIENT_AUTO_START, input -> Client.clientAutoStart = Boolean.parseBoolean(input));
@@ -77,16 +77,16 @@ public class Config {
 			{SERVER_AUTO_START, Server.serverAutoStart},
 			{"# 客户端配置"},
 			{CLIENT_PORT, Client.clientPort},
-			{SERVER_ADDRESS, serverAddress},
+			{REMOTE_ADDRESS, remoteAddress},
 			{CLIENT_SYNC_DIRECTORY, clientSyncDirectory},
 			{CLIENT_ONLY_DIRECTORY, clientOnlyDirectory},
 			{CLIENT_AUTO_START, Client.clientAutoStart}
 		};
 		var joiner = new StringJoiner(System.lineSeparator());
-		for (var config : configEntries) {
-			if (config[0].toString().startsWith("#")) joiner.add(config[0].toString());
-			else joiner.add(String.format("%s=%s", config[0], config.length > 1 ? config[1] : ""));
-		}
+		for (var config : configEntries)
+			joiner.add(config[0].toString().startsWith("#")
+				? config[0].toString()
+				: String.format("%s=%s", config[0], config.length > 1 ? config[1] : ""));
 		var configFile = new File(CONFIG_PATH);
 		try (var bufferedWriter = new BufferedWriter(new FileWriter(configFile))) {
 			bufferedWriter.write(joiner.toString());

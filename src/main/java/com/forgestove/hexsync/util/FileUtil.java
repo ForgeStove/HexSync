@@ -6,7 +6,7 @@ import com.forgestove.hexsync.server.Server;
 import org.jetbrains.annotations.*;
 
 import java.io.*;
-import java.nio.file.Files;
+import java.nio.file.*;
 import java.security.MessageDigest;
 import java.util.*;
 public class FileUtil {
@@ -41,9 +41,7 @@ public class FileUtil {
 			int bytesRead;
 			while ((bytesRead = fileInputStream.read(buffer)) != -1) digest.update(buffer, 0, bytesRead);
 			var hashBytes = digest.digest();
-			var hexString = new StringBuilder();
-			for (var b : hashBytes) hexString.append(String.format("%02x", b));
-			var sha1 = hexString.toString();
+			var sha1 = HexFormat.of().formatHex(hashBytes);
 			HashCache.putSHA1(file, sha1); // 写入缓存
 			return sha1;
 		} catch (Exception error) {
@@ -107,5 +105,14 @@ public class FileUtil {
 			Log.error("写入文件失败: %s %s", targetFile, error.getMessage());
 			return false;
 		}
+	}
+	/**
+	 * 创建包含平台特定分隔符的路径
+	 *
+	 * @param parts 路径组成部分
+	 * @return 连接后的路径
+	 */
+	public static @NotNull String path(String... parts) {
+		return Path.of("", parts).toString();
 	}
 }

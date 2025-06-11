@@ -23,7 +23,7 @@ public class RequestHandler {
 			break;
 		}
 		if (fileName == null) return;
-		var file = new File("%s%s%s".formatted(Config.serverSyncDirectory, File.separator, fileName));
+		var file = new File(FileUtil.path(Config.serverSyncDirectory, fileName));
 		try (var inputStream = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
 			ResponseSender.sendResponse(exchange, inputStream, file.length());
 			Log.info("发送文件: %s 至: %s", file, HttpUtil.getHostAddress(exchange));

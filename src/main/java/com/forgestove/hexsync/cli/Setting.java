@@ -52,8 +52,8 @@ public class Setting implements Runnable {
 	static class RemoteAddress implements Runnable {
 		@Parameters(description = "地址") String address;
 		public void run() {
-			Config.serverAddress = address;
-			System.out.println("服务器地址已设置为: " + Config.serverAddress);
+			Config.remoteAddress = address;
+			System.out.println("服务器地址已设置为: " + Config.remoteAddress);
 		}
 	}
 	@Command(name = "cd", description = "设置客户端同步目录")

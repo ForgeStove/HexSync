@@ -46,14 +46,14 @@ public enum Log {
 				System.err.println("无法写入日志: " + error.getMessage());
 			}
 			if (!HexSync.HEADLESS) {
-				SwingUtilities.invokeLater(() -> appendLogToPane(level, log));
+				SwingUtilities.invokeLater(() -> writeToLogPane(level, log));
 				return;
 			}
 			System.out.printf(HexSync.ANSI ? log : "%s%s\u001B[0m", level.ansi, log);
 		});
 	}
 	// 在日志面板中追加日志
-	private static void appendLogToPane(Log level, String formattedLog) {
+	private static void writeToLogPane(Log level, String formattedLog) {
 		try {
 			var document = GUI.logPane.getDocument();
 			var root = document.getDefaultRootElement();
@@ -68,18 +68,11 @@ public enum Log {
 	// 初始化日志
 	public static void initLog() {
 		FileUtil.makeDirectory(HexSync.NAME);
-		try {
-			logWriter = new BufferedWriter(new FileWriter(Config.LOG_PATH, false));
-		} catch (IOException error) {
+		try {logWriter = new BufferedWriter(new FileWriter(Config.LOG_PATH, false));} catch (IOException error) {
 			System.err.println("无法创建日志文件: " + error.getMessage());
 		}
-		flushScheduler.scheduleAtFixedRate(
-			() -> {
-				try {
-					if (logWriter != null) logWriter.flush();
-				} catch (IOException ignored) {}
-			}, 5, 5, TimeUnit.SECONDS
-		);
+		Runnable runnable = () -> {if (logWriter != null) try {logWriter.flush();} catch (IOException ignored) {}};
+		flushScheduler.scheduleAtFixedRate(runnable, 5, 5, TimeUnit.SECONDS);
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			try {
 				if (logWriter != null) logWriter.close();

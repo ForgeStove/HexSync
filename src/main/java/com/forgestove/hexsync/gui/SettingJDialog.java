@@ -30,7 +30,7 @@ public class SettingJDialog {
 		serverPanel.add(serverUploadRateLimitField);
 		serverPanel.add(new JLabel("<html>上传速率单位:"));
 		var serverUploadRateLimitUnitBox = new JComboBox<>(new String[]{
-			RateUnit.BPS.name(), RateUnit.KBPS.name(), RateUnit.MBPS.name(), RateUnit.GBPS.name()
+			RateUnit.bps.name(), RateUnit.Kbps.name(), RateUnit.Mbps.name(), RateUnit.Gbps.name()
 		});
 		serverUploadRateLimitUnitBox.setFocusable(false);
 		serverUploadRateLimitUnitBox.setSelectedItem(Config.serverUploadRateLimitUnit.name());
@@ -46,7 +46,7 @@ public class SettingJDialog {
 		var clientPortField = new JTextField(String.valueOf(Client.clientPort));
 		clientPanel.add(clientPortField);
 		clientPanel.add(new JLabel("<html>服务器地址:"));
-		var serverAddressField = new JTextField(Config.serverAddress);
+		var serverAddressField = new JTextField(Config.remoteAddress);
 		clientPanel.add(serverAddressField);
 		clientPanel.add(new JLabel("<html>客户端同步路径:"));
 		var clientSyncDirectoryField = new JTextField(Config.clientSyncDirectory);
@@ -95,7 +95,7 @@ public class SettingJDialog {
 				Config.serverUploadRateLimitUnit = RateUnit.fromUnit((String) serverUploadRateLimitUnitBox.getSelectedItem());
 				Config.serverSyncDirectory = serverSyncDirectoryField.getText().trim();
 				Client.clientAutoStart = clientAutoStartBox.isSelected();
-				Config.serverAddress = serverAddressField.getText().trim();
+				Config.remoteAddress = serverAddressField.getText().trim();
 				Config.clientSyncDirectory = clientSyncDirectoryField.getText().trim();
 				Config.clientOnlyDirectory = clientOnlyDirectoryField.getText().trim();
 				Config.saveConfig(); // 保存配置
