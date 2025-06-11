@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
-import java.util.function.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 public class FileUtil {
 	// 初始化文件
@@ -99,13 +99,13 @@ public class FileUtil {
 	/**
 	 * 按行处理文件内容
 	 *
-	 * @param file          要读取的文件
-	 * @param lineProcessor 处理每一行的函数
+	 * @param file     要读取的文件
+	 * @param consumer 处理每一行的函数
 	 */
-	public static void readLines(@NotNull File file, @NotNull Consumer<String> lineProcessor) {
+	public static void readLine(@NotNull File file, @NotNull Consumer<String> consumer) {
 		try (var reader = Files.newBufferedReader(file.toPath())) {
 			String line;
-			while ((line = reader.readLine()) != null) lineProcessor.accept(line);
+			while ((line = reader.readLine()) != null) consumer.accept(line);
 		} catch (IOException error) {Log.error("文件读取失败: " + error.getMessage());}
 	}
 	/**
@@ -116,48 +116,6 @@ public class FileUtil {
 	 */
 	public static void writeFile(@NotNull File file, @NotNull String content) {
 		try {Files.writeString(file.toPath(), content);} catch (IOException error) {Log.error("文件写入失败: " + error.getMessage());}
-	}
-	/**
-	 * 使用转换器将对象写入文件
-	 * 将单个对象转换为字符串并写入文件
-	 *
-	 * @param file        目标文件
-	 * @param object      要写入的对象
-	 * @param transformer 对象到字符串的转换器
-	 * @param <T>         对象类型
-	 * @return 是否写入成功
-	 */
-	public static <T> boolean writeObject(@NotNull File file, @NotNull T object, @NotNull Function<T, String> transformer) {
-		try {
-			var content = transformer.apply(object);
-			Files.writeString(file.toPath(), content);
-			return true;
-		} catch (IOException error) {
-			Log.error("文件写入失败: " + error.getMessage());
-			return false;
-		}
-	}
-	/**
-	 * 使用转换器将对象集合写入文件
-	 * 将集合中的每个对象转换为一行并写入文件
-	 *
-	 * @param file        目标文件
-	 * @param objects     要写入的对象集合
-	 * @param transformer 对象到字符串的转换器，结果将作为单独一行写入
-	 * @param <T>         对象类型
-	 * @return 是否写入成功
-	 */
-	public static <T> boolean writeObjects(@NotNull File file, @NotNull Collection<T> objects, @NotNull Function<T, String> transformer) {
-		try (var writer = Files.newBufferedWriter(file.toPath())) {
-			for (var object : objects) {
-				writer.write(transformer.apply(object));
-				writer.newLine();
-			}
-			return true;
-		} catch (IOException error) {
-			Log.error("文件写入失败: " + error.getMessage());
-			return false;
-		}
 	}
 	/**
 	 * 向文件末尾追加内容

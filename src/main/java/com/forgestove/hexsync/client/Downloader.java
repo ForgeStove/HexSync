@@ -41,17 +41,16 @@ public class Downloader {
 			Data.clientPort.get().getValue(),
 			HttpUtil.DOWNLOAD,
 			requestSHA1);
-		try {
-			var response = HttpUtil.sendGet(downloadURL, BodyHandlers.ofInputStream());
-			if (response.statusCode() != HttpURLConnection.HTTP_OK) {
-				Log.error("下载失败,错误代码: " + response.statusCode());
-				return false;
-			}
-			if (!FileUtil.writeToFile(response.body(), clientFile)) return false;
-		} catch (Exception error) {
-			Log.error("下载失败: %s %s", filePath, error.getMessage());
+		var response = HttpUtil.sendGet(downloadURL, BodyHandlers.ofInputStream());
+		if (response == null) {
+			Log.error("下载请求失败: " + downloadURL);
 			return false;
 		}
+		if (response.statusCode() != HttpURLConnection.HTTP_OK) {
+			Log.error("下载失败,错误代码: " + response.statusCode());
+			return false;
+		}
+		if (!FileUtil.writeToFile(response.body(), clientFile)) return false;
 		if (!requestSHA1.equals(HashUtil.calculateSHA1(clientFile))) {
 			Log.error("校验失败,文件可能已损坏: " + clientFile);
 			FileUtil.deleteFile(clientFile);
@@ -61,18 +60,21 @@ public class Downloader {
 	}
 	// 从服务器获取文件名和校验码列表
 	public static Map<String, String> fetchFileSHA1List() {
-		var url = String.format("%s:%d/%s", HttpUtil.formatHTTP(Data.remoteAddress.get()), Data.clientPort.get().getValue(),
-			HttpUtil.LIST);
+		var url = "%s:%d/%s".formatted(HttpUtil.formatHTTP(Data.remoteAddress.get()), Data.clientPort.get().getValue(), HttpUtil.LIST);
 		Log.info("正在连接至: " + url);
-		Map<String, String> requestMap = new HashMap<>();
-		try {
-			var response = HttpUtil.sendGet(url, BodyHandlers.ofString());
-			if (response.statusCode() != HttpURLConnection.HTTP_OK) {
-				if (Client.clientThread.get() != null) Log.error("请求列表失败,错误代码: " + response.statusCode());
-				Client.errorDownload = true;
-				return requestMap;
-			}
-			var bufferedReader = new BufferedReader(new StringReader(response.body()));
+		var requestMap = new HashMap<String, String>();
+		var response = HttpUtil.sendGet(url, BodyHandlers.ofString());
+		if (response == null) {
+			Log.error("获取文件列表失败: " + url);
+			Client.errorDownload = true;
+			return requestMap;
+		}
+		if (response.statusCode() != HttpURLConnection.HTTP_OK) {
+			if (Client.clientThread.get() != null) Log.error("请求列表失败,错误代码: " + response.statusCode());
+			Client.errorDownload = true;
+			return requestMap;
+		}
+		try (var bufferedReader = new BufferedReader(new StringReader(response.body()))) {
 			String fileName;
 			while ((fileName = bufferedReader.readLine()) != null) {
 				var sha1 = bufferedReader.readLine();
