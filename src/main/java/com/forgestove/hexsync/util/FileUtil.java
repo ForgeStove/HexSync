@@ -12,12 +12,12 @@ import java.util.*;
 public class FileUtil {
 	// 初始化文件
 	public static void initFiles(boolean isServer) {
-		makeDirectory(isServer ? Config.serverSyncDirectory : Config.clientSyncDirectory);
+		makeDirectory(isServer ? Data.serverSyncDirectory.get() : Data.clientSyncDirectory.get());
 		makeDirectory(HexSync.NAME);
 		ConfigUtil.loadConfig();
-		if (isServer) Server.serverMap = initMap(Config.serverSyncDirectory);
+		if (isServer) Server.serverMap = initMap(Data.serverSyncDirectory.get());
 		else {
-			makeDirectory(Config.clientOnlyDirectory);
+			makeDirectory(Data.clientOnlyDirectory.get());
 			Client.errorDownload = false;
 		}
 	}
@@ -58,7 +58,7 @@ public class FileUtil {
 	}
 	// 删除指定路径下的文件
 	public static void deleteFilesNotInMaps(Map<String, String> requestMap, Map<String, String> clientOnlyMap) {
-		var fileList = new File(Config.clientSyncDirectory).listFiles();
+		var fileList = new File(Data.clientSyncDirectory.get()).listFiles();
 		if (fileList == null) return;
 		for (var file : fileList) {
 			if (!file.isFile()) continue;

@@ -5,14 +5,12 @@ import com.forgestove.hexsync.util.Rate.Unit;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.Dialog.ModalityType;
-public class SettingJDialog {
+public class SettingJDialog extends JDialog {
 	// 打开设置对话框
-	public static void setting() {
-		if (ComponentUtil.checkJDialog("设置")) return;
+	public SettingJDialog(Window owner, String title) {
+		super(owner, title, ModalityType.MODELESS);
 		ConfigUtil.loadConfig();
 		// 设置对话框
-		var settingJDialog = new JDialog(GUI.frame, "设置", ModalityType.MODELESS);
 		var settingPanel = new JPanel(new BorderLayout());
 		settingPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		// 选项卡面板
@@ -22,36 +20,36 @@ public class SettingJDialog {
 		// 服务端选项卡
 		var serverPanel = new JPanel(new GridLayout(5, 2));
 		serverPanel.add(new JLabel("<html>端口号:"));
-		var serverPortField = new JTextField(String.valueOf(Config.serverPort));
+		var serverPortField = new JTextField(String.valueOf(Data.serverPort));
 		serverPanel.add(serverPortField);
 		serverPanel.add(new JLabel("<html>最大上传速率:"));
-		var serverUploadRateLimitField = new JTextField(String.valueOf(Config.serverUploadRate.value));
+		var serverUploadRateLimitField = new JTextField(String.valueOf(Data.serverUploadRate.get().value));
 		serverPanel.add(serverUploadRateLimitField);
 		serverPanel.add(new JLabel("<html>上传速率单位:"));
 		var serverUploadRateLimitUnitBox = new JComboBox<>(new Unit[]{Unit.bps, Unit.Kbps, Unit.Mbps, Unit.Gbps});
 		serverUploadRateLimitUnitBox.setFocusable(false);
-		serverUploadRateLimitUnitBox.setSelectedItem(Config.serverUploadRate.unit);
+		serverUploadRateLimitUnitBox.setSelectedItem(Data.serverUploadRate.get().unit);
 		serverPanel.add(serverUploadRateLimitUnitBox);
 		serverPanel.add(new JLabel("<html>服务端同步路径:"));
-		var serverSyncDirectoryField = new JTextField(Config.serverSyncDirectory);
+		var serverSyncDirectoryField = new JTextField(Data.serverSyncDirectory.get());
 		serverPanel.add(serverSyncDirectoryField);
-		var serverAutoStartBox = ComponentUtil.newJCheckBox(serverPanel, "<html>自动启动服务端", Config.serverAutoStart);
+		var serverAutoStartBox = ComponentUtil.newJCheckBox(serverPanel, "<html>自动启动服务端", Data.serverAutoStart.get());
 		tabbedPane.addTab("<html>服务端设置", serverPanel);
 		// 客户端选项卡
 		var clientPanel = new JPanel(new GridLayout(5, 2));
 		clientPanel.add(new JLabel("<html>端口号:"));
-		var clientPortField = new JTextField(String.valueOf(Config.clientPort));
+		var clientPortField = new JTextField(String.valueOf(Data.clientPort));
 		clientPanel.add(clientPortField);
 		clientPanel.add(new JLabel("<html>服务器地址:"));
-		var serverAddressField = new JTextField(Config.remoteAddress);
+		var serverAddressField = new JTextField(Data.remoteAddress.get());
 		clientPanel.add(serverAddressField);
 		clientPanel.add(new JLabel("<html>客户端同步路径:"));
-		var clientSyncDirectoryField = new JTextField(Config.clientSyncDirectory);
+		var clientSyncDirectoryField = new JTextField(Data.clientSyncDirectory.get());
 		clientPanel.add(clientSyncDirectoryField);
 		clientPanel.add(new JLabel("<html>仅客户端模组路径:"));
-		var clientOnlyDirectoryField = new JTextField(Config.clientOnlyDirectory);
+		var clientOnlyDirectoryField = new JTextField(Data.clientOnlyDirectory.get());
 		clientPanel.add(clientOnlyDirectoryField);
-		var clientAutoStartBox = ComponentUtil.newJCheckBox(clientPanel, "<html>自动启动客户端", Config.clientAutoStart);
+		var clientAutoStartBox = ComponentUtil.newJCheckBox(clientPanel, "<html>自动启动客户端", Data.clientAutoStart.get());
 		tabbedPane.addTab("<html>客户端设置", clientPanel);
 		// 按钮面板
 		var buttonPanel = new JPanel(new GridLayout(1, 3, 5, 0));
@@ -77,8 +75,10 @@ public class SettingJDialog {
 						}
 					}
 				// 检测输入框是否为数字且在合法范围内并尝试转换
-				if (!SettingUtil.canSetPort(serverPortField.getText().trim(), true)) ComponentUtil.selectAndFocus(serverPortField);
-				if (!SettingUtil.canSetPort(clientPortField.getText().trim(), false)) ComponentUtil.selectAndFocus(clientPortField);
+				if (!SettingUtil.canSetPort(Integer.parseInt(serverPortField.getText().trim()), true))
+					ComponentUtil.selectAndFocus(serverPortField);
+				if (!SettingUtil.canSetPort(Integer.parseInt(clientPortField.getText().trim()), false))
+					ComponentUtil.selectAndFocus(clientPortField);
 				// 检测最大上传速率
 				var uploadRateLimitText = serverUploadRateLimitField.getText().trim();
 				if (SettingUtil.isInvalidLong(uploadRateLimitText) || Long.parseLong(uploadRateLimitText) < 0) {
@@ -87,25 +87,25 @@ public class SettingJDialog {
 					ComponentUtil.selectAndFocus(serverUploadRateLimitField);
 					return;
 				}
-				Config.serverAutoStart = serverAutoStartBox.isSelected();
-				Config.serverUploadRate = new Rate(
+				Data.serverAutoStart.set(serverAutoStartBox.isSelected());
+				Data.serverUploadRate.set(new Rate(
 					Long.parseLong(uploadRateLimitText),
 					(Unit) serverUploadRateLimitUnitBox.getSelectedItem()
-				);
-				Config.serverSyncDirectory = serverSyncDirectoryField.getText().trim();
-				Config.clientAutoStart = clientAutoStartBox.isSelected();
-				Config.remoteAddress = serverAddressField.getText().trim();
-				Config.clientSyncDirectory = clientSyncDirectoryField.getText().trim();
-				Config.clientOnlyDirectory = clientOnlyDirectoryField.getText().trim();
+				));
+				Data.serverSyncDirectory.set(serverSyncDirectoryField.getText().trim());
+				Data.clientAutoStart.set(clientAutoStartBox.isSelected());
+				Data.remoteAddress.set(serverAddressField.getText().trim());
+				Data.clientSyncDirectory.set(clientSyncDirectoryField.getText().trim());
+				Data.clientOnlyDirectory.set(clientOnlyDirectoryField.getText().trim());
 				ConfigUtil.saveConfig(); // 保存配置
-				settingJDialog.dispose(); // 关闭对话框
+				dispose(); // 关闭对话框
 			}
 		);
-		ComponentUtil.newJButton(buttonPanel, "取消", event -> settingJDialog.dispose());
-		ComponentUtil.newJButton(buttonPanel, "关于", event -> AboutJDialog.about(GUI.frame, "关于"));
+		ComponentUtil.newJButton(buttonPanel, "取消", event -> dispose());
+		ComponentUtil.newJButton(buttonPanel, "关于", event -> new AboutJDialog(owner, "关于"));
 		settingPanel.add(buttonPanel, BorderLayout.SOUTH);
-		settingJDialog.add(settingPanel);
-		settingJDialog.setMinimumSize(new Dimension(320, 0));
-		ComponentUtil.setWindow(settingJDialog);
+		add(settingPanel);
+		setMinimumSize(new Dimension(320, 0));
+		ComponentUtil.setWindow(this);
 	}
 }

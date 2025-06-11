@@ -1,6 +1,6 @@
 package com.forgestove.hexsync.server;
 import com.forgestove.hexsync.HexSync;
-import com.forgestove.hexsync.config.Config;
+import com.forgestove.hexsync.config.Data;
 import com.forgestove.hexsync.util.*;
 import com.sun.net.httpserver.HttpServer;
 
@@ -18,12 +18,12 @@ public class Server {
 			Log.info(HexSync.NAME + "Server正在启动...");
 			FileUtil.initFiles(true);
 			if (serverMap.isEmpty()) {
-				Log.warn(Config.serverSyncDirectory + "没有文件,无法启动服务器");
+				Log.warn(Data.serverSyncDirectory + "没有文件,无法启动服务器");
 				stopServer();
 				return;
 			}
 			try {
-				HTTPServer = HttpServer.create(new InetSocketAddress(Config.serverPort), 0);
+				HTTPServer = HttpServer.create(new InetSocketAddress(Data.serverPort.get()), 0);
 				HTTPServer.setExecutor(Executors.newCachedThreadPool());
 				HTTPServer.createContext("/", RequestHandler::handleRequest);
 				HTTPServer.start();
@@ -31,7 +31,7 @@ public class Server {
 				Log.error("%sServer无法启动: %s", HexSync.NAME, error.getMessage());
 				return;
 			}
-			Log.info("%sServer正在运行...端口号为: %d", HexSync.NAME, Config.serverPort);
+			Log.info("%sServer正在运行...端口号为: %d", HexSync.NAME, Data.serverPort.get());
 		});
 		serverThread.start();
 	}

@@ -1,6 +1,6 @@
 package com.forgestove.hexsync.client;
 import com.forgestove.hexsync.HexSync;
-import com.forgestove.hexsync.config.Config;
+import com.forgestove.hexsync.config.Data;
 import com.forgestove.hexsync.util.*;
 
 import java.util.HashSet;
@@ -16,11 +16,11 @@ public class Client {
 			FileUtil.initFiles(false);
 			var requestMap = Downloader.fetchFileSHA1List();
 			if (!requestMap.isEmpty()) {
-				FileUtil.deleteFilesNotInMaps(requestMap, FileUtil.initMap(Config.clientOnlyDirectory));
-				var clientSHA1Set = new HashSet<>(FileUtil.initMap(Config.clientSyncDirectory).values());
+				FileUtil.deleteFilesNotInMaps(requestMap, FileUtil.initMap(Data.clientOnlyDirectory.get()));
+				var clientSHA1Set = new HashSet<>(FileUtil.initMap(Data.clientSyncDirectory.get()).values());
 				requestMap.entrySet().removeIf(entry -> clientSHA1Set.contains(entry.getValue()));
 				Downloader.downloadMissingFiles(requestMap);
-				FileUtil.copyDirectory(Config.clientOnlyDirectory, Config.clientSyncDirectory);
+				FileUtil.copyDirectory(Data.clientOnlyDirectory.get(), Data.clientSyncDirectory.get());
 			}
 			stopClient();
 		});
@@ -30,6 +30,6 @@ public class Client {
 	public static void stopClient() {
 		if (clientThread.getAndSet(null) == null) return;
 		Log.info(HexSync.NAME + "Client已关闭");
-		if (Config.clientAutoStart && !errorDownload) System.exit(0);
+		if (Data.clientAutoStart.get() && !errorDownload) System.exit(0);
 	}
 }

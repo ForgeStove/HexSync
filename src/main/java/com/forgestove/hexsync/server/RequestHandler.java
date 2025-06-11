@@ -1,5 +1,5 @@
 package com.forgestove.hexsync.server;
-import com.forgestove.hexsync.config.Config;
+import com.forgestove.hexsync.config.Data;
 import com.forgestove.hexsync.util.*;
 import com.sun.net.httpserver.HttpExchange;
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +23,7 @@ public class RequestHandler {
 			break;
 		}
 		if (fileName == null) return;
-		var file = new File(FileUtil.path(Config.serverSyncDirectory, fileName));
+		var file = new File(FileUtil.path(Data.serverSyncDirectory.get(), fileName));
 		try (var inputStream = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
 			ResponseSender.sendResponse(exchange, inputStream, file.length());
 			Log.info("发送文件: %s 至: %s", file, HttpUtil.getHostAddress(exchange));

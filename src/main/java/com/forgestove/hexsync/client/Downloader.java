@@ -1,5 +1,5 @@
 package com.forgestove.hexsync.client;
-import com.forgestove.hexsync.config.Config;
+import com.forgestove.hexsync.config.Data;
 import com.forgestove.hexsync.util.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,7 +21,7 @@ public class Downloader {
 		var executor = Executors.newFixedThreadPool(4);
 		var futures = new ArrayList<Future<?>>();
 		for (var entry : toDownloadMap.entrySet()) {
-			var filePath = FileUtil.path(Config.clientSyncDirectory, entry.getKey());
+			var filePath = FileUtil.path(Data.clientSyncDirectory.get(), entry.getKey());
 			futures.add(executor.submit(() -> {
 				if (downloadAndCheckFile(filePath, entry.getValue()))
 					Log.info("已下载: [%d/%d] %s", count.incrementAndGet(), toDownloadMap.size(), filePath);
@@ -34,7 +34,7 @@ public class Downloader {
 		for (var future : futures) try {future.get();} catch (Exception ignored) {} // 等待所有任务完成
 		executor.shutdown();
 		Log.info("%s: [%d/%d]", Client.errorDownload ? "下载失败" : "下载完成", count.get(), toDownloadMap.size());
-		if (Config.clientAutoStart) System.exit(0);
+		if (Data.clientAutoStart.get()) System.exit(0);
 	}
 	private static boolean downloadAndCheckFile(String filePath, String requestSHA1) {
 		if (Client.clientThread.get() == null) return false;
@@ -45,7 +45,7 @@ public class Downloader {
 		}
 		var downloadURL = ModAPI.getURL(requestSHA1);
 		if (downloadURL == null) downloadURL = "%s:%d/%s/%s".formatted(
-			HttpUtil.formatHTTP(Config.remoteAddress), Config.clientPort,
+			HttpUtil.formatHTTP(Data.remoteAddress.get()), Data.clientPort.get(),
 			HttpUtil.DOWNLOAD,
 			requestSHA1
 		);
@@ -69,7 +69,7 @@ public class Downloader {
 	}
 	// 从服务器获取文件名和校验码列表
 	public static Map<String, String> fetchFileSHA1List() {
-		var url = String.format("%s:%d/%s", HttpUtil.formatHTTP(Config.remoteAddress), Config.clientPort, HttpUtil.LIST);
+		var url = String.format("%s:%d/%s", HttpUtil.formatHTTP(Data.remoteAddress.get()), Data.clientPort.get(), HttpUtil.LIST);
 		Log.info("正在连接至: " + url);
 		Map<String, String> requestMap = new HashMap<>();
 		try {

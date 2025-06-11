@@ -1,7 +1,8 @@
 package com.forgestove.hexsync.cli;
 import com.forgestove.hexsync.cli.Setting.*;
 import com.forgestove.hexsync.config.*;
-import com.forgestove.hexsync.util.SettingUtil;
+import com.forgestove.hexsync.util.*;
+import com.forgestove.hexsync.util.Rate.Unit;
 import picocli.CommandLine;
 import picocli.CommandLine.*;
 @Command(
@@ -22,56 +23,55 @@ public class Setting implements Runnable {
 	public void run() {new CommandLine(this).usage(System.out);}
 	@Command(name = "sp", description = "设置服务端端口")
 	static class ServerPort implements Runnable {
-		@Parameters(description = "端口") String port;
+		@Parameters(description = "端口") int port;
 		public void run() {SettingUtil.canSetPort(port, true);}
 	}
 	@Command(name = "sl", description = "设置限速")
 	static class ServerLimit implements Runnable {
-		@Parameters(description = "数字") String number;
-		@Parameters(description = "单位") String unit;
-		public void run() {SettingUtil.setRate(number + " " + unit);}
+		@Parameters(description = "数字") long value;
+		@Parameters(description = "单位") Unit unit;
+		public void run() {Data.serverUploadRate.set(new Rate(value, unit));}
 	}
 	@Command(name = "sd", description = "设置服务端同步目录")
 	static class ServerDirectory implements Runnable {
 		@Parameters(description = "目录") String dir;
-		public void run() {SettingUtil.setDirectory(dir, "服务端同步", value -> Config.serverSyncDirectory = value);}
+		public void run() {SettingUtil.setDirectory(dir, "服务端同步", Data.serverSyncDirectory::set);}
 	}
 	@Command(name = "ss", description = "设置服务端自动启动")
 	static class ServerAutoStart implements Runnable {
-		@Parameters(description = "true/false") String auto;
-		public void run() {SettingUtil.setAutoStart(auto, true, value -> Config.serverAutoStart = value);}
+		@Parameters(description = "true/false") boolean auto;
+		public void run() {Data.serverAutoStart.set(auto);}
 	}
 	@Command(name = "cp", description = "设置客户端端口")
 	static class ClientPort implements Runnable {
-		@Parameters(description = "端口") String port;
+		@Parameters(description = "端口") int port;
 		public void run() {SettingUtil.canSetPort(port, false);}
 	}
 	@Command(name = "ra", description = "设置服务器地址")
 	static class RemoteAddress implements Runnable {
 		@Parameters(description = "地址") String address;
 		public void run() {
-			Config.remoteAddress = address;
-			System.out.println("服务器地址已设置为: " + Config.remoteAddress);
+			Data.remoteAddress.set(address);
+			System.out.println("服务器地址已设置为: " + Data.remoteAddress.get());
 		}
 	}
 	@Command(name = "cd", description = "设置客户端同步目录")
 	static class ClientSyncDirectory implements Runnable {
 		@Parameters(description = "目录") String dir;
-		public void run() {SettingUtil.setDirectory(dir, "客户端同步", value -> Config.clientSyncDirectory = value);}
+		public void run() {SettingUtil.setDirectory(dir, "客户端同步", Data.clientSyncDirectory::set);}
 	}
 	@Command(name = "co", description = "设置仅客户端模组目录")
 	static class ClientOnlyDirectory implements Runnable {
 		@Parameters(description = "目录") String dir;
-		public void run() {SettingUtil.setDirectory(dir, "仅客户端模组", value -> Config.clientOnlyDirectory = value);}
+		public void run() {SettingUtil.setDirectory(dir, "仅客户端模组", Data.clientOnlyDirectory::set);}
 	}
 	@Command(name = "cs", description = "设置客户端自动启动")
 	static class ClientAutoStart implements Runnable {
-		@Parameters(description = "true/false") String auto;
-		public void run() {SettingUtil.setAutoStart(auto, false, value -> Config.clientAutoStart = value);}
+		@Parameters(description = "true/false") boolean auto;
+		public void run() {Data.clientAutoStart.set(auto);}
 	}
 	@Command(name = "save", description = "保存设置")
 	static class Save implements Runnable {
 		public void run() {ConfigUtil.saveConfig();}
 	}
 }
-

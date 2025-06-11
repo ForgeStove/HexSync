@@ -19,17 +19,6 @@ public class ComponentUtil {
 			component.setFont(font); // 设置字体
 		}
 	}
-	// 检测是否有同名窗口并显示
-	public static boolean checkJDialog(String title) {
-		for (var window : Window.getWindows()) {
-			if (!(window instanceof JDialog dialog)) continue;
-			if (!dialog.getTitle().equals(title)) continue;
-			dialog.setVisible(true);
-			dialog.toFront();
-			return true;
-		}
-		return false;
-	}
 	// 基础复选框框架
 	public static @NotNull JCheckBox newJCheckBox(@NotNull JPanel panel, String text, boolean selected) {
 		var checkBox = new JCheckBox(text);

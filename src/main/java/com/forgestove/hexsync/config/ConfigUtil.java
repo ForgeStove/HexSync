@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 public class ConfigUtil {
 	// 加载配置
 	public static void loadConfig() {
-		var configFile = new File(Config.CONFIG_PATH);
+		var configFile = new File(Data.CONFIG_PATH);
 		if (!configFile.isFile()) {
 			saveConfig();
 			return;
@@ -39,7 +39,7 @@ public class ConfigUtil {
 			joiner.add(config[0].toString().startsWith("#")
 				? config[0].toString()
 				: String.format("%s=%s", config[0], config.length > 1 ? config[1] : ""));
-		var configFile = new File(Config.CONFIG_PATH);
+		var configFile = new File(Data.CONFIG_PATH);
 		try (var bufferedWriter = new BufferedWriter(new FileWriter(configFile))) {
 			bufferedWriter.write(joiner.toString());
 			Log.info("配置已保存: %s%s", System.lineSeparator(), joiner);
@@ -50,7 +50,7 @@ public class ConfigUtil {
 	// 创建配置映射
 	public static @NotNull Map<String, Consumer<String>> createConfigMap() {
 		Map<String, Consumer<String>> configMap = new HashMap<>();
-		Config.CONFIG_ENTRIES.stream().filter(entry -> entry instanceof ValueEntry).forEach(entry -> {
+		Data.CONFIG_ENTRIES.stream().filter(entry -> entry instanceof ValueEntry).forEach(entry -> {
 			var valueEntry = (ValueEntry<?>) entry;
 			configMap.put(valueEntry.key(), valueEntry.setter());
 		});
@@ -58,6 +58,6 @@ public class ConfigUtil {
 	}
 	@Contract(value = " -> new", pure = true)
 	public static Object @NotNull [][] getConfigEntries() {
-		return Config.CONFIG_ENTRIES.stream().map(ConfigEntry::toObjectArray).toArray(Object[][]::new);
+		return Data.CONFIG_ENTRIES.stream().map(ConfigEntry::toObjectArray).toArray(Object[][]::new);
 	}
 }

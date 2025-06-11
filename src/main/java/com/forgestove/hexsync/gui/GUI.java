@@ -25,7 +25,7 @@ public class GUI {
 			var buttonPanel = new JPanel(new GridLayout(2, 3));
 			ComponentUtil.newJButton(buttonPanel, "启动服务端", event -> Server.runServer());
 			ComponentUtil.newJButton(buttonPanel, "启动客户端", event -> Client.runClient());
-			ComponentUtil.newJButton(buttonPanel, "设置", event -> SettingJDialog.setting());
+			ComponentUtil.newJButton(buttonPanel, "设置", event -> new SettingJDialog(frame, "设置"));
 			ComponentUtil.newJButton(buttonPanel, "停止服务端", event -> Server.stopServer());
 			ComponentUtil.newJButton(buttonPanel, "停止客户端", event -> Client.stopClient());
 			ComponentUtil.newJButton(buttonPanel, "退出", event -> System.exit(0));

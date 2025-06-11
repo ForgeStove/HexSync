@@ -1,6 +1,6 @@
 package com.forgestove.hexsync.util;
 import com.forgestove.hexsync.HexSync;
-import com.forgestove.hexsync.config.Config;
+import com.forgestove.hexsync.config.Data;
 import com.forgestove.hexsync.gui.GUI;
 import org.jetbrains.annotations.NotNull;
 
@@ -68,7 +68,7 @@ public enum Log {
 	// 初始化日志
 	public static void initLog() {
 		FileUtil.makeDirectory(HexSync.NAME);
-		try {logWriter = new BufferedWriter(new FileWriter(Config.LOG_PATH, false));} catch (IOException error) {
+		try {logWriter = new BufferedWriter(new FileWriter(Data.LOG_PATH, false));} catch (IOException error) {
 			System.err.println("无法创建日志文件: " + error.getMessage());
 		}
 		Runnable runnable = () -> {if (logWriter != null) try {logWriter.flush();} catch (IOException ignored) {}};

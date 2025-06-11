@@ -5,9 +5,9 @@ import com.forgestove.hexsync.util.Log;
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent.EventType;
 import java.awt.*;
-import java.awt.Dialog.ModalityType;
-public class AboutJDialog {
-	public static void about(Frame parent, String title) {
+public class AboutJDialog extends JDialog {
+	public AboutJDialog(Window parent, String title) {
+		super(parent, title, ModalityType.MODELESS);
 		var aboutTextPane = new JTextPane();
 		aboutTextPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		aboutTextPane.setContentType("text/html");
@@ -25,9 +25,8 @@ public class AboutJDialog {
 				Log.warn("无法打开超链接: " + error.getMessage());
 			}
 		});
-		var aboutJDialog = new JDialog(parent, title, ModalityType.MODELESS);
-		aboutJDialog.add(new JScrollPane(aboutTextPane));
-		aboutJDialog.setMinimumSize(new Dimension(400, 150));
-		ComponentUtil.setWindow(aboutJDialog);
+		add(new JScrollPane(aboutTextPane));
+		setMinimumSize(new Dimension(400, 150));
+		ComponentUtil.setWindow(this);
 	}
 }
