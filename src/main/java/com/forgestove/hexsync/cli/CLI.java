@@ -3,7 +3,6 @@ import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.cli.CLI.*;
 import com.forgestove.hexsync.cli.CLI.Run.*;
 import com.forgestove.hexsync.cli.CLI.Stop.*;
-import com.forgestove.hexsync.cli.Setting.*;
 import com.forgestove.hexsync.client.Client;
 import com.forgestove.hexsync.server.Server;
 import com.forgestove.hexsync.util.Log;
@@ -11,7 +10,7 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
 import java.util.Scanner;
-@Command(name = HexSync.NAME, subcommands = {Run.class, Stop.class, Help.class, Set.class, Exit.class})
+@Command(name = HexSync.NAME, subcommands = {Run.class, Stop.class, Setting.class, Help.class, Exit.class})
 public class CLI implements Runnable {
 	public void run() {
 		System.out.printf("欢迎使用%s!%n输入 help 获取帮助，输入 exit 退出。%n", HexSync.NAME);
@@ -55,23 +54,6 @@ public class CLI implements Runnable {
 		static class StopClient implements Runnable {
 			public void run() {Client.stopClient();}
 		}
-	}
-	@Command(
-		name = "set", description = "设置相关参数", subcommands = {
-		ServerPort.class,
-		ServerLimit.class,
-		ServerDirectory.class,
-		ServerAutoStart.class,
-		ClientPort.class,
-		RemoteAddress.class,
-		ClientSyncDirectory.class,
-		ClientOnlyDirectory.class,
-		ClientAutoStart.class,
-		Save.class
-	}
-	)
-	static class Set implements Runnable {
-		public void run() {new CommandLine(new Setting()).usage(System.out);}
 	}
 	@Command(name = "help", description = "显示帮助信息")
 	static class Help implements Runnable {

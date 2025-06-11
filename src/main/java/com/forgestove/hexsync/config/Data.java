@@ -11,7 +11,7 @@ public class Data {
 	public static final Config<String> serverSyncDirectory = new Config<>("mods"); // 服务端同步文件夹路径
 	public static final Config<String> clientSyncDirectory = new Config<>("mods"); // 客户端同步文件夹路径
 	public static final Config<String> clientOnlyDirectory = new Config<>("clientMods"); // 仅客户端文件夹路径
-	public static final Config<String> remoteAddress = new Config<>("localhost"); // 服务器地址
+	public static final Config<String> remoteAddress = new Config<>("localhost"); // 远程地址
 	public static final Config<Rate> serverUploadRate = new Config<>(new Rate(1, Unit.Mbps)); // 上传速率限制
 	public static final Config<Boolean> clientAutoStart = new Config<>(false); // 客户端自动启动
 	public static final Config<Boolean> serverAutoStart = new Config<>(false); // 服务端自动启动

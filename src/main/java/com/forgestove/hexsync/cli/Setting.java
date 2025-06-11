@@ -47,12 +47,12 @@ public class Setting implements Runnable {
 		@Parameters(description = "端口") Port port;
 		public void run() {SettingUtil.canSetPort(port, false);}
 	}
-	@Command(name = "ra", description = "设置服务器地址")
+	@Command(name = "ra", description = "设置远程地址")
 	static class RemoteAddress implements Runnable {
 		@Parameters(description = "地址") String address;
 		public void run() {
 			Data.remoteAddress.set(address);
-			System.out.println("服务器地址已设置为: " + Data.remoteAddress.get());
+			System.out.println("远程地址已设置为: " + address);
 		}
 	}
 	@Command(name = "cd", description = "设置客户端同步目录")

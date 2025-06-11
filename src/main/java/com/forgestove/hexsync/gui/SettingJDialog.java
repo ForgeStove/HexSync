@@ -40,7 +40,7 @@ public class SettingJDialog extends JDialog {
 		clientPanel.add(new JLabel("<html>端口号:"));
 		var clientPortField = new JTextField(String.valueOf(Data.clientPort));
 		clientPanel.add(clientPortField);
-		clientPanel.add(new JLabel("<html>服务器地址:"));
+		clientPanel.add(new JLabel("<html>远程地址:"));
 		var serverAddressField = new JTextField(Data.remoteAddress.get());
 		clientPanel.add(serverAddressField);
 		clientPanel.add(new JLabel("<html>客户端同步路径:"));
@@ -61,8 +61,7 @@ public class SettingJDialog extends JDialog {
 					{"最大上传速率", serverUploadRateLimitField, 0},
 					{"上传速率单位", serverUploadRateLimitUnitBox, 0},
 					{"服务端同步路径", serverSyncDirectoryField, 0},
-					{"客户端端口", clientPortField, 1},
-					{"服务器地址", serverAddressField, 1},
+					{"客户端端口", clientPortField, 1}, {"远程地址", serverAddressField, 1},
 					{"客户端同步路径", clientSyncDirectoryField, 1},
 					{"仅客户端模组路径", clientOnlyDirectoryField, 1}
 				})
