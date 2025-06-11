@@ -23,7 +23,7 @@ public class Server {
 				return;
 			}
 			try {
-				HTTPServer = HttpServer.create(new InetSocketAddress(Data.serverPort.get()), 0);
+				HTTPServer = HttpServer.create(new InetSocketAddress(Data.serverPort.get().getValue()), 0);
 				HTTPServer.setExecutor(Executors.newCachedThreadPool());
 				HTTPServer.createContext("/", RequestHandler::handleRequest);
 				HTTPServer.start();
@@ -31,7 +31,7 @@ public class Server {
 				Log.error("%sServer无法启动: %s", HexSync.NAME, error.getMessage());
 				return;
 			}
-			Log.info("%sServer正在运行...端口号为: %d", HexSync.NAME, Data.serverPort.get());
+			Log.info("%sServer正在运行...端口号为: %d", HexSync.NAME, Data.serverPort.get().getValue());
 		});
 		serverThread.start();
 	}

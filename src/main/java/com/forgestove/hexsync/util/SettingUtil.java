@@ -7,22 +7,12 @@ import java.io.File;
 import java.util.function.Consumer;
 public class SettingUtil {
 	// 字符串转端口
-	public static boolean canSetPort(int port, boolean isServer) {
+	public static boolean canSetPort(Port port, boolean isServer) {
 		var side = isServer ? "服务端" : "客户端";
-		try {
-			if (port > 0 && port < 65536) {
-				if (isServer) Data.serverPort.set(port);
-				else Data.clientPort.set(port);
-				if (HexSync.HEADLESS) System.out.printf("%s端口已设置为: %d%n", side, port);
-				return true;
-			} else {
-				if (HexSync.HEADLESS) System.err.println(side + "端口号必须在0~65535之间.");
-				return false;
-			}
-		} catch (NumberFormatException error) {
-			if (HexSync.HEADLESS) System.out.println(side + "端口号必须为数字.");
-			return false;
-		}
+		if (isServer) Data.serverPort.set(port);
+		else Data.clientPort.set(port);
+		if (HexSync.HEADLESS) System.out.printf("%s端口已设置为: %d%n", side, port.getValue());
+		return true;
 	}
 	// 检测数字输入是否不在Long范围内
 	public static boolean isInvalidLong(@NotNull String input) {

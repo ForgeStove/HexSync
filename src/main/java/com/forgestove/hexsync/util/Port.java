@@ -1,23 +1,26 @@
 package com.forgestove.hexsync.util;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.Contract;
 public class Port {
 	private final short value;
-	private Port(short value) {
-		this.value = value;
+	@Contract(pure = true)
+	public Port(int value) {
+		if (value >= 0 && value <= 65535) this.value = (short) value;
+		else throw new IllegalArgumentException("Port value must be between 0 and 65535");
 	}
-	@Contract("_ -> new")
-	public static @NotNull Port of(int value) {
-		if (value >= 0 && value <= 65535) return new Port((short) value);
-		throw new IllegalArgumentException();
+	@Contract(pure = true)
+	public Port(String value) {
+		this(getValue(value));
 	}
-	public static @NotNull Port fromString(String value) {
-		return of(Integer.parseInt(value));
+	private static int getValue(String value) {
+		try {return Integer.parseInt(value);} catch (Exception error) {
+			throw new IllegalArgumentException("Port value must be an integer", error);
+		}
 	}
-	public int get() {
+	public int getValue() {
 		return value & 0xFFFF;
 	}
 	@Override
 	public String toString() {
-		return String.valueOf(get());
+		return String.valueOf(getValue());
 	}
 }

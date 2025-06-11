@@ -75,9 +75,9 @@ public class SettingJDialog extends JDialog {
 						}
 					}
 				// 检测输入框是否为数字且在合法范围内并尝试转换
-				if (!SettingUtil.canSetPort(Integer.parseInt(serverPortField.getText().trim()), true))
+				if (!SettingUtil.canSetPort(new Port(serverPortField.getText().trim()), true))
 					ComponentUtil.selectAndFocus(serverPortField);
-				if (!SettingUtil.canSetPort(Integer.parseInt(clientPortField.getText().trim()), false))
+				if (!SettingUtil.canSetPort(new Port(clientPortField.getText().trim()), false))
 					ComponentUtil.selectAndFocus(clientPortField);
 				// 检测最大上传速率
 				var uploadRateLimitText = serverUploadRateLimitField.getText().trim();

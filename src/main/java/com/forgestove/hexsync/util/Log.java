@@ -10,24 +10,12 @@ import java.awt.Color;
 import java.io.*;
 import java.time.LocalTime;
 import java.util.concurrent.*;
-public enum Log {
-	INFO("Log.info", "\u001B[32m", new Color(0, 165, 0)),
-	WARN("Log.warn", "\u001B[33m", new Color(255, 140, 0)),
-	ERROR("Log.error", "\u001B[31m", new Color(200, 0, 0));
+
+import static com.forgestove.hexsync.util.Log.Level.*;
+public class Log {
 	public static final ExecutorService logExecutor = Executors.newSingleThreadExecutor();
 	public static final ScheduledExecutorService flushScheduler = Executors.newSingleThreadScheduledExecutor();
 	public static BufferedWriter logWriter;
-	public final String ansi;
-	public final SimpleAttributeSet attr;
-	public final Color color;
-	public final String resourceName;
-	Log(String resourceName, String ansi, Color color) {
-		this.resourceName = resourceName;
-		this.ansi = ansi;
-		this.color = color;
-		attr = new SimpleAttributeSet();
-		StyleConstants.setForeground(attr, color);
-	}
 	// 日志记录方法
 	public static void info(String message) {log(INFO, message);}
 	public static void info(@NotNull String format, Object... args) {log(INFO, format.formatted(args));}
@@ -36,8 +24,8 @@ public enum Log {
 	public static void error(String message) {log(ERROR, message);}
 	public static void error(@NotNull String format, Object... args) {log(ERROR, format.formatted(args));}
 	// 日志核心方法
-	private static void log(Log level, String message) {
-		if (!(HexSync.LOG && logWriter != null)) return;
+	private static void log(Level level, String message) {
+		if (logWriter == null) return;
 		logExecutor.submit(() -> {
 			var log = "[%s] [%s] %s%n".formatted(LocalTime.now().withNano(0), HexSync.lang.getString(level.resourceName), message);
 			try {
@@ -53,7 +41,7 @@ public enum Log {
 		});
 	}
 	// 在日志面板中追加日志
-	private static void writeToLogPane(Log level, String formattedLog) {
+	private static void writeToLogPane(Level level, String formattedLog) {
 		try {
 			var document = GUI.logPane.getDocument();
 			var root = document.getDefaultRootElement();
@@ -80,5 +68,22 @@ public enum Log {
 				logExecutor.shutdown();
 			} catch (IOException ignored) {}
 		}));
+		Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> error(throwable.getMessage()));
+	}
+	public enum Level {
+		INFO("Log.info", "\u001B[32m", new Color(0, 165, 0)),
+		WARN("Log.warn", "\u001B[33m", new Color(255, 140, 0)),
+		ERROR("Log.error", "\u001B[31m", new Color(235, 0, 0));
+		public final String ansi;
+		public final SimpleAttributeSet attr;
+		public final Color color;
+		public final String resourceName;
+		Level(String resourceName, String ansi, Color color) {
+			this.resourceName = resourceName;
+			this.ansi = ansi;
+			this.color = color;
+			attr = new SimpleAttributeSet();
+			StyleConstants.setForeground(attr, color);
+		}
 	}
 }

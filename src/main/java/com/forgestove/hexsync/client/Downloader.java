@@ -45,7 +45,7 @@ public class Downloader {
 		}
 		var downloadURL = ModAPI.getURL(requestSHA1);
 		if (downloadURL == null) downloadURL = "%s:%d/%s/%s".formatted(
-			HttpUtil.formatHTTP(Data.remoteAddress.get()), Data.clientPort.get(),
+			HttpUtil.formatHTTP(Data.remoteAddress.get()), Data.clientPort.get().getValue(),
 			HttpUtil.DOWNLOAD,
 			requestSHA1
 		);
@@ -69,7 +69,8 @@ public class Downloader {
 	}
 	// 从服务器获取文件名和校验码列表
 	public static Map<String, String> fetchFileSHA1List() {
-		var url = String.format("%s:%d/%s", HttpUtil.formatHTTP(Data.remoteAddress.get()), Data.clientPort.get(), HttpUtil.LIST);
+		var url = String.format("%s:%d/%s", HttpUtil.formatHTTP(Data.remoteAddress.get()), Data.clientPort.get().getValue(),
+			HttpUtil.LIST);
 		Log.info("正在连接至: " + url);
 		Map<String, String> requestMap = new HashMap<>();
 		try {
