@@ -33,6 +33,6 @@ public class ConfigUtil {
 				? config[0].toString() : "%s=%s".formatted(config[0], config.length > 1 ? config[1] : ""))
 			.collect(Collectors.joining(System.lineSeparator()));
 		FileUtil.writeFile(new File(Data.CONFIG_PATH), configContent);
-		Log.info("配置已保存: %n%s", configContent);
+		Log.info("配置已保存: %n%s".formatted(configContent));
 	}
 }

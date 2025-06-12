@@ -1,7 +1,6 @@
 package com.forgestove.hexsync.gui;
 import com.forgestove.hexsync.util.Log;
 import com.formdev.flatlaf.*;
-import com.formdev.flatlaf.extras.FlatSVGIcon.ColorFilter;
 import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes;
 import com.formdev.flatlaf.themes.*;
 import org.jetbrains.annotations.NotNull;
@@ -10,7 +9,7 @@ import javax.swing.*;
 import javax.swing.UIManager.LookAndFeelInfo;
 import java.awt.*;
 import java.util.Arrays;
-public class ComponentUtil {
+public class Component {
 	static {
 		FlatLightLaf.installLafInfo();
 		FlatDarkLaf.installLafInfo();
@@ -36,17 +35,17 @@ public class ComponentUtil {
 	// 设置窗口属性
 	public static void setWindow(@NotNull Window window) {
 		setFont(window, new Font("Microsoft YaHei", Font.PLAIN, 14));
-		window.setIconImage(GUI.icon.getImage());
+		window.setIconImage(SVGIcon.icon.getImage());
 		window.pack();
 		window.setLocationRelativeTo(window.getOwner());
 		window.setVisible(true);
 	}
 	public static void setTheme(String name) {
-		GUI.icon.setColorFilter(new ColorFilter(color -> UIManager.getColor("Component.accentColor")));
+		SVGIconManager.getInstance().updateIconColors();
 		try {
 			UIManager.setLookAndFeel(name);
 		} catch (Exception error) {
-			Log.error("设置主题 '" + name + "' 时出错: " + error.getMessage());
+			Log.error("设置主题 '%s' 时出错: %s".formatted(name, error.getMessage()));
 		}
 	}
 	// 从主题名称获取主题类名
@@ -57,7 +56,7 @@ public class ComponentUtil {
 			.findFirst()
 			.orElse(null);
 		if (className != null) return className;
-		Log.error("未找到名为 %s 的主题", name);
+		Log.error("未找到名为 %s 的主题".formatted(name));
 		return UIManager.getSystemLookAndFeelClassName(); // 如果找不到，返回系统默认外观
 	}
 }

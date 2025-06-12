@@ -52,7 +52,7 @@ public class Server implements Runnable {
 		if (httpServer != null) try {
 			httpServer.stop(0); // 停止HTTP服务器
 		} catch (Exception error) {
-			Log.warn("%sServer 停止过程中出现异常: %s", HexSync.NAME, error.getMessage());
+			Log.warn("%sServer 停止过程中出现异常: %s".formatted(HexSync.NAME, error.getMessage()));
 		} finally {
 			httpServer = null;
 		}
@@ -60,7 +60,7 @@ public class Server implements Runnable {
 			serverThread.interrupt(); // 中断服务器线程
 			serverThread = null;
 		} catch (Exception error) {
-			Log.warn("服务器线程中断失败: %s", error.getMessage());
+			Log.warn("服务器线程中断失败: %s".formatted(error.getMessage()));
 		}
 		Log.info(HexSync.NAME + "Server 已关闭");
 	}
@@ -97,9 +97,9 @@ public class Server implements Runnable {
 			httpServer.createContext("/", RequestHandler::handleRequest);
 			httpServer.start();
 			isRunning = true;
-			Log.info("%sServer 正在运行...端口号为: %d", HexSync.NAME, Data.serverPort.get().getValue());
+			Log.info("%sServer 正在运行...端口号为: %d".formatted(HexSync.NAME, Data.serverPort.get().getValue()));
 		} catch (Exception error) {
-			Log.error("%sServer 无法启动: %s", HexSync.NAME, error.getMessage());
+			Log.error("%sServer 无法启动: %s".formatted(HexSync.NAME, error.getMessage()));
 			stop();
 		}
 	}

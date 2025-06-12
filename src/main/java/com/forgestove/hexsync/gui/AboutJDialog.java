@@ -29,6 +29,6 @@ public class AboutJDialog extends JDialog {
 			}
 		});
 		add(new JScrollPane(aboutTextPane));
-		ComponentUtil.setWindow(this);
+		Component.setWindow(this);
 	}
 }

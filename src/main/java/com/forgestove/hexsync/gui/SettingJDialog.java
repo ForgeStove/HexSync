@@ -88,19 +88,19 @@ public class SettingJDialog extends JDialog {
 			})
 				if (input[1] instanceof JTextField textField && textField.getText().trim().isEmpty()) {
 					tabbedPane.setSelectedIndex((int) input[2]); // 跳转到对应的选项卡
-					ComponentUtil.selectAndFocus(textField);
-					Log.warn("%s不能为空", input[0]);
+					Component.selectAndFocus(textField);
+					Log.warn("%s不能为空".formatted(input[0]));
 					return;
 				}
 			// 检测输入框是否为数字且在合法范围内并尝试转换
-			if (!SettingUtil.canSetPort(new Port(serverPortField.getText().trim()), true)) ComponentUtil.selectAndFocus(serverPortField);
-			if (!SettingUtil.canSetPort(new Port(clientPortField.getText().trim()), false)) ComponentUtil.selectAndFocus(clientPortField);
+			SettingUtil.setPort(new Port(serverPortField.getText().trim()), true);
+			SettingUtil.setPort(new Port(clientPortField.getText().trim()), false);
 			// 检测最大上传速率
 			var rateText = rateField.getText().trim();
 			if (SettingUtil.isInvalidLong(rateText) || Long.parseLong(rateText) < 0) {
 				Log.warn(HexSync.get("Settings.maxUploadRate") + "格式错误: " + rateText);
 				tabbedPane.setSelectedIndex(0);
-				ComponentUtil.selectAndFocus(rateField);
+				Component.selectAndFocus(rateField);
 				return;
 			}
 			Data.serverAuto.set(serverAutoStartBox.isSelected());
@@ -113,11 +113,11 @@ public class SettingJDialog extends JDialog {
 			var themeItem = (String) themeBox.getSelectedItem();
 			if (!Data.theme.get().equals(themeItem)) {
 				Data.theme.set(themeItem);
-				ComponentUtil.setTheme(ComponentUtil.getClassName(themeItem));
+				Component.setTheme(Component.getClassName(themeItem));
 				// 更新所有窗口的UI
 				Arrays.stream(getWindows()).forEach(window -> {
 					SwingUtilities.updateComponentTreeUI(window);
-					window.setIconImage(GUI.icon.getImage());
+					window.setIconImage(SVGIcon.icon.getImage());
 				});
 			}
 			ConfigUtil.saveConfig(); // 保存配置
@@ -127,6 +127,6 @@ public class SettingJDialog extends JDialog {
 		buttonPanel.add(new CButton(HexSync.get("Settings.about"), event -> new AboutJDialog(owner, HexSync.get("About.title"))));
 		settingPanel.add(buttonPanel, BorderLayout.SOUTH);
 		add(settingPanel);
-		ComponentUtil.setWindow(this);
+		Component.setWindow(this);
 	}
 }

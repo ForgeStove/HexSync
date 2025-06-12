@@ -7,12 +7,11 @@ import java.io.File;
 import java.util.function.Consumer;
 public class SettingUtil {
 	// 字符串转端口
-	public static boolean canSetPort(Port port, boolean isServer) {
+	public static void setPort(Port port, boolean isServer) {
 		var side = isServer ? "服务端" : "客户端";
 		if (isServer) Data.serverPort.set(port);
 		else Data.clientPort.set(port);
 		if (HexSync.HEADLESS) System.out.printf("%s端口已设置为: %d%n", side, port.getValue());
-		return true;
 	}
 	// 检测数字输入是否不在Long范围内
 	public static boolean isInvalidLong(@NotNull String input) {

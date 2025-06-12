@@ -69,7 +69,7 @@ public class FileUtil {
 			if (file.isDirectory()) copyDirectory(String.valueOf(file), String.valueOf(targetFile));
 			else if (!targetFile.exists()) try {
 				Files.copy(file.toPath(), targetFile.toPath());
-				Log.info("已复制: %s -> %s", file, target);
+				Log.info("已复制: %s -> %s".formatted(file, target));
 			} catch (IOException error) {
 				Log.error("复制失败: " + error.getMessage());
 			}
@@ -83,7 +83,7 @@ public class FileUtil {
 			while ((bytesRead = inputStream.read(buffer)) != -1) outputStream.write(buffer, 0, bytesRead);
 			return true;
 		} catch (IOException error) {
-			Log.error("写入文件失败: %s %s", targetFile, error.getMessage());
+			Log.error("写入文件失败: %s %s".formatted(targetFile, error.getMessage()));
 			return false;
 		}
 	}

@@ -17,17 +17,18 @@ public class Downloader {
 			return;
 		}
 		var size = toDownloadMap.size();
-		Log.info("开始下载 [%d] 个文件", size);
+		Log.info("开始下载 [%d] 个文件".formatted(size));
 		var count = new AtomicInteger(0);
 		toDownloadMap.entrySet().parallelStream().forEach(entry -> {
 			var filePath = FileUtil.path(Data.clientSyncPath.get(), entry.getKey());
-			if (downloadAndCheckFile(filePath, entry.getValue())) Log.info("已下载: [%d/%d] %s", count.incrementAndGet(), size, filePath);
+			if (downloadAndCheckFile(filePath, entry.getValue()))
+				Log.info("已下载: [%d/%d] %s".formatted(count.incrementAndGet(), size, filePath));
 			else {
 				Log.error("下载失败: " + filePath);
 				Client.errorDownload = true;
 			}
 		});
-		Log.info("%s: [%d/%d]", Client.errorDownload ? "下载失败" : "下载完成", count.get(), size);
+		Log.info("%s: [%d/%d]".formatted(Client.errorDownload ? "下载失败" : "下载完成", count.get(), size));
 		if (Data.clientAuto.get()) System.exit(0);
 	}
 	private static boolean downloadAndCheckFile(String filePath, String requestSHA1) {
@@ -89,7 +90,7 @@ public class Downloader {
 			Log.error("读取响应时出错: " + (error.getMessage() != null ? error.getMessage() : "无响应内容"));
 			Client.errorDownload = true;
 		}
-		Log.info("获取到 [%d] 个文件", requestMap.size());
+		Log.info("获取到 [%d] 个文件".formatted(requestMap.size()));
 		return requestMap;
 	}
 }

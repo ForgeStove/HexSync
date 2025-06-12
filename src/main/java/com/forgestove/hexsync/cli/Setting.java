@@ -24,7 +24,7 @@ public class Setting implements Runnable {
 	@Command(name = "sp", description = "设置服务端端口")
 	static class ServerPort implements Runnable {
 		@Parameters(description = "端口") Port port;
-		public void run() {SettingUtil.canSetPort(port, true);}
+		public void run() {SettingUtil.setPort(port, true);}
 	}
 	@Command(name = "sl", description = "设置限速")
 	static class ServerLimit implements Runnable {
@@ -45,7 +45,7 @@ public class Setting implements Runnable {
 	@Command(name = "cp", description = "设置客户端端口")
 	static class ClientPort implements Runnable {
 		@Parameters(description = "端口") Port port;
-		public void run() {SettingUtil.canSetPort(port, false);}
+		public void run() {SettingUtil.setPort(port, false);}
 	}
 	@Command(name = "ra", description = "设置远程地址")
 	static class RemoteAddress implements Runnable {

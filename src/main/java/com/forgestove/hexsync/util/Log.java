@@ -2,7 +2,6 @@ package com.forgestove.hexsync.util;
 import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.config.Data;
 import com.forgestove.hexsync.gui.GUI;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
@@ -15,11 +14,8 @@ public class Log {
 	public static final ScheduledExecutorService flushScheduler = Executors.newSingleThreadScheduledExecutor();
 	// 日志记录方法
 	public static void info(String message) {log(Level.INFO, message);}
-	public static void info(@NotNull String format, Object... args) {log(Level.INFO, format.formatted(args));}
 	public static void warn(String message) {log(Level.WARN, message);}
-	public static void warn(@NotNull String format, Object... args) {log(Level.WARN, format.formatted(args));}
 	public static void error(String message) {log(Level.ERROR, message);}
-	public static void error(@NotNull String format, Object... args) {log(Level.ERROR, format.formatted(args));}
 	// 日志核心方法
 	private static void log(Level level, String message) {
 		logExecutor.submit(() -> {
