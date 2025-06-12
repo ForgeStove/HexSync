@@ -32,8 +32,7 @@ githubRelease {
 	repo = e("github.repo")
 	tagName = "v${e("app.version")}"
 	releaseName = tagName
-	body =
-		"**Full Changelog**: https://github.com/${e("github.owner")}/${e("github.repo")}/compare/v${getPreviousVersion()}...v${e("app.version")}"
+	generateReleaseNotes = true
 	prerelease = true
 	releaseAssets(tasks.shadowJar.get().outputs.files)
 	overwrite = true // 如果标签已存在，将覆盖它
@@ -103,20 +102,3 @@ tasks.register("packageApp") {
 	}
 }
 fun e(key: String) = extra[key].toString()
-fun getPreviousVersion(): String {
-	val currentVersion = e("app.version")
-	val versionParts = currentVersion.split(".")
-	if(versionParts.size >= 3) {
-		val major = versionParts[0].toInt()
-		val minor = versionParts[1].toInt()
-		val patch = versionParts[2].toInt()
-		// 如果patch版本大于0，则递减patch版本
-		if(patch > 0) return "$major.$minor.${patch - 1}"
-		// 如果minor版本大于0，则递减minor版本，patch设为9
-		else if(minor > 0) return "$major.${minor - 1}.9"
-		// 如果major版本大于0，则递减major版本，minor设为9，patch设为9
-		else if(major > 0) return "${major - 1}.9.9"
-	}
-	// 如果无法解析版本号或者是0.0.0，则返回默认值
-	return "0.0.0"
-}
