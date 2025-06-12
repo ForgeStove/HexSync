@@ -72,13 +72,12 @@ public class ResponseSender {
 		// 计算应该添加的令牌数量
 		var rateLimit = Data.serverUploadRate.get();
 		var tokensToAdd = elapsed * rateLimit.bps / 1000;
-		if (tokensToAdd > 0) {
-			// 限制最大令牌数为速率的2秒容量
-			var maxTokens = rateLimit.bps * 2L;
-			// 更新令牌数和最后补充时间
-			var newTokens = Math.min(availableTokens.get() + tokensToAdd, maxTokens);
-			availableTokens.set(newTokens);
-			lastRefillTime = now;
-		}
+		if (tokensToAdd <= 0) return;
+		// 限制最大令牌数为速率的2秒容量
+		var maxTokens = rateLimit.bps * 2L;
+		// 更新令牌数和最后补充时间
+		var newTokens = Math.min(availableTokens.get() + tokensToAdd, maxTokens);
+		availableTokens.set(newTokens);
+		lastRefillTime = now;
 	}
 }
