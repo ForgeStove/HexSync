@@ -120,7 +120,7 @@ public class SettingJDialog extends JDialog {
 		ComponentUtil.newJButton(buttonPanel, "关于", event -> new AboutJDialog(owner, "关于"));
 		settingPanel.add(buttonPanel, BorderLayout.SOUTH);
 		add(settingPanel);
-		setMinimumSize(new Dimension(320, 0));
+		setMinimumSize(new Dimension(360, 280));
 		ComponentUtil.setWindow(this);
 	}
 }

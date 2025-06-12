@@ -6,6 +6,7 @@ import com.forgestove.hexsync.server.Server;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Objects;
 public class GUI {
 	public static final JTextPane logPane = new JTextPane(); // 日志面板
 	public static Image icon; // 程序图标
@@ -13,7 +14,7 @@ public class GUI {
 	// 图形化界面
 	public static void runGUI() {
 		SwingUtilities.invokeLater(() -> {
-			icon = Toolkit.getDefaultToolkit().getImage(HexSync.class.getClassLoader().getResource("icon.png"));
+			icon = new ImageIcon(Objects.requireNonNull(GUI.class.getResource("/icon.png"))).getImage();
 			ComponentUtil.setTheme(ComponentUtil.getClassName(Data.theme.get()));
 			var panel = new JPanel(); // 主面板
 			panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
