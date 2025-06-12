@@ -8,7 +8,6 @@ public class Port {
 		if (value >= 0 && value <= MAX_VALUE) this.value = (short) value;
 		else this.value = (short) MAX_VALUE;
 	}
-	@Contract(pure = true)
 	public Port(String value) {
 		this(getValue(value));
 	}
