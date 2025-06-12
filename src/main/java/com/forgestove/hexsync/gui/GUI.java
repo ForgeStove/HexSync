@@ -26,8 +26,8 @@ public class GUI {
 			panel.add(scrollPane, BorderLayout.CENTER);
 			frame = new JFrame(HexSync.NAME); // 主窗口
 			var buttonPanel = new JPanel(new GridLayout(0, 3));
-			buttonPanel.add(new CButton("启动服务端", event -> Server.run()));
-			buttonPanel.add(new CButton("启动客户端", event -> Client.run()));
+			buttonPanel.add(new CButton("启动服务端", event -> Server.start()));
+			buttonPanel.add(new CButton("启动客户端", event -> Client.start()));
 			buttonPanel.add(new CButton("设置", event -> new SettingJDialog(frame, "设置")));
 			buttonPanel.add(new CButton("停止服务端", event -> Server.stop()));
 			buttonPanel.add(new CButton("停止客户端", event -> Client.stop()));

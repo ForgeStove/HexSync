@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.util.Map.Entry;
 import java.util.StringJoiner;
 public class RequestHandler {
 	// 处理请求
@@ -16,12 +17,12 @@ public class RequestHandler {
 	}
 	public static void sendFile(HttpExchange exchange, @NotNull String requestURI) {
 		var requestSHA1 = requestURI.substring(requestURI.lastIndexOf("/") + 1);
-		String fileName = null;
-		for (var entry : Server.serverMap.entrySet()) {
-			if (!entry.getValue().equals(requestSHA1)) continue;
-			fileName = entry.getKey();
-			break;
-		}
+		var fileName = Server.serverMap.entrySet()
+			.stream()
+			.filter(entry -> entry.getValue().equals(requestSHA1))
+			.findFirst()
+			.map(Entry::getKey)
+			.orElse(null);
 		if (fileName == null) return;
 		var file = new File(FileUtil.path(Data.serverSyncDirectory.get(), fileName));
 		try (var inputStream = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
@@ -34,7 +35,7 @@ public class RequestHandler {
 	public static void sendList(@NotNull HttpExchange exchange) {
 		var separator = System.lineSeparator();
 		var joiner = new StringJoiner(separator);
-		for (var entry : Server.serverMap.entrySet()) joiner.add(entry.getKey() + separator + entry.getValue());
+		Server.serverMap.entrySet().stream().map(entry -> entry.getKey() + separator + entry.getValue()).forEach(joiner::add);
 		var bytes = joiner.toString().getBytes();
 		try (var inputStream = new ByteArrayInputStream(bytes)) {
 			ResponseSender.sendResponse(exchange, inputStream, bytes.length);

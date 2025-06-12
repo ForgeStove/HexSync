@@ -2,18 +2,31 @@ package com.forgestove.hexsync.server;
 import com.forgestove.hexsync.config.Data;
 import com.forgestove.hexsync.util.Log;
 import com.sun.net.httpserver.HttpExchange;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.time.Instant;
 import java.util.concurrent.atomic.AtomicLong;
+/**
+ * 响应发送器，负责处理HTTP响应发送，支持速率限制
+ */
 public class ResponseSender {
-	public static final AtomicLong AVAILABLE_TOKENS = new AtomicLong(0); // 当前可用令牌数量
-	// 发送数据
-	public static void sendResponse(HttpExchange exchange, InputStream inputStream, long responseBytesLength) {
+	private static final int BUFFER_SIZE = 16384; // 缓冲区大小：16KB
+	private static final AtomicLong availableTokens = new AtomicLong(0); // 当前可用令牌数量
+	private static volatile long lastRefillTime = Instant.now().toEpochMilli(); // 最近一次令牌补充时间
+	/**
+	 * 发送HTTP响应
+	 *
+	 * @param exchange            HTTP交换对象
+	 * @param inputStream         输入流
+	 * @param responseBytesLength 响应体长度
+	 */
+	public static void sendResponse(@NotNull HttpExchange exchange, InputStream inputStream, long responseBytesLength) {
 		try (var outputStream = exchange.getResponseBody()) {
 			exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=UTF-8");
 			exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytesLength);
-			var buffer = new byte[16384];
+			var buffer = new byte[BUFFER_SIZE];
 			long totalBytesSent = 0; // 记录已发送字节数
 			if (Data.serverUploadRate.get().value == 0) { // 无限制
 				int bytesRead;
@@ -24,12 +37,11 @@ public class ResponseSender {
 				}
 				return;
 			}
-			var lastFillTime = System.currentTimeMillis(); // 最近一次填充时间
 			while (totalBytesSent < responseBytesLength) {
-				var bytesToSend = (int) Math.min(16384, responseBytesLength - totalBytesSent);
-				refillTokens(lastFillTime);
-				if (AVAILABLE_TOKENS.get() < bytesToSend) {
-					var sleepMillis = (bytesToSend - AVAILABLE_TOKENS.get()) * 1000L / Data.serverUploadRate.get().bps;
+				var bytesToSend = (int) Math.min(BUFFER_SIZE, responseBytesLength - totalBytesSent);
+				refillTokens();
+				if (availableTokens.get() < bytesToSend) {
+					var sleepMillis = (bytesToSend - availableTokens.get()) * 1000L / Data.serverUploadRate.get().bps;
 					try {
 						Thread.sleep(Math.max(sleepMillis, 1));
 					} catch (InterruptedException error) {
@@ -44,18 +56,29 @@ public class ResponseSender {
 				outputStream.write(buffer, 0, bytesRead); // 写入数据
 				outputStream.flush();
 				totalBytesSent += bytesRead; // 更新已发送字节数
-				AVAILABLE_TOKENS.addAndGet(-bytesRead); // 减少可用令牌
-				lastFillTime = System.currentTimeMillis(); // 仅在有速率限制时更新
+				availableTokens.addAndGet(-bytesRead); // 减少可用令牌
 			}
 		} catch (Exception error) {
 			Log.error("发送响应时出错: " + error);
 		}
 	}
-	// 令牌桶补充逻辑，带最大值限制
-	private static void refillTokens(long lastFillTime) {
-		var tokensToAdd = (System.currentTimeMillis() - lastFillTime) * Data.serverUploadRate.get().bps / 1000;
-		if (tokensToAdd <= 0) return;
-		var maxTokens = Data.serverUploadRate.get().bps * 2L; // 令牌最大值为带宽2秒
-		AVAILABLE_TOKENS.set(Math.min(AVAILABLE_TOKENS.get() + tokensToAdd, maxTokens));
+	/**
+	 * 补充令牌桶中的令牌
+	 */
+	private static void refillTokens() {
+		var now = Instant.now().toEpochMilli();
+		var elapsed = now - lastRefillTime;
+		if (elapsed <= 0) return;
+		// 计算应该添加的令牌数量
+		var rateLimit = Data.serverUploadRate.get();
+		var tokensToAdd = elapsed * rateLimit.bps / 1000;
+		if (tokensToAdd > 0) {
+			// 限制最大令牌数为速率的2秒容量
+			var maxTokens = rateLimit.bps * 2L;
+			// 更新令牌数和最后补充时间
+			var newTokens = Math.min(availableTokens.get() + tokensToAdd, maxTokens);
+			availableTokens.set(newTokens);
+			lastRefillTime = now;
+		}
 	}
 }

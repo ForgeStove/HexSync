@@ -36,11 +36,11 @@ public class CLI implements Runnable {
 		public void run() {new CommandLine(new Run()).usage(System.out);}
 		@Command(name = "server", description = "启动服务端")
 		static class RunServer implements Runnable {
-			public void run() {Server.run();}
+			public void run() {Server.start();}
 		}
 		@Command(name = "client", description = "启动客户端")
 		static class RunClient implements Runnable {
-			public void run() {Client.run();}
+			public void run() {Client.start();}
 		}
 	}
 	@Command(name = "stop", description = "关闭实例", subcommands = {StopServer.class, StopClient.class})

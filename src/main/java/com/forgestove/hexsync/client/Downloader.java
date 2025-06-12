@@ -31,7 +31,7 @@ public class Downloader {
 		if (Data.clientAutoStart.get()) System.exit(0);
 	}
 	private static boolean downloadAndCheckFile(String filePath, String requestSHA1) {
-		if (Client.clientThread.get() == null) return false;
+		if (!Client.isRunning()) return false;
 		var clientFile = new File(filePath);
 		if (requestSHA1 == null) {
 			Log.error("无法获取请求的校验码: " + clientFile);
@@ -75,7 +75,7 @@ public class Downloader {
 			return requestMap;
 		}
 		if (response.statusCode() != HttpURLConnection.HTTP_OK) {
-			if (Client.clientThread.get() != null) Log.error("请求列表失败, 错误代码: " + response.statusCode());
+			if (Client.isRunning()) Log.error("请求列表失败, 错误代码: " + response.statusCode());
 			Client.errorDownload = true;
 			return requestMap;
 		}
