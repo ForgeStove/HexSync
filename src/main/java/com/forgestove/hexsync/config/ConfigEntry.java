@@ -21,10 +21,11 @@ public interface ConfigEntry {
 		 * @param parser 从String转换到泛型T的解析器
 		 * @param <T>    配置项的值类型
 		 * @return 创建的泛型配置项
+		 * @implNote 默认使用 T::toString 作为序列化器
 		 */
 		@Contract("_, _, _ -> new")
 		public static <T> @NotNull ValueEntry<T> value(String key, @NotNull Config<T> config, Function<String, T> parser) {
-			return new ValueEntry<>(key, config::get, string -> config.set(parser.apply(string)), T::toString);
+			return value(key, config, parser, T::toString);
 		}
 		/**
 		 * 创建一个需要解析和序列化的泛型配置项
