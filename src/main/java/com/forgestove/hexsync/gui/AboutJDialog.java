@@ -14,14 +14,19 @@ public class AboutJDialog extends JDialog {
 		aboutTextPane.setEditable(false);
 		aboutTextPane.setText("""
 			<span style="font-family:Microsoft YaHei;"><b>%s<br>
-			License: <a href="%s">%s</a><br>
-			Repository: <a href="%s">%s</a><br></span>
-			""".formatted(HexSync.NAME, HexSync.LICENSE_URL, HexSync.LICENSE, HexSync.GITHUB_URL, HexSync.GITHUB_URL));
+			%s: <a href="%s">%s</a><br>
+			Github: <a href="%s">%s</a><br></span>
+			""".formatted(HexSync.NAME,
+			HexSync.lang.getString("About.license"),
+			HexSync.LICENSE_URL,
+			HexSync.LICENSE,
+			HexSync.GITHUB_URL,
+			HexSync.GITHUB_URL));
 		aboutTextPane.addHyperlinkListener(event -> {
 			if (EventType.ACTIVATED.equals(event.getEventType())) try {
 				Desktop.getDesktop().browse(event.getURL().toURI());
 			} catch (Exception error) {
-				Log.warn("无法打开超链接: " + error.getMessage());
+				Log.warn(HexSync.lang.getString("About.linkError") + ": " + error.getMessage());
 			}
 		});
 		add(new JScrollPane(aboutTextPane));
