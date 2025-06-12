@@ -33,14 +33,14 @@ public class Log {
 		});
 	}
 	// 在日志面板中追加日志
-	private static void writeToLogPane(Level level, String formattedLog) {
+	private static void writeToLogPane(Level level, String log) {
 		try {
 			var document = GUI.logPane.getDocument();
 			var root = document.getDefaultRootElement();
 			var maxLines = 100;
 			var lineCount = root.getElementCount();
 			if (lineCount > maxLines) document.remove(0, root.getElement(lineCount - maxLines - 1).getEndOffset());
-			document.insertString(document.getLength(), formattedLog, level.attr);
+			document.insertString(document.getLength(), log, level.attr);
 		} catch (Exception error) {
 			System.err.println("日志输出失败: " + error.getMessage());
 		}

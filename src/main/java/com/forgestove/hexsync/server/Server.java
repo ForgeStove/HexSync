@@ -12,14 +12,14 @@ public class Server {
 	public static HttpServer HTTPServer; // 存储服务器实例
 	public static Map<String, String> serverMap; // 存储服务端文件名和对应的校验码数据
 	// 启动服务端
-	public static void runServer() {
+	public static void run() {
 		if (serverThread != null) return;
 		serverThread = new Thread(() -> {
 			Log.info(HexSync.NAME + "Server正在启动...");
 			FileUtil.initFiles(true);
 			if (serverMap.isEmpty()) {
 				Log.warn(Data.serverSyncDirectory + "没有文件,无法启动服务器");
-				stopServer();
+				stop();
 				return;
 			}
 			try {
@@ -36,7 +36,7 @@ public class Server {
 		serverThread.start();
 	}
 	// 停止服务端
-	public static void stopServer() {
+	public static void stop() {
 		if (serverThread == null && HTTPServer == null) return;
 		if (serverMap != null) serverMap.clear();
 		if (serverThread != null) serverThread = null;

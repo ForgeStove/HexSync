@@ -14,10 +14,9 @@ public class SettingJDialog extends JDialog {
 		ConfigUtil.loadConfig();
 		// 设置对话框
 		var settingPanel = new JPanel(new BorderLayout());
-		settingPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		settingPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		// 选项卡面板
 		var tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
-		tabbedPane.setFocusable(false);
 		settingPanel.add(tabbedPane, BorderLayout.CENTER);
 		// 设置布局
 		var layout = new GridLayout(0, 2);
@@ -31,13 +30,13 @@ public class SettingJDialog extends JDialog {
 		serverPanel.add(rateField);
 		serverPanel.add(new JLabel("上传速率单位:"));
 		var rateUnitBox = new JComboBox<>(Unit.values());
-		rateUnitBox.setFocusable(false);
 		rateUnitBox.setSelectedItem(Data.serverUploadRate.get().unit);
 		serverPanel.add(rateUnitBox);
 		serverPanel.add(new JLabel("服务端同步路径:"));
 		var serverSyncField = new JTextField(Data.serverSyncDirectory.get());
 		serverPanel.add(serverSyncField);
-		var serverAutoStartBox = ComponentUtil.newJCheckBox(serverPanel, "自动启动服务端", Data.serverAutoStart.get());
+		var serverAutoStartBox = new JCheckBox("自动启动服务端", Data.serverAutoStart.get());
+		serverPanel.add(serverAutoStartBox);
 		tabbedPane.addTab("服务端设置", serverPanel);
 		// 客户端选项卡
 		var clientPanel = new JPanel(layout);
@@ -53,7 +52,8 @@ public class SettingJDialog extends JDialog {
 		clientPanel.add(new JLabel("仅客户端模组路径:"));
 		var clientOnlyField = new JTextField(Data.clientOnlyDirectory.get());
 		clientPanel.add(clientOnlyField);
-		var clientAutoStartBox = ComponentUtil.newJCheckBox(clientPanel, "自动启动客户端", Data.clientAutoStart.get());
+		var clientAutoStartBox = new JCheckBox("自动启动客户端", Data.clientAutoStart.get());
+		clientPanel.add(clientAutoStartBox);
 		tabbedPane.addTab("客户端设置", clientPanel);
 		// 其他选项卡
 		var otherPanel = new JPanel(layout);
@@ -61,7 +61,6 @@ public class SettingJDialog extends JDialog {
 		var themeBox = new JComboBox<>(Arrays.stream(UIManager.getInstalledLookAndFeels())
 			.map(LookAndFeelInfo::getName)
 			.toArray(String[]::new));
-		themeBox.setFocusable(false);
 		themeBox.setSelectedItem(Data.theme.get());
 		otherPanel.add(themeBox);
 		otherPanel.add(new JLabel());
@@ -72,7 +71,7 @@ public class SettingJDialog extends JDialog {
 		tabbedPane.addTab("其他设置", otherPanel);
 		// 按钮面板
 		var buttonPanel = new JPanel(new GridLayout(1, 0));
-		ComponentUtil.newJButton(buttonPanel, "保存", event -> {
+		buttonPanel.add(new CButton("保存", event -> {
 			for (var input : new Object[][]{
 				{"服务端端口", serverPortField, 0},
 				{"最大上传速率", rateField, 0},
@@ -119,12 +118,12 @@ public class SettingJDialog extends JDialog {
 			}
 			ConfigUtil.saveConfig(); // 保存配置
 			dispose(); // 关闭对话框
-		});
-		ComponentUtil.newJButton(buttonPanel, "取消", event -> dispose());
-		ComponentUtil.newJButton(buttonPanel, "关于", event -> new AboutJDialog(owner, "关于"));
+		}));
+		buttonPanel.add(new CButton("取消", event -> dispose()));
+		buttonPanel.add(new CButton("关于", event -> new AboutJDialog(owner, "关于")));
 		settingPanel.add(buttonPanel, BorderLayout.SOUTH);
 		add(settingPanel);
-		setMinimumSize(new Dimension(360, 280));
+		setMinimumSize(new Dimension(360, 300));
 		ComponentUtil.setWindow(this);
 	}
 }

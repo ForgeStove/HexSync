@@ -21,19 +21,21 @@ public class GUI {
 			panel.setLayout(new BorderLayout(5, 5));
 			logPane.setEditable(false);
 			logPane.setOpaque(false);
-			panel.add(new JScrollPane(logPane), BorderLayout.CENTER);
+			var scrollPane = new JScrollPane(logPane);
+			scrollPane.setBorder(BorderFactory.createTitledBorder("日志"));
+			panel.add(scrollPane, BorderLayout.CENTER);
 			frame = new JFrame(HexSync.NAME); // 主窗口
-			var buttonPanel = new JPanel(new GridLayout(2, 3));
-			ComponentUtil.newJButton(buttonPanel, "启动服务端", event -> Server.runServer());
-			ComponentUtil.newJButton(buttonPanel, "启动客户端", event -> Client.runClient());
-			ComponentUtil.newJButton(buttonPanel, "设置", event -> new SettingJDialog(frame, "设置"));
-			ComponentUtil.newJButton(buttonPanel, "停止服务端", event -> Server.stopServer());
-			ComponentUtil.newJButton(buttonPanel, "停止客户端", event -> Client.stopClient());
-			ComponentUtil.newJButton(buttonPanel, "退出", event -> System.exit(0));
+			var buttonPanel = new JPanel(new GridLayout(0, 3));
+			buttonPanel.add(new CButton("启动服务端", event -> Server.run()));
+			buttonPanel.add(new CButton("启动客户端", event -> Client.run()));
+			buttonPanel.add(new CButton("设置", event -> new SettingJDialog(frame, "设置")));
+			buttonPanel.add(new CButton("停止服务端", event -> Server.stop()));
+			buttonPanel.add(new CButton("停止客户端", event -> Client.stop()));
+			buttonPanel.add(new CButton("退出", event -> System.exit(0)));
 			panel.add(buttonPanel, BorderLayout.SOUTH);
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			frame.add(panel);
-			frame.setPreferredSize(new Dimension(480, 360));
+			frame.setPreferredSize(new Dimension(512, 512));
 			ComponentUtil.setWindow(frame); // 设置窗口属性
 		});
 	}

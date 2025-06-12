@@ -21,9 +21,9 @@ tasks.shadowJar {
 	archiveClassifier.set("")
 	manifest { attributes(mapOf("Main-Class" to "com.forgestove.hexsync.HexSync")) }
 	mergeServiceFiles()
-//	minimize {
-//		exclude(dependency("com.formdev:flatlaf-intellij-themes"))
-//	}
+	minimize {
+		exclude(dependency("com.formdev:flatlaf-intellij-themes"))
+	}
 	from("LICENSE")
 }
 tasks.build { dependsOn(tasks.shadowJar) }

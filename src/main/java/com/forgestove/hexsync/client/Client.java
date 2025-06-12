@@ -9,7 +9,7 @@ public class Client {
 	public static final AtomicReference<Thread> clientThread = new AtomicReference<>();
 	public static boolean errorDownload;
 	// 启动客户端
-	public static void runClient() {
+	public static void run() {
 		if (clientThread.get() != null) return;
 		var thread = new Thread(() -> {
 			Log.info(HexSync.NAME + "Client正在启动...");
@@ -22,12 +22,12 @@ public class Client {
 				Downloader.downloadMissingFiles(requestMap);
 				FileUtil.copyDirectory(Data.clientOnlyDirectory.get(), Data.clientSyncDirectory.get());
 			}
-			stopClient();
+			stop();
 		});
 		if (clientThread.compareAndSet(null, thread)) thread.start();
 	}
 	// 停止客户端
-	public static void stopClient() {
+	public static void stop() {
 		if (clientThread.getAndSet(null) == null) return;
 		Log.info(HexSync.NAME + "Client已关闭");
 		if (Data.clientAutoStart.get() && !errorDownload) System.exit(0);

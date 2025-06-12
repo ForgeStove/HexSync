@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -41,18 +42,20 @@ public class Downloader {
 			Data.clientPort.get().getValue(),
 			HttpUtil.DOWNLOAD,
 			requestSHA1);
-		var response = HttpUtil.sendGet(downloadURL, BodyHandlers.ofInputStream());
-		if (response == null) {
-			Log.error("下载请求失败: " + downloadURL);
+		HttpResponse<InputStream> response;
+		try {
+			response = HttpUtil.sendGet(downloadURL, BodyHandlers.ofInputStream());
+		} catch (Exception error) {
+			Log.error("下载文件时出错: " + error.getMessage());
 			return false;
 		}
 		if (response.statusCode() != HttpURLConnection.HTTP_OK) {
-			Log.error("下载失败,错误代码: " + response.statusCode());
+			Log.error("下载失败, 错误代码: " + response.statusCode());
 			return false;
 		}
 		if (!FileUtil.writeToFile(response.body(), clientFile)) return false;
 		if (!requestSHA1.equals(HashUtil.calculateSHA1(clientFile))) {
-			Log.error("校验失败,文件可能已损坏: " + clientFile);
+			Log.error("校验失败, 文件可能已损坏: " + clientFile);
 			FileUtil.deleteFile(clientFile);
 			return false;
 		}
@@ -63,14 +66,16 @@ public class Downloader {
 		var url = "%s:%d/%s".formatted(HttpUtil.formatHTTP(Data.remoteAddress.get()), Data.clientPort.get().getValue(), HttpUtil.LIST);
 		Log.info("正在连接至: " + url);
 		var requestMap = new HashMap<String, String>();
-		var response = HttpUtil.sendGet(url, BodyHandlers.ofString());
-		if (response == null) {
-			Log.error("获取文件列表失败: " + url);
+		HttpResponse<String> response;
+		try {
+			response = HttpUtil.sendGet(url, BodyHandlers.ofString());
+		} catch (Exception error) {
+			Log.error("获取文件列表时出错: " + error.getMessage());
 			Client.errorDownload = true;
 			return requestMap;
 		}
 		if (response.statusCode() != HttpURLConnection.HTTP_OK) {
-			if (Client.clientThread.get() != null) Log.error("请求列表失败,错误代码: " + response.statusCode());
+			if (Client.clientThread.get() != null) Log.error("请求列表失败, 错误代码: " + response.statusCode());
 			Client.errorDownload = true;
 			return requestMap;
 		}

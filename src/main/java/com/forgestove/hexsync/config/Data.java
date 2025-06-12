@@ -1,7 +1,6 @@
 package com.forgestove.hexsync.config;
 import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.config.ConfigEntry.*;
-import com.forgestove.hexsync.gui.ComponentUtil;
 import com.forgestove.hexsync.util.*;
 import com.forgestove.hexsync.util.Rate.Unit;
 import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMTGitHubDarkIJTheme;
@@ -32,5 +31,6 @@ public class Data {
 		ValueEntry.value("clientSyncDirectory", clientSyncDirectory),
 		ValueEntry.value("clientOnlyDirectory", clientOnlyDirectory),
 		ValueEntry.value("clientAutoStart", clientAutoStart, Boolean::parseBoolean),
-		new HeaderEntry("# 其他配置"), ValueEntry.value("theme", theme, ComponentUtil::getName));
+		new HeaderEntry("# 其他配置"),
+		ValueEntry.value("theme", theme));
 }
