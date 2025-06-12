@@ -1,7 +1,9 @@
 package com.forgestove.hexsync.gui;
 import com.forgestove.hexsync.util.Log;
+import com.formdev.flatlaf.*;
 import com.formdev.flatlaf.extras.FlatSVGIcon.ColorFilter;
 import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes;
+import com.formdev.flatlaf.themes.*;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -10,6 +12,12 @@ import java.awt.*;
 import java.util.Arrays;
 public class ComponentUtil {
 	static {
+		FlatLightLaf.installLafInfo();
+		FlatDarkLaf.installLafInfo();
+		FlatMacLightLaf.installLafInfo();
+		FlatMacDarkLaf.installLafInfo();
+		FlatIntelliJLaf.installLafInfo();
+		FlatDarculaLaf.installLafInfo();
 		Arrays.stream(FlatAllIJThemes.INFOS).toList().forEach(UIManager::installLookAndFeel);
 	}
 	// 聚焦并全选输入框
