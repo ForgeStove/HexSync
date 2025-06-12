@@ -10,11 +10,10 @@ import java.util.HashSet;
  * 负责客户端的启动、停止和状态管理
  */
 public class Client implements Runnable {
-	public static volatile boolean errorDownload;           // 下载错误标志
-	private static volatile Thread clientThread;            // 客户端线程
-	private static volatile boolean isRunning = false;      // 客户端运行状态
-	// 单例实例
-	private static Client instance;
+	public static volatile boolean errorDownload; // 下载错误标志
+	private static volatile Thread clientThread; // 客户端线程
+	private static volatile boolean isRunning = false; // 客户端运行状态
+	private static Client instance; // 单例实例
 	@Contract(pure = true)
 	private Client() {}
 	/**
