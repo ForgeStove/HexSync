@@ -9,13 +9,20 @@ public class Rate {
 		this.unit = unit;
 		bps = this.value * (long) Math.pow(1000, this.unit.ordinal()) / 8;
 	}
-	@Contract("_ -> new")
-	public static @NotNull Rate fromString(@NotNull String input) {
-		var parts = input.split("\\s+");
-		if (parts.length != 2 || !parts[0].matches("\\d+")) return new Rate(1, Unit.Mbps);
-		var rateUnit = Unit.fromString(parts[1]);
-		if (rateUnit == null || SettingUtil.isInvalidLong(parts[0])) return new Rate(1, Unit.Mbps);
-		return new Rate(Long.parseLong(parts[0]), rateUnit);
+	public Rate(@NotNull String input) {
+		var tempValue = (long) 1;
+		var tempUnit = Unit.Mbps;
+		var parts = input.trim().split("\\s+");
+		if (parts.length == 2 && parts[0].matches("\\d+")) {
+			var parsedUnit = Unit.fromString(parts[1]);
+			if (parsedUnit != null && !SettingUtil.isInvalidLong(parts[0])) {
+				tempValue = Long.parseLong(parts[0]);
+				tempUnit = parsedUnit;
+			}
+		}
+		value = tempValue;
+		unit = tempUnit;
+		bps = value * (long) Math.pow(1000, unit.ordinal()) / 8;
 	}
 	public String toString() {
 		return value + " " + unit.name();

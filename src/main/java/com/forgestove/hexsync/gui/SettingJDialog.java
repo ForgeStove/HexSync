@@ -4,7 +4,9 @@ import com.forgestove.hexsync.util.*;
 import com.forgestove.hexsync.util.Rate.Unit;
 
 import javax.swing.*;
+import javax.swing.UIManager.LookAndFeelInfo;
 import java.awt.*;
+import java.util.Arrays;
 public class SettingJDialog extends JDialog {
 	// 打开设置对话框
 	public SettingJDialog(Window owner, String title) {
@@ -17,52 +19,69 @@ public class SettingJDialog extends JDialog {
 		var tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
 		tabbedPane.setFocusable(false);
 		settingPanel.add(tabbedPane, BorderLayout.CENTER);
+		// 设置布局
+		var layout = new GridLayout(0, 2);
 		// 服务端选项卡
-		var serverPanel = new JPanel(new GridLayout(5, 2));
+		var serverPanel = new JPanel(layout);
 		serverPanel.add(new JLabel("端口号:"));
 		var serverPortField = new JTextField(String.valueOf(Data.serverPort));
 		serverPanel.add(serverPortField);
 		serverPanel.add(new JLabel("最大上传速率:"));
-		var serverUploadRateLimitField = new JTextField(String.valueOf(Data.serverUploadRate.get().value));
-		serverPanel.add(serverUploadRateLimitField);
+		var rateField = new JTextField(String.valueOf(Data.serverUploadRate.get().value));
+		serverPanel.add(rateField);
 		serverPanel.add(new JLabel("上传速率单位:"));
-		var serverUploadRateLimitUnitBox = new JComboBox<>(new Unit[]{Unit.bps, Unit.Kbps, Unit.Mbps, Unit.Gbps});
-		serverUploadRateLimitUnitBox.setFocusable(false);
-		serverUploadRateLimitUnitBox.setSelectedItem(Data.serverUploadRate.get().unit);
-		serverPanel.add(serverUploadRateLimitUnitBox);
+		var rateUnitBox = new JComboBox<>(Unit.values());
+		rateUnitBox.setFocusable(false);
+		rateUnitBox.setSelectedItem(Data.serverUploadRate.get().unit);
+		serverPanel.add(rateUnitBox);
 		serverPanel.add(new JLabel("服务端同步路径:"));
-		var serverSyncDirectoryField = new JTextField(Data.serverSyncDirectory.get());
-		serverPanel.add(serverSyncDirectoryField);
+		var serverSyncField = new JTextField(Data.serverSyncDirectory.get());
+		serverPanel.add(serverSyncField);
 		var serverAutoStartBox = ComponentUtil.newJCheckBox(serverPanel, "自动启动服务端", Data.serverAutoStart.get());
 		tabbedPane.addTab("服务端设置", serverPanel);
 		// 客户端选项卡
-		var clientPanel = new JPanel(new GridLayout(5, 2));
+		var clientPanel = new JPanel(layout);
 		clientPanel.add(new JLabel("端口号:"));
 		var clientPortField = new JTextField(String.valueOf(Data.clientPort));
 		clientPanel.add(clientPortField);
 		clientPanel.add(new JLabel("远程地址:"));
-		var serverAddressField = new JTextField(Data.remoteAddress.get());
-		clientPanel.add(serverAddressField);
+		var remoteAddressField = new JTextField(Data.remoteAddress.get());
+		clientPanel.add(remoteAddressField);
 		clientPanel.add(new JLabel("客户端同步路径:"));
-		var clientSyncDirectoryField = new JTextField(Data.clientSyncDirectory.get());
-		clientPanel.add(clientSyncDirectoryField);
+		var clientSyncField = new JTextField(Data.clientSyncDirectory.get());
+		clientPanel.add(clientSyncField);
 		clientPanel.add(new JLabel("仅客户端模组路径:"));
-		var clientOnlyDirectoryField = new JTextField(Data.clientOnlyDirectory.get());
-		clientPanel.add(clientOnlyDirectoryField);
+		var clientOnlyField = new JTextField(Data.clientOnlyDirectory.get());
+		clientPanel.add(clientOnlyField);
 		var clientAutoStartBox = ComponentUtil.newJCheckBox(clientPanel, "自动启动客户端", Data.clientAutoStart.get());
 		tabbedPane.addTab("客户端设置", clientPanel);
+		// 其他选项卡
+		var otherPanel = new JPanel(layout);
+		otherPanel.add(new JLabel("主题:"));
+		var themeBox = new JComboBox<>(Arrays.stream(UIManager.getInstalledLookAndFeels())
+			.map(LookAndFeelInfo::getName)
+			.toArray(String[]::new));
+		themeBox.setFocusable(false);
+		themeBox.setSelectedItem(Data.theme.get());
+		otherPanel.add(themeBox);
+		otherPanel.add(new JLabel());
+		otherPanel.add(new JLabel());
+		otherPanel.add(new JLabel());
+		otherPanel.add(new JLabel());
+		otherPanel.add(new JLabel());
+		tabbedPane.addTab("其他设置", otherPanel);
 		// 按钮面板
-		var buttonPanel = new JPanel(new GridLayout(1, 3, 5, 0));
+		var buttonPanel = new JPanel(new GridLayout(1, 0));
 		ComponentUtil.newJButton(buttonPanel, "保存", event -> {
 			for (var input : new Object[][]{
 				{"服务端端口", serverPortField, 0},
-				{"最大上传速率", serverUploadRateLimitField, 0},
-				{"上传速率单位", serverUploadRateLimitUnitBox, 0},
-				{"服务端同步路径", serverSyncDirectoryField, 0},
+				{"最大上传速率", rateField, 0},
+				{"上传速率单位", rateUnitBox, 0},
+				{"服务端同步路径", serverSyncField, 0},
 				{"客户端端口", clientPortField, 1},
-				{"远程地址", serverAddressField, 1},
-				{"客户端同步路径", clientSyncDirectoryField, 1},
-				{"仅客户端模组路径", clientOnlyDirectoryField, 1}
+				{"远程地址", remoteAddressField, 1},
+				{"客户端同步路径", clientSyncField, 1},
+				{"仅客户端模组路径", clientOnlyField, 1}
 			})
 				if (input[1] instanceof JTextField textField && textField.getText().trim().isEmpty()) {
 					tabbedPane.setSelectedIndex((int) input[2]); // 跳转到对应的选项卡
@@ -74,21 +93,26 @@ public class SettingJDialog extends JDialog {
 			if (!SettingUtil.canSetPort(new Port(serverPortField.getText().trim()), true)) ComponentUtil.selectAndFocus(serverPortField);
 			if (!SettingUtil.canSetPort(new Port(clientPortField.getText().trim()), false)) ComponentUtil.selectAndFocus(clientPortField);
 			// 检测最大上传速率
-			var uploadRateLimitText = serverUploadRateLimitField.getText().trim();
-			if (SettingUtil.isInvalidLong(uploadRateLimitText) || Long.parseLong(uploadRateLimitText) < 0) {
-				Log.warn("最大上传速率格式错误: " + uploadRateLimitText);
+			var rateText = rateField.getText().trim();
+			if (SettingUtil.isInvalidLong(rateText) || Long.parseLong(rateText) < 0) {
+				Log.warn("最大上传速率格式错误: " + rateText);
 				tabbedPane.setSelectedIndex(0);
-				ComponentUtil.selectAndFocus(serverUploadRateLimitField);
+				ComponentUtil.selectAndFocus(rateField);
 				return;
 			}
 			Data.serverAutoStart.set(serverAutoStartBox.isSelected());
-			Data.serverUploadRate.set(new Rate(Long.parseLong(uploadRateLimitText),
-				(Unit) serverUploadRateLimitUnitBox.getSelectedItem()));
-			Data.serverSyncDirectory.set(serverSyncDirectoryField.getText().trim());
+			Data.serverUploadRate.set(new Rate(Long.parseLong(rateText), (Unit) rateUnitBox.getSelectedItem()));
+			Data.serverSyncDirectory.set(serverSyncField.getText().trim());
 			Data.clientAutoStart.set(clientAutoStartBox.isSelected());
-			Data.remoteAddress.set(serverAddressField.getText().trim());
-			Data.clientSyncDirectory.set(clientSyncDirectoryField.getText().trim());
-			Data.clientOnlyDirectory.set(clientOnlyDirectoryField.getText().trim());
+			Data.remoteAddress.set(remoteAddressField.getText().trim());
+			Data.clientSyncDirectory.set(clientSyncField.getText().trim());
+			Data.clientOnlyDirectory.set(clientOnlyField.getText().trim());
+			var themeItem = (String) themeBox.getSelectedItem();
+			if (!Data.theme.get().equals(themeItem)) {
+				Data.theme.set(themeItem);
+				ComponentUtil.setTheme(ComponentUtil.getClassName(themeItem));
+				for (var window : getWindows()) SwingUtilities.updateComponentTreeUI(window); // 更新所有窗口的UI
+			}
 			ConfigUtil.saveConfig(); // 保存配置
 			dispose(); // 关闭对话框
 		});

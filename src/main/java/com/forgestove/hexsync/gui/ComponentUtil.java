@@ -1,11 +1,18 @@
 package com.forgestove.hexsync.gui;
 import com.forgestove.hexsync.util.Log;
+import com.formdev.flatlaf.*;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 public class ComponentUtil {
+	static {
+		FlatDarculaLaf.installLafInfo();
+		FlatDarkLaf.installLafInfo();
+		FlatIntelliJLaf.installLafInfo();
+		FlatLightLaf.installLafInfo();
+	}
 	// 聚焦并全选输入框
 	public static void selectAndFocus(@NotNull JTextField textField) {
 		textField.requestFocus(); // 聚焦输入框
@@ -43,12 +50,23 @@ public class ComponentUtil {
 		window.setLocationRelativeTo(window.getOwner());
 		window.setVisible(true);
 	}
-	// 设置主题
-	public static void setTheme(LookAndFeel lookAndFeel) {
+	public static void setTheme(String name) {
 		try {
-			UIManager.setLookAndFeel(lookAndFeel);
-		} catch (UnsupportedLookAndFeelException error) {
-			Log.error("设置主题时出错: " + error.getMessage());
+			UIManager.setLookAndFeel(name);
+		} catch (Exception error) {
+			Log.error("设置主题 '" + name + "' 时出错: " + error.getMessage());
 		}
+	}
+	public static String fromName(String name) {
+		for (var info : UIManager.getInstalledLookAndFeels())
+			if (info.getName().equalsIgnoreCase(name)) return info.getName();
+		Log.error("未找到名为 '" + name + "' 的主题");
+		return UIManager.getSystemLookAndFeelClassName(); // 如果找不到，返回系统默认外观
+	}
+	public static String getClassName(String name) {
+		for (var info : UIManager.getInstalledLookAndFeels())
+			if (info.getName().equalsIgnoreCase(name)) return info.getClassName();
+		Log.error("未找到名为 '" + name + "' 的主题");
+		return UIManager.getSystemLookAndFeelClassName(); // 如果找不到，返回系统默认外观
 	}
 }

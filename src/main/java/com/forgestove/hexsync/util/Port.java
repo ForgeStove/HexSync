@@ -1,23 +1,23 @@
 package com.forgestove.hexsync.util;
 import org.jetbrains.annotations.Contract;
 public class Port {
+	public static final int MAX_VALUE = 65535;
 	private final short value;
 	@Contract(pure = true)
 	public Port(int value) {
-		if (value >= 0 && value <= 65535) this.value = (short) value;
-		else this.value = (short) 65535; // 默认端口值
+		if (value >= 0 && value <= MAX_VALUE) this.value = (short) value;
+		else this.value = (short) MAX_VALUE;
 	}
 	@Contract(pure = true)
 	public Port(String value) {
 		this(getValue(value));
 	}
+	@Contract(pure = true)
 	private static int getValue(String value) {
-		try {return Integer.parseInt(value);} catch (Exception error) {
-			return 65535;
-		}
+		try {return Integer.parseInt(value);} catch (Exception error) {return MAX_VALUE;}
 	}
 	public int getValue() {
-		return value & 0xFFFF;
+		return value & MAX_VALUE;
 	}
 	@Override
 	public String toString() {

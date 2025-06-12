@@ -1,8 +1,8 @@
 package com.forgestove.hexsync.gui;
 import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.client.Client;
+import com.forgestove.hexsync.config.Data;
 import com.forgestove.hexsync.server.Server;
-import com.formdev.flatlaf.FlatDarculaLaf;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,7 +14,7 @@ public class GUI {
 	public static void runGUI() {
 		SwingUtilities.invokeLater(() -> {
 			icon = Toolkit.getDefaultToolkit().getImage(HexSync.class.getClassLoader().getResource("icon.png"));
-			ComponentUtil.setTheme(new FlatDarculaLaf());
+			ComponentUtil.setTheme(ComponentUtil.getClassName(Data.theme.get()));
 			var panel = new JPanel(); // 主面板
 			panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 			panel.setLayout(new BorderLayout(5, 5));
