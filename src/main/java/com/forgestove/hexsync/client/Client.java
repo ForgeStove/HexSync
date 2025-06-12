@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Contract;
 
 import java.util.HashSet;
 /**
- * HexSync 客户端管理类
+ * HexSync 客户端管理类<p>
  * 负责客户端的启动、停止和状态管理
  */
 public class Client implements Runnable {
