@@ -35,12 +35,12 @@ public class Setting implements Runnable {
 	@Command(name = "sd", description = "设置服务端同步目录")
 	static class ServerDirectory implements Runnable {
 		@Parameters(description = "目录") String dir;
-		public void run() {SettingUtil.setDirectory(dir, "服务端同步", Data.serverSyncDirectory::set);}
+		public void run() {SettingUtil.setDirectory(dir, "服务端同步", Data.serverSyncPath::set);}
 	}
 	@Command(name = "ss", description = "设置服务端自动启动")
 	static class ServerAutoStart implements Runnable {
 		@Parameters(description = "true/false") boolean auto;
-		public void run() {Data.serverAutoStart.set(auto);}
+		public void run() {Data.serverAuto.set(auto);}
 	}
 	@Command(name = "cp", description = "设置客户端端口")
 	static class ClientPort implements Runnable {
@@ -58,17 +58,17 @@ public class Setting implements Runnable {
 	@Command(name = "cd", description = "设置客户端同步目录")
 	static class ClientSyncDirectory implements Runnable {
 		@Parameters(description = "目录") String dir;
-		public void run() {SettingUtil.setDirectory(dir, "客户端同步", Data.clientSyncDirectory::set);}
+		public void run() {SettingUtil.setDirectory(dir, "客户端同步", Data.clientSyncPath::set);}
 	}
 	@Command(name = "co", description = "设置仅客户端模组目录")
 	static class ClientOnlyDirectory implements Runnable {
 		@Parameters(description = "目录") String dir;
-		public void run() {SettingUtil.setDirectory(dir, "仅客户端模组", Data.clientOnlyDirectory::set);}
+		public void run() {SettingUtil.setDirectory(dir, "仅客户端模组", Data.clientOnlyPath::set);}
 	}
 	@Command(name = "cs", description = "设置客户端自动启动")
 	static class ClientAutoStart implements Runnable {
 		@Parameters(description = "true/false") boolean auto;
-		public void run() {Data.clientAutoStart.set(auto);}
+		public void run() {Data.clientAuto.set(auto);}
 	}
 	@Command(name = "save", description = "保存设置")
 	static class Save implements Runnable {

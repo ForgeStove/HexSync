@@ -86,7 +86,7 @@ public class Server implements Runnable {
 		FileUtil.initFiles(true);
 		// 检查是否有文件可以同步
 		if (serverMap == null || serverMap.isEmpty()) {
-			Log.warn(Data.serverSyncDirectory + " 没有文件，无法启动服务器");
+			Log.warn(Data.serverSyncPath + " 没有文件，无法启动服务器");
 			stop();
 			return;
 		}

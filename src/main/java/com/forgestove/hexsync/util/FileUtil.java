@@ -13,12 +13,12 @@ import java.util.stream.Collectors;
 public class FileUtil {
 	// 初始化文件
 	public static void initFiles(boolean isServer) {
-		makeDirectory(isServer ? Data.serverSyncDirectory.get() : Data.clientSyncDirectory.get());
+		makeDirectory(isServer ? Data.serverSyncPath.get() : Data.clientSyncPath.get());
 		makeDirectory(HexSync.NAME);
 		ConfigUtil.loadConfig();
-		if (isServer) Server.serverMap = initMap(Data.serverSyncDirectory.get());
+		if (isServer) Server.serverMap = initMap(Data.serverSyncPath.get());
 		else {
-			makeDirectory(Data.clientOnlyDirectory.get());
+			makeDirectory(Data.clientOnlyPath.get());
 			Client.errorDownload = false;
 		}
 	}
@@ -40,7 +40,7 @@ public class FileUtil {
 	}
 	// 删除指定路径下的文件
 	public static void deleteFilesNotInMaps(Map<String, String> requestMap, Map<String, String> clientOnlyMap) {
-		var fileList = new File(Data.clientSyncDirectory.get()).listFiles();
+		var fileList = new File(Data.clientSyncPath.get()).listFiles();
 		if (fileList == null) return;
 		Arrays.stream(fileList).parallel().filter(File::isFile).forEach(file -> {
 			var SHA1 = HashUtil.calculateSHA1(file);

@@ -36,9 +36,9 @@ public class SettingJDialog extends JDialog {
 		rateUnitBox.setSelectedItem(Data.serverUploadRate.get().unit);
 		serverPanel.add(rateUnitBox);
 		serverPanel.add(new JLabel(HexSync.get("Settings.serverSyncPath")));
-		var serverSyncField = new JTextField(Data.serverSyncDirectory.get());
+		var serverSyncField = new JTextField(Data.serverSyncPath.get());
 		serverPanel.add(serverSyncField);
-		var serverAutoStartBox = new JCheckBox(HexSync.get("Settings.autoStartServer"), Data.serverAutoStart.get());
+		var serverAutoStartBox = new JCheckBox(HexSync.get("Settings.autoStartServer"), Data.serverAuto.get());
 		serverPanel.add(serverAutoStartBox);
 		tabbedPane.addTab(HexSync.get("Settings.serverSettings"), serverPanel);
 		// 客户端选项卡
@@ -50,13 +50,13 @@ public class SettingJDialog extends JDialog {
 		var remoteAddressField = new JTextField(Data.remoteAddress.get());
 		clientPanel.add(remoteAddressField);
 		clientPanel.add(new JLabel(HexSync.get("Settings.clientSyncPath")));
-		var clientSyncField = new JTextField(Data.clientSyncDirectory.get());
+		var clientSyncField = new JTextField(Data.clientSyncPath.get());
 		clientPanel.add(clientSyncField);
 		// 保留原有"仅客户端模组路径"标签，并添加到属性文件
 		clientPanel.add(new JLabel(HexSync.get("Settings.clientOnlyPath")));
-		var clientOnlyField = new JTextField(Data.clientOnlyDirectory.get());
+		var clientOnlyField = new JTextField(Data.clientOnlyPath.get());
 		clientPanel.add(clientOnlyField);
-		var clientAutoStartBox = new JCheckBox(HexSync.get("Settings.autoStartClient"), Data.clientAutoStart.get());
+		var clientAutoStartBox = new JCheckBox(HexSync.get("Settings.autoStartClient"), Data.clientAuto.get());
 		clientPanel.add(clientAutoStartBox);
 		tabbedPane.addTab(HexSync.get("Settings.clientSettings"), clientPanel);
 		// 其他选项卡
@@ -103,13 +103,13 @@ public class SettingJDialog extends JDialog {
 				ComponentUtil.selectAndFocus(rateField);
 				return;
 			}
-			Data.serverAutoStart.set(serverAutoStartBox.isSelected());
+			Data.serverAuto.set(serverAutoStartBox.isSelected());
 			Data.serverUploadRate.set(new Rate(Long.parseLong(rateText), (Unit) rateUnitBox.getSelectedItem()));
-			Data.serverSyncDirectory.set(serverSyncField.getText().trim());
-			Data.clientAutoStart.set(clientAutoStartBox.isSelected());
+			Data.serverSyncPath.set(serverSyncField.getText().trim());
+			Data.clientAuto.set(clientAutoStartBox.isSelected());
 			Data.remoteAddress.set(remoteAddressField.getText().trim());
-			Data.clientSyncDirectory.set(clientSyncField.getText().trim());
-			Data.clientOnlyDirectory.set(clientOnlyField.getText().trim());
+			Data.clientSyncPath.set(clientSyncField.getText().trim());
+			Data.clientOnlyPath.set(clientOnlyField.getText().trim());
 			var themeItem = (String) themeBox.getSelectedItem();
 			if (!Data.theme.get().equals(themeItem)) {
 				Data.theme.set(themeItem);

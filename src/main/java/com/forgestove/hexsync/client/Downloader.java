@@ -20,7 +20,7 @@ public class Downloader {
 		Log.info("开始下载 [%d] 个文件", size);
 		var count = new AtomicInteger(0);
 		toDownloadMap.entrySet().parallelStream().forEach(entry -> {
-			var filePath = FileUtil.path(Data.clientSyncDirectory.get(), entry.getKey());
+			var filePath = FileUtil.path(Data.clientSyncPath.get(), entry.getKey());
 			if (downloadAndCheckFile(filePath, entry.getValue())) Log.info("已下载: [%d/%d] %s", count.incrementAndGet(), size, filePath);
 			else {
 				Log.error("下载失败: " + filePath);
@@ -28,7 +28,7 @@ public class Downloader {
 			}
 		});
 		Log.info("%s: [%d/%d]", Client.errorDownload ? "下载失败" : "下载完成", count.get(), size);
-		if (Data.clientAutoStart.get()) System.exit(0);
+		if (Data.clientAuto.get()) System.exit(0);
 	}
 	private static boolean downloadAndCheckFile(String filePath, String requestSHA1) {
 		if (!Client.isRunning()) return false;

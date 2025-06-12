@@ -56,7 +56,7 @@ public class Client implements Runnable {
 		HttpUtil.resetClient();
 		isRunning = false;
 		Log.info(HexSync.NAME + "Client 已关闭");
-		if (Data.clientAutoStart.get() && !errorDownload) System.exit(0); // 如果设置了自动启动且没有下载错误，则退出程序
+		if (Data.clientAuto.get() && !errorDownload) System.exit(0); // 如果设置了自动启动且没有下载错误，则退出程序
 	}
 	/**
 	 * 检查客户端是否正在运行
@@ -81,11 +81,11 @@ public class Client implements Runnable {
 			FileUtil.initFiles(false); // 初始化文件
 			var requestMap = Downloader.fetchFileSHA1List(); // 获取服务器文件列表
 			if (!requestMap.isEmpty()) {
-				FileUtil.deleteFilesNotInMaps(requestMap, FileUtil.initMap(Data.clientOnlyDirectory.get())); // 删除不在服务器列表中的文件
-				var clientSHA1Set = new HashSet<>(FileUtil.initMap(Data.clientSyncDirectory.get()).values()); // 获取客户端已有文件的 SHA1 列表
+				FileUtil.deleteFilesNotInMaps(requestMap, FileUtil.initMap(Data.clientOnlyPath.get())); // 删除不在服务器列表中的文件
+				var clientSHA1Set = new HashSet<>(FileUtil.initMap(Data.clientSyncPath.get()).values()); // 获取客户端已有文件的 SHA1 列表
 				requestMap.entrySet().removeIf(entry -> clientSHA1Set.contains(entry.getValue())); // 过滤掉客户端已有的文件
 				Downloader.downloadMissingFiles(requestMap); // 下载缺失的文件
-				FileUtil.copyDirectory(Data.clientOnlyDirectory.get(), Data.clientSyncDirectory.get()); // 复制文件到客户端同步目录
+				FileUtil.copyDirectory(Data.clientOnlyPath.get(), Data.clientSyncPath.get()); // 复制文件到客户端同步目录
 			}
 		} catch (Exception e) {
 			Log.error("客户端运行过程中出现错误: %s", e.getMessage());
