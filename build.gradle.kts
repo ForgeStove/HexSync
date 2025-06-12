@@ -35,7 +35,7 @@ githubRelease {
 	generateReleaseNotes = true
 	prerelease = true
 	releaseAssets(tasks.shadowJar.get().outputs.files)
-	overwrite = true // 如果标签已存在，将覆盖它
+	overwrite = true
 }
 tasks.register("packageApp") {
 	description = "打包应用程序为可执行镜像"
