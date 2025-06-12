@@ -1,17 +1,18 @@
 package com.forgestove.hexsync.gui;
 import com.forgestove.hexsync.util.Log;
-import com.formdev.flatlaf.*;
+import com.formdev.flatlaf.extras.FlatSVGIcon.ColorFilter;
+import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes;
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMTGitHubDarkIJTheme;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 public class ComponentUtil {
 	static {
-		FlatDarculaLaf.installLafInfo();
-		FlatDarkLaf.installLafInfo();
-		FlatIntelliJLaf.installLafInfo();
-		FlatLightLaf.installLafInfo();
+		Arrays.stream(FlatAllIJThemes.INFOS).toList().forEach(UIManager::installLookAndFeel);
+		FlatMTGitHubDarkIJTheme.updateUI();
 	}
 	// 聚焦并全选输入框
 	public static void selectAndFocus(@NotNull JTextField textField) {
@@ -45,19 +46,20 @@ public class ComponentUtil {
 	// 设置窗口属性
 	public static void setWindow(@NotNull Window window) {
 		setFont(window, new Font("Microsoft YaHei", Font.PLAIN, 14));
-		window.setIconImage(GUI.icon);
+		window.setIconImage(GUI.icon.getImage());
 		window.pack();
 		window.setLocationRelativeTo(window.getOwner());
 		window.setVisible(true);
 	}
 	public static void setTheme(String name) {
+		GUI.icon.setColorFilter(new ColorFilter(color -> UIManager.getColor("Component.accentColor")));
 		try {
 			UIManager.setLookAndFeel(name);
 		} catch (Exception error) {
 			Log.error("设置主题 '" + name + "' 时出错: " + error.getMessage());
 		}
 	}
-	public static String fromName(String name) {
+	public static String getName(String name) {
 		for (var info : UIManager.getInstalledLookAndFeels())
 			if (info.getName().equalsIgnoreCase(name)) return info.getName();
 		Log.error("未找到名为 '" + name + "' 的主题");

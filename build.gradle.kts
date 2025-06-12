@@ -12,16 +12,18 @@ repositories {
 }
 dependencies {
 	compileOnly("org.jetbrains:annotations:+")
-	implementation("com.formdev:flatlaf:1.1.1")
+	implementation("com.formdev:flatlaf:+")
+	implementation("com.formdev:flatlaf-intellij-themes:+")
+	implementation("com.formdev:flatlaf-extras:+")
 	implementation("info.picocli:picocli:+")
 }
 tasks.shadowJar {
 	archiveClassifier.set("")
 	manifest { attributes(mapOf("Main-Class" to "com.forgestove.hexsync.HexSync")) }
 	mergeServiceFiles()
-	minimize {
-		exclude(dependency("com.formdev:flatlaf"))
-	}
+//	minimize {
+//		exclude(dependency("com.formdev:flatlaf-intellij-themes"))
+//	}
 	from("LICENSE")
 }
 tasks.build { dependsOn(tasks.shadowJar) }

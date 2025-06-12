@@ -3,18 +3,18 @@ import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.client.Client;
 import com.forgestove.hexsync.config.Data;
 import com.forgestove.hexsync.server.Server;
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Objects;
 public class GUI {
 	public static final JTextPane logPane = new JTextPane(); // 日志面板
-	public static Image icon; // 程序图标
+	public static FlatSVGIcon icon; // 程序图标
 	public static JFrame frame; // 主窗口
 	// 图形化界面
 	public static void runGUI() {
 		SwingUtilities.invokeLater(() -> {
-			icon = new ImageIcon(Objects.requireNonNull(GUI.class.getResource("/icon.png"))).getImage();
+			icon = new FlatSVGIcon("icon.svg");
 			ComponentUtil.setTheme(ComponentUtil.getClassName(Data.theme.get()));
 			var panel = new JPanel(); // 主面板
 			panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));

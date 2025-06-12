@@ -111,7 +111,11 @@ public class SettingJDialog extends JDialog {
 			if (!Data.theme.get().equals(themeItem)) {
 				Data.theme.set(themeItem);
 				ComponentUtil.setTheme(ComponentUtil.getClassName(themeItem));
-				for (var window : getWindows()) SwingUtilities.updateComponentTreeUI(window); // 更新所有窗口的UI
+				// 更新所有窗口的UI
+				Arrays.stream(getWindows()).forEach(window -> {
+					SwingUtilities.updateComponentTreeUI(window);
+					window.setIconImage(GUI.icon.getImage());
+				});
 			}
 			ConfigUtil.saveConfig(); // 保存配置
 			dispose(); // 关闭对话框
