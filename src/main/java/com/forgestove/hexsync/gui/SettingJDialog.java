@@ -127,7 +127,6 @@ public class SettingJDialog extends JDialog {
 		buttonPanel.add(new CButton(HexSync.get("Settings.about"), event -> new AboutJDialog(owner, HexSync.get("About.title"))));
 		settingPanel.add(buttonPanel, BorderLayout.SOUTH);
 		add(settingPanel);
-		setMinimumSize(new Dimension(360, 300));
 		ComponentUtil.setWindow(this);
 	}
 }

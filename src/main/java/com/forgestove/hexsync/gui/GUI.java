@@ -35,7 +35,7 @@ public class GUI {
 			panel.add(buttonPanel, BorderLayout.SOUTH);
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			frame.add(panel);
-			frame.setPreferredSize(new Dimension(512, 512));
+			frame.setMinimumSize(new Dimension(640, 480));
 			ComponentUtil.setWindow(frame); // 设置窗口属性
 		});
 	}
