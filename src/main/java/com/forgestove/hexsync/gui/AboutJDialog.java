@@ -16,8 +16,7 @@ public class AboutJDialog extends JDialog {
 			<span style="font-family:Microsoft YaHei;"><b>%s<br>
 			%s: <a href="%s">%s</a><br>
 			Github: <a href="%s">%s</a><br></span>
-			""".formatted(HexSync.NAME,
-			HexSync.lang.getString("About.license"),
+			""".formatted(HexSync.NAME, HexSync.get("About.license"),
 			HexSync.LICENSE_URL,
 			HexSync.LICENSE,
 			HexSync.GITHUB_URL,
@@ -26,7 +25,7 @@ public class AboutJDialog extends JDialog {
 			if (EventType.ACTIVATED.equals(event.getEventType())) try {
 				Desktop.getDesktop().browse(event.getURL().toURI());
 			} catch (Exception error) {
-				Log.warn(HexSync.lang.getString("About.linkError") + ": " + error.getMessage());
+				Log.warn(HexSync.get("About.linkError") + ": " + error.getMessage());
 			}
 		});
 		add(new JScrollPane(aboutTextPane));

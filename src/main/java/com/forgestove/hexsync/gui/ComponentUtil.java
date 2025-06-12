@@ -35,7 +35,11 @@ public class ComponentUtil {
 	}
 	public static void setTheme(String name) {
 		GUI.icon.setColorFilter(new ColorFilter(color -> UIManager.getColor("Component.accentColor")));
-		try {UIManager.setLookAndFeel(name);} catch (Exception error) {Log.error("设置主题 '" + name + "' 时出错: " + error.getMessage());}
+		try {
+			UIManager.setLookAndFeel(name);
+		} catch (Exception error) {
+			Log.error("设置主题 '" + name + "' 时出错: " + error.getMessage());
+		}
 	}
 	// 从主题名称获取主题类名
 	public static @NotNull String getClassName(String name) {

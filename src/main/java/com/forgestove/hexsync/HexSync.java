@@ -5,6 +5,7 @@ import com.forgestove.hexsync.config.*;
 import com.forgestove.hexsync.gui.GUI;
 import com.forgestove.hexsync.server.Server;
 import com.forgestove.hexsync.util.Log;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.GraphicsEnvironment;
 import java.util.*;
@@ -14,10 +15,10 @@ public class HexSync {
 		LICENSE = "MIT", // 程序许可证
 		GITHUB_URL = "https://github.com/ForgeStove/HexSync", // GitHub地址
 		LICENSE_URL = GITHUB_URL + "/blob/main/LICENSE"; // 许可证地址
-	public static final ResourceBundle lang = ResourceBundle.getBundle(NAME, Locale.getDefault()); // 语言资源包，默认使用系统语言
 	public static final boolean //
 		HEADLESS = GraphicsEnvironment.isHeadless(),// 是否处于无头模式
 		ANSI = System.getProperty("ansi", "true").equalsIgnoreCase("false");// 是否启用ANSI控制台输出
+	public static final ResourceBundle lang = ResourceBundle.getBundle(NAME, Locale.getDefault()); // 语言
 	public static void main(String[] args) {
 		Log.initLog();
 		ConfigUtil.loadConfig();
@@ -25,5 +26,8 @@ public class HexSync {
 		if (Data.clientAutoStart.get()) Client.start();
 		if (HEADLESS) new CLI().run();
 		else GUI.runGUI();
+	}
+	public static @NotNull String get(String key) {
+		return lang.getString(key);
 	}
 }

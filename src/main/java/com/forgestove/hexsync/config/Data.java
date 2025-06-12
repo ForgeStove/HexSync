@@ -18,19 +18,19 @@ public class Data {
 	public static final Config<Boolean> serverAutoStart = new Config<>(false); // 服务端自动启动
 	public static final Config<Port> serverPort = new Config<>(new Port(65535)); // 服务端端口
 	public static final Config<Port> clientPort = new Config<>(new Port(65535)); // 客户端端口
-	public static final Config<String> theme = new Config<>(FlatMTGitHubDarkIJTheme.NAME); // 主题配置
+	public static final Config<String> theme = new Config<>(FlatMTGitHubDarkIJTheme.NAME); // 主题
 	public static final List<ConfigEntry> CONFIG_ENTRIES = List.of( // 配置文件结构
-		new HeaderEntry("# 服务端配置"),
+		new HeaderEntry("# Server"),
 		ValueEntry.value("serverPort", serverPort, Port::new),
 		ValueEntry.value("serverUploadRate", serverUploadRate, Rate::new),
-		ValueEntry.value("serverSyncDirectory", serverSyncDirectory),
+		ValueEntry.value("serverSyncDirectory", serverSyncDirectory, String::new),
 		ValueEntry.value("serverAutoStart", serverAutoStart, Boolean::parseBoolean),
-		new HeaderEntry("# 客户端配置"),
+		new HeaderEntry("# Client"),
 		ValueEntry.value("clientPort", clientPort, Port::new),
-		ValueEntry.value("remoteAddress", remoteAddress),
-		ValueEntry.value("clientSyncDirectory", clientSyncDirectory),
-		ValueEntry.value("clientOnlyDirectory", clientOnlyDirectory),
+		ValueEntry.value("remoteAddress", remoteAddress, String::new),
+		ValueEntry.value("clientSyncDirectory", clientSyncDirectory, String::new),
+		ValueEntry.value("clientOnlyDirectory", clientOnlyDirectory, String::new),
 		ValueEntry.value("clientAutoStart", clientAutoStart, Boolean::parseBoolean),
-		new HeaderEntry("# 其他配置"),
-		ValueEntry.value("theme", theme));
+		new HeaderEntry("# UI"),
+		ValueEntry.value("theme", theme, String::new));
 }

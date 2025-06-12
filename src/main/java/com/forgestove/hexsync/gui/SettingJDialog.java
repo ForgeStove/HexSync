@@ -7,7 +7,7 @@ import com.forgestove.hexsync.util.Rate.Unit;
 import javax.swing.*;
 import javax.swing.UIManager.LookAndFeelInfo;
 import java.awt.*;
-import java.util.*;
+import java.util.Arrays;
 public class SettingJDialog extends JDialog {
 	// 打开设置对话框
 	public SettingJDialog(Window owner, String title) {
@@ -21,71 +21,70 @@ public class SettingJDialog extends JDialog {
 		settingPanel.add(tabbedPane, BorderLayout.CENTER);
 		// 设置布局
 		var layout = new GridLayout(0, 2);
+		UIManager.put("Label.minimumSize", new Dimension(150, 25));
+		UIManager.put("Label.preferredSize", new Dimension(150, 25));
 		// 服务端选项卡
 		var serverPanel = new JPanel(layout);
-		serverPanel.add(new JLabel(HexSync.lang.getString("Settings.port")));
+		serverPanel.add(new JLabel(HexSync.get("Settings.port")));
 		var serverPortField = new JTextField(String.valueOf(Data.serverPort));
 		serverPanel.add(serverPortField);
-		serverPanel.add(new JLabel(HexSync.lang.getString("Settings.maxUploadRate")));
+		serverPanel.add(new JLabel(HexSync.get("Settings.maxUploadRate")));
 		var rateField = new JTextField(String.valueOf(Data.serverUploadRate.get().value));
 		serverPanel.add(rateField);
-		serverPanel.add(new JLabel(HexSync.lang.getString("Settings.rateUnit")));
+		serverPanel.add(new JLabel(HexSync.get("Settings.rateUnit")));
 		var rateUnitBox = new JComboBox<>(Unit.values());
 		rateUnitBox.setSelectedItem(Data.serverUploadRate.get().unit);
 		serverPanel.add(rateUnitBox);
-		serverPanel.add(new JLabel(HexSync.lang.getString("Settings.serverSyncPath")));
+		serverPanel.add(new JLabel(HexSync.get("Settings.serverSyncPath")));
 		var serverSyncField = new JTextField(Data.serverSyncDirectory.get());
 		serverPanel.add(serverSyncField);
-		var serverAutoStartBox = new JCheckBox(HexSync.lang.getString("Settings.autoStartServer"), Data.serverAutoStart.get());
+		var serverAutoStartBox = new JCheckBox(HexSync.get("Settings.autoStartServer"), Data.serverAutoStart.get());
 		serverPanel.add(serverAutoStartBox);
-		tabbedPane.addTab(HexSync.lang.getString("Settings.serverSettings"), serverPanel);
+		tabbedPane.addTab(HexSync.get("Settings.serverSettings"), serverPanel);
 		// 客户端选项卡
 		var clientPanel = new JPanel(layout);
-		clientPanel.add(new JLabel(HexSync.lang.getString("Settings.port")));
+		clientPanel.add(new JLabel(HexSync.get("Settings.port")));
 		var clientPortField = new JTextField(String.valueOf(Data.clientPort));
 		clientPanel.add(clientPortField);
-		clientPanel.add(new JLabel(HexSync.lang.getString("Settings.remoteAddress")));
+		clientPanel.add(new JLabel(HexSync.get("Settings.remoteAddress")));
 		var remoteAddressField = new JTextField(Data.remoteAddress.get());
 		clientPanel.add(remoteAddressField);
-		clientPanel.add(new JLabel(HexSync.lang.getString("Settings.clientSyncPath")));
+		clientPanel.add(new JLabel(HexSync.get("Settings.clientSyncPath")));
 		var clientSyncField = new JTextField(Data.clientSyncDirectory.get());
 		clientPanel.add(clientSyncField);
 		// 保留原有"仅客户端模组路径"标签，并添加到属性文件
-		clientPanel.add(new JLabel(HexSync.lang.getString("Settings.clientOnlyPath")));
+		clientPanel.add(new JLabel(HexSync.get("Settings.clientOnlyPath")));
 		var clientOnlyField = new JTextField(Data.clientOnlyDirectory.get());
 		clientPanel.add(clientOnlyField);
-		var clientAutoStartBox = new JCheckBox(HexSync.lang.getString("Settings.autoStartClient"), Data.clientAutoStart.get());
+		var clientAutoStartBox = new JCheckBox(HexSync.get("Settings.autoStartClient"), Data.clientAutoStart.get());
 		clientPanel.add(clientAutoStartBox);
-		tabbedPane.addTab(HexSync.lang.getString("Settings.clientSettings"), clientPanel);
+		tabbedPane.addTab(HexSync.get("Settings.clientSettings"), clientPanel);
 		// 其他选项卡
 		var otherPanel = new JPanel(layout);
-		otherPanel.add(new JLabel(HexSync.lang.getString("Settings.theme")));
+		otherPanel.add(new JLabel(HexSync.get("Settings.theme")));
 		var themeBox = new JComboBox<>(Arrays.stream(UIManager.getInstalledLookAndFeels())
 			.map(LookAndFeelInfo::getName)
 			.toArray(String[]::new));
 		themeBox.setSelectedItem(Data.theme.get());
 		otherPanel.add(themeBox);
-		var languageBox = new JComboBox<>(Locale.getAvailableLocales());
-		languageBox.setSelectedItem(HexSync.lang.getLocale());
-		otherPanel.add(new JLabel(HexSync.lang.getString("Settings.language")));
-		otherPanel.add(languageBox);
 		otherPanel.add(new JLabel());
 		otherPanel.add(new JLabel());
 		otherPanel.add(new JLabel());
 		otherPanel.add(new JLabel());
-		tabbedPane.addTab(HexSync.lang.getString("Settings.uiSettings"), otherPanel);
+		otherPanel.add(new JLabel());
+		tabbedPane.addTab(HexSync.get("Settings.uiSettings"), otherPanel);
 		// 按钮面板
 		var buttonPanel = new JPanel(new GridLayout(1, 0));
-		buttonPanel.add(new CButton(HexSync.lang.getString("Settings.save"), event -> {
+		buttonPanel.add(new CButton(HexSync.get("Settings.save"), event -> {
 			for (var input : new Object[][]{
-				{HexSync.lang.getString("Settings.port"), serverPortField, 0},
-				{HexSync.lang.getString("Settings.maxUploadRate"), rateField, 0},
-				{HexSync.lang.getString("Settings.rateUnit"), rateUnitBox, 0},
-				{HexSync.lang.getString("Settings.serverSyncPath"), serverSyncField, 0},
-				{HexSync.lang.getString("Settings.port"), clientPortField, 1},
-				{HexSync.lang.getString("Settings.remoteAddress"), remoteAddressField, 1},
-				{HexSync.lang.getString("Settings.clientSyncPath"), clientSyncField, 1},
-				{HexSync.lang.getString("Settings.clientOnlyPath"), clientOnlyField, 1}
+				{HexSync.get("Settings.port"), serverPortField, 0},
+				{HexSync.get("Settings.maxUploadRate"), rateField, 0},
+				{HexSync.get("Settings.rateUnit"), rateUnitBox, 0},
+				{HexSync.get("Settings.serverSyncPath"), serverSyncField, 0},
+				{HexSync.get("Settings.port"), clientPortField, 1},
+				{HexSync.get("Settings.remoteAddress"), remoteAddressField, 1},
+				{HexSync.get("Settings.clientSyncPath"), clientSyncField, 1},
+				{HexSync.get("Settings.clientOnlyPath"), clientOnlyField, 1}
 			})
 				if (input[1] instanceof JTextField textField && textField.getText().trim().isEmpty()) {
 					tabbedPane.setSelectedIndex((int) input[2]); // 跳转到对应的选项卡
@@ -99,7 +98,7 @@ public class SettingJDialog extends JDialog {
 			// 检测最大上传速率
 			var rateText = rateField.getText().trim();
 			if (SettingUtil.isInvalidLong(rateText) || Long.parseLong(rateText) < 0) {
-				Log.warn(HexSync.lang.getString("Settings.maxUploadRate") + "格式错误: " + rateText);
+				Log.warn(HexSync.get("Settings.maxUploadRate") + "格式错误: " + rateText);
 				tabbedPane.setSelectedIndex(0);
 				ComponentUtil.selectAndFocus(rateField);
 				return;
@@ -124,9 +123,8 @@ public class SettingJDialog extends JDialog {
 			ConfigUtil.saveConfig(); // 保存配置
 			dispose(); // 关闭对话框
 		}));
-		buttonPanel.add(new CButton(HexSync.lang.getString("Settings.cancel"), event -> dispose()));
-		buttonPanel.add(new CButton(HexSync.lang.getString("Settings.about"),
-			event -> new AboutJDialog(owner, HexSync.lang.getString("About.title"))));
+		buttonPanel.add(new CButton(HexSync.get("Settings.cancel"), event -> dispose()));
+		buttonPanel.add(new CButton(HexSync.get("Settings.about"), event -> new AboutJDialog(owner, HexSync.get("About.title"))));
 		settingPanel.add(buttonPanel, BorderLayout.SOUTH);
 		add(settingPanel);
 		setMinimumSize(new Dimension(360, 300));

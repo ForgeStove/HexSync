@@ -22,17 +22,16 @@ public class GUI {
 			logPane.setEditable(false);
 			logPane.setOpaque(false);
 			var scrollPane = new JScrollPane(logPane);
-			scrollPane.setBorder(BorderFactory.createTitledBorder(HexSync.lang.getString("GUI.log")));
+			scrollPane.setBorder(BorderFactory.createTitledBorder(HexSync.get("GUI.log")));
 			panel.add(scrollPane, BorderLayout.CENTER);
 			frame = new JFrame(HexSync.NAME); // 主窗口
 			var buttonPanel = new JPanel(new GridLayout(0, 3));
-			buttonPanel.add(new CButton(HexSync.lang.getString("GUI.startServer"), event -> Server.start()));
-			buttonPanel.add(new CButton(HexSync.lang.getString("GUI.startClient"), event -> Client.start()));
-			buttonPanel.add(new CButton(HexSync.lang.getString("GUI.settings"),
-				event -> new SettingJDialog(frame, HexSync.lang.getString("Settings.title"))));
-			buttonPanel.add(new CButton(HexSync.lang.getString("GUI.stopServer"), event -> Server.stop()));
-			buttonPanel.add(new CButton(HexSync.lang.getString("GUI.stopClient"), event -> Client.stop()));
-			buttonPanel.add(new CButton(HexSync.lang.getString("GUI.exit"), event -> System.exit(0)));
+			buttonPanel.add(new CButton(HexSync.get("GUI.startServer"), event -> Server.start()));
+			buttonPanel.add(new CButton(HexSync.get("GUI.startClient"), event -> Client.start()));
+			buttonPanel.add(new CButton(HexSync.get("GUI.settings"), event -> new SettingJDialog(frame, HexSync.get("Settings.title"))));
+			buttonPanel.add(new CButton(HexSync.get("GUI.stopServer"), event -> Server.stop()));
+			buttonPanel.add(new CButton(HexSync.get("GUI.stopClient"), event -> Client.stop()));
+			buttonPanel.add(new CButton(HexSync.get("GUI.exit"), event -> System.exit(0)));
 			panel.add(buttonPanel, BorderLayout.SOUTH);
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			frame.add(panel);

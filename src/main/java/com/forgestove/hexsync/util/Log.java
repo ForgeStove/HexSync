@@ -23,7 +23,7 @@ public class Log {
 	// 日志核心方法
 	private static void log(Level level, String message) {
 		logExecutor.submit(() -> {
-			var log = "[%s] [%s] %s%n".formatted(LocalTime.now().withNano(0), HexSync.lang.getString(level.resourceName), message);
+			var log = "[%s] [%s] %s%n".formatted(LocalTime.now().withNano(0), HexSync.get(level.resourceName), message);
 			FileUtil.appendLine(new File(Data.LOG_PATH), log);
 			if (!HexSync.HEADLESS) {
 				SwingUtilities.invokeLater(() -> writeToLogPane(level, log));
@@ -34,11 +34,11 @@ public class Log {
 	}
 	// 在日志面板中追加日志
 	private static void writeToLogPane(Level level, String log) {
+		var document = GUI.logPane.getDocument();
+		var root = document.getDefaultRootElement();
+		var maxLines = 100;
+		var lineCount = root.getElementCount();
 		try {
-			var document = GUI.logPane.getDocument();
-			var root = document.getDefaultRootElement();
-			var maxLines = 100;
-			var lineCount = root.getElementCount();
 			if (lineCount > maxLines) document.remove(0, root.getElement(lineCount - maxLines - 1).getEndOffset());
 			document.insertString(document.getLength(), log, level.attr);
 		} catch (Exception error) {
