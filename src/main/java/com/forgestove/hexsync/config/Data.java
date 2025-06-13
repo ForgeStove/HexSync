@@ -7,19 +7,19 @@ import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMTGitHubDarkIJ
 
 import java.util.List;
 public class Data {
-	public static final String CONFIG_PATH = FileUtil.path(HexSync.NAME, "config.properties"); // 配置文件路径
-	public static final String LOG_PATH = FileUtil.path(HexSync.NAME, "latest.log"); // 日志文件路径
-	public static final Config<String> serverSyncPath = new Config<>("mods"); // 服务端同步文件夹路径
-	public static final Config<String> clientSyncPath = new Config<>("mods"); // 客户端同步文件夹路径
-	public static final Config<String> clientOnlyPath = new Config<>("clientMods"); // 仅客户端文件夹路径
-	public static final Config<String> remoteAddress = new Config<>("localhost"); // 远程地址
-	public static final Config<Rate> serverUploadRate = new Config<>(new Rate(1, Unit.Mbps)); // 上传速率限制
-	public static final Config<Boolean> clientAuto = new Config<>(false); // 自动客户端
-	public static final Config<Boolean> serverAuto = new Config<>(false); // 自动服务端
-	public static final Config<Port> serverPort = new Config<>(new Port(Port.MAX_VALUE)); // 服务端端口
-	public static final Config<Port> clientPort = new Config<>(new Port(Port.MAX_VALUE)); // 客户端端口
-	public static final Config<String> theme = new Config<>(FlatMTGitHubDarkIJTheme.NAME); // 主题
-	public static final List<ConfigEntry> CONFIG_ENTRIES = List.of( // 配置文件结构
+	public static final String CONFIG_PATH = FileUtil.path(HexSync.NAME, "config.properties");
+	public static final String LOG_PATH = FileUtil.path(HexSync.NAME, "latest.log");
+	public static final Config<String> serverSyncPath = new Config<>("mods");
+	public static final Config<String> clientSyncPath = new Config<>("mods");
+	public static final Config<String> clientOnlyPath = new Config<>("clientMods");
+	public static final Config<String> remoteAddress = new Config<>("localhost");
+	public static final Config<Rate> serverUploadRate = new Config<>(new Rate(1, Unit.Mbps));
+	public static final Config<Boolean> clientAuto = new Config<>(false);
+	public static final Config<Boolean> serverAuto = new Config<>(false);
+	public static final Config<Port> serverPort = new Config<>(new Port(Port.MAX_VALUE));
+	public static final Config<Port> clientPort = new Config<>(new Port(Port.MAX_VALUE));
+	public static final Config<String> theme = new Config<>(FlatMTGitHubDarkIJTheme.NAME);
+	public static final List<ConfigEntry> CONFIG_ENTRIES = List.of( //
 		new HeaderEntry("# Server"),
 		ValueEntry.value("serverPort", serverPort, Port::new),
 		ValueEntry.value("serverUploadRate", serverUploadRate, Rate::new),

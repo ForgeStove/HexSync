@@ -47,22 +47,12 @@ public class SVGIconManager {
 	 * @param color 自定义颜色
 	 * @return 创建的图标
 	 */
-	public FlatSVGIcon getIconWithColor(String name, Color color) {
+	public FlatSVGIcon getIcon(String name, Color color) {
 		var icon = new FlatSVGIcon(name);
 		iconsByType.get(IconType.CUSTOM).add(icon);
 		customColors.put(icon, color);
 		icon.setColorFilter(new ColorFilter(c -> color));
 		return icon;
-	}
-	/**
-	 * 设置图标颜色
-	 *
-	 * @param icon  图标
-	 * @param color 颜色
-	 */
-	public void setIconColor(FlatSVGIcon icon, Color color) {
-		customColors.put(icon, color);
-		icon.setColorFilter(new ColorFilter(c -> color));
 	}
 	/**
 	 * 更新所有图标的颜色以适应当前主题
@@ -88,16 +78,6 @@ public class SVGIconManager {
 	 */
 	private void updateIconsOfType(IconType type, Color color) {
 		for (var icon : iconsByType.get(type)) icon.setColorFilter(new ColorFilter(c -> color));
-	}
-	/**
-	 * 获取所有已注册的图标
-	 *
-	 * @return 所有图标的列表
-	 */
-	public List<FlatSVGIcon> getAllIcons() {
-		List<FlatSVGIcon> allIcons = new ArrayList<>();
-		for (var icons : iconsByType.values()) allIcons.addAll(icons);
-		return Collections.unmodifiableList(allIcons);
 	}
 	// 图标分类，用于对不同类型的图标应用不同的颜色策略
 	public enum IconType {

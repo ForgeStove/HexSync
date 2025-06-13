@@ -3,37 +3,49 @@ import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.client.Client;
 import com.forgestove.hexsync.config.Data;
 import com.forgestove.hexsync.server.Server;
+import org.jetbrains.annotations.Contract;
 
 import javax.swing.*;
 import java.awt.*;
-public class GUI {
-	public static final JTextPane logPane = new JTextPane(); // 日志面板
-	public static void runGUI() {
-		SwingUtilities.invokeLater(() -> {
-			Component.setTheme(Component.getClassName(Data.theme.get()));
-			var panel = new JPanel(); // 主面板
-			panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-			panel.setLayout(new BorderLayout(5, 5));
-			logPane.setEditable(false);
-			logPane.setOpaque(false);
-			var scrollPane = new JScrollPane(logPane);
-			scrollPane.setBorder(BorderFactory.createTitledBorder(HexSync.get("GUI.log")));
-			panel.add(scrollPane, BorderLayout.CENTER);
-			var frame = new JFrame(HexSync.NAME); // 主窗口
-			var buttonPanel = new JPanel(new GridLayout(0, 3));
-			buttonPanel.add(new CButton(HexSync.get("GUI.startServer"), event -> Server.start()));
-			buttonPanel.add(new CButton(HexSync.get("GUI.startClient"), event -> Client.start()));
-			buttonPanel.add(new CButton(HexSync.get("GUI.settings"),
-				event -> new SettingJDialog(frame, HexSync.get("Settings.title")),
-				SVGIcon.cog));
-			buttonPanel.add(new CButton(HexSync.get("GUI.stopServer"), event -> Server.stop()));
-			buttonPanel.add(new CButton(HexSync.get("GUI.stopClient"), event -> Client.stop()));
-			buttonPanel.add(new CButton(HexSync.get("GUI.exit"), event -> System.exit(0)));
-			panel.add(buttonPanel, BorderLayout.SOUTH);
-			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			frame.add(panel);
-			frame.setMinimumSize(new Dimension(640, 480));
-			Component.setWindow(frame); // 设置窗口属性
+public class GUI implements Runnable {
+	public static final JTextPane logPane = new JTextPane() {{
+		setEditable(false);
+		setOpaque(false);
+	}}; // 日志面板
+	@Contract(pure = true)
+	private GUI() {}
+	public static void start() {SwingUtilities.invokeLater(() -> new GUI().run());}
+	public void run() {
+		Component.setTheme(Data.theme.get());
+		var frame = new JFrame(HexSync.NAME); // 主窗口
+		var scrollPane = new JScrollPane(logPane); // 日志滚动面板
+		var buttonPanel = new JPanel(new GridLayout(0, 3)); // 按钮面板
+		scrollPane.setBorder(BorderFactory.createTitledBorder(HexSync.get("GUI.log")));
+		buttonPanel.add(new CButton(HexSync.get("GUI.startServer"), event -> Server.start()));
+		buttonPanel.add(new CButton(HexSync.get("GUI.startClient"), event -> Client.start()));
+		buttonPanel.add(new CButton(HexSync.get("GUI.settings"),
+			event -> new SettingJDialog(frame, HexSync.get("Settings.title")),
+			SVGIcon.cog));
+		buttonPanel.add(new CButton(HexSync.get("GUI.stopServer"), event -> Server.stop()));
+		buttonPanel.add(new CButton(HexSync.get("GUI.stopClient"), event -> Client.stop()));
+		buttonPanel.add(new CButton(HexSync.get("GUI.exit"), event -> System.exit(0), SVGIcon.exit));
+		frame.setLayout(new BorderLayout(10, 10));
+		frame.add(scrollPane, BorderLayout.CENTER);
+		frame.add(buttonPanel, BorderLayout.SOUTH);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setMinimumSize(new Dimension(640, 480));
+		// 弹出菜单
+		var copyItem = new JMenuItem(HexSync.get("GUI.copy"));
+		var clearItem = new JMenuItem(HexSync.get("GUI.clear"));
+		copyItem.addActionListener(event -> {
+			if (logPane.getSelectedText() == null) logPane.selectAll();
+			logPane.copy();
 		});
+		clearItem.addActionListener(event -> logPane.setText(""));
+		var popupMenu = new JPopupMenu();
+		popupMenu.add(copyItem);
+		popupMenu.add(clearItem);
+		logPane.setComponentPopupMenu(popupMenu); // 为日志面板添加鼠标事件监听器
+		Component.setWindow(frame); // 设置窗口属性
 	}
 }

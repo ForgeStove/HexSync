@@ -24,10 +24,8 @@ public class HexSync {
 		ConfigUtil.loadConfig();
 		if (Data.serverAuto.get()) Server.start();
 		if (Data.clientAuto.get()) Client.start();
-		if (HEADLESS) new CLI().run();
-		else GUI.runGUI();
+		if (HEADLESS) CLI.start();
+		else GUI.start();
 	}
-	public static @NotNull String get(String key) {
-		return lang.getString(key);
-	}
+	public static @NotNull String get(String key) {return lang.getString(key);}
 }

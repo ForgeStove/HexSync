@@ -6,12 +6,17 @@ import com.forgestove.hexsync.cli.CLI.Stop.*;
 import com.forgestove.hexsync.client.Client;
 import com.forgestove.hexsync.server.Server;
 import com.forgestove.hexsync.util.Log;
+import org.jetbrains.annotations.Contract;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
 import java.util.Scanner;
 @Command(name = HexSync.NAME, subcommands = {Run.class, Stop.class, Setting.class, Help.class, Exit.class})
 public class CLI implements Runnable {
+	@Contract(pure = true)
+	private CLI() {}
+	public static void start() {new CLI().run();}
+	@SuppressWarnings("InfiniteLoopStatement")
 	public void run() {
 		System.out.printf("欢迎使用%s!%n输入 help 获取帮助，输入 exit 退出。%n", HexSync.NAME);
 		new Help().run();
@@ -23,12 +28,7 @@ public class CLI implements Runnable {
 		while (true) {
 			var line = scanner.nextLine().trim();
 			if (line.isEmpty()) continue;
-			try {
-				cmd.execute(line.split("\\s+"));
-			} catch (Exception error) {
-				Log.error("命令执行出错: " + error.getMessage());
-				System.exit(1);
-			}
+			cmd.execute(line.split("\\s+"));
 		}
 	}
 	@Command(name = "run", description = "运行实例", subcommands = {RunServer.class, RunClient.class})

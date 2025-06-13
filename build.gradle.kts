@@ -24,7 +24,7 @@ tasks.shadowJar {
 	minimize {
 		exclude(dependency("com.formdev:flatlaf-intellij-themes"))
 	}
-	from("LICENSE")
+	from("LICENSE") { rename { "${it}_${project.name}" } }
 }
 tasks.build { dependsOn(tasks.shadowJar) }
 tasks.named("githubRelease") { dependsOn(tasks.build) }

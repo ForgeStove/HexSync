@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/HexSync.iml" filepath="$PROJECT_DIR$/HexSync.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/HexSync.main.iml" filepath="$PROJECT_DIR$/.idea/modules/HexSync.main.iml" />
     </modules>
   </component>
 </project>
