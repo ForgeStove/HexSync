@@ -48,19 +48,19 @@ public class SettingJDialog extends JDialog {
 		clientPanel.add(new JLabel(HexSync.get("Settings.clientOnlyPath")));
 		clientPanel.add(clientOnlyField);
 		clientPanel.add(clientAutoStartBox);
-		// 其他选项卡
-		var otherPanel = new JPanel(layout);
+		// 界面选项卡
 		var themeBox = new JComboBox<>(Arrays.stream(UIManager.getInstalledLookAndFeels())
 			.map(LookAndFeelInfo::getName)
 			.toArray(String[]::new)) {{setSelectedItem(Data.theme.get());}};
-		otherPanel.add(new JLabel(HexSync.get("Settings.theme")));
-		otherPanel.add(themeBox);
+		var uiPanel = new JPanel(layout);
+		uiPanel.add(new JLabel(HexSync.get("Settings.theme")));
+		uiPanel.add(themeBox);
 		// 选项卡
 		var tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT) {{
 			addChangeListener(event -> SwingUtilities.invokeLater(SettingJDialog.this::pack));
 			addTab(HexSync.get("Settings.serverSettings"), serverPanel);
 			addTab(HexSync.get("Settings.clientSettings"), clientPanel);
-			addTab(HexSync.get("Settings.uiSettings"), otherPanel);
+			addTab(HexSync.get("Settings.uiSettings"), uiPanel);
 		}};
 		// 按钮
 		var save = new CButton(HexSync.get("Settings.save"), event -> {
