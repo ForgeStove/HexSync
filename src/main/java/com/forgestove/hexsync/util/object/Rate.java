@@ -1,4 +1,4 @@
-package com.forgestove.hexsync.util;
+package com.forgestove.hexsync.util.object;
 import org.jetbrains.annotations.*;
 public class Rate {
 	public final long value;

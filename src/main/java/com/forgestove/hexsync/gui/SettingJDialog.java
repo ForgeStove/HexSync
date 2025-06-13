@@ -2,7 +2,9 @@ package com.forgestove.hexsync.gui;
 import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.config.*;
 import com.forgestove.hexsync.util.*;
-import com.forgestove.hexsync.util.Rate.Unit;
+import com.forgestove.hexsync.util.converter.TypeConverter;
+import com.forgestove.hexsync.util.object.*;
+import com.forgestove.hexsync.util.object.Rate.Unit;
 
 import javax.swing.*;
 import javax.swing.UIManager.LookAndFeelInfo;
@@ -18,11 +20,11 @@ public class SettingJDialog extends JDialog {
 		var layout = new GridLayout(0, 2);
 		// 服务端选项卡
 		var serverPanel = new JPanel(layout);
-		var serverPortField = new JTextField(String.valueOf(Data.serverPort));
+		var serverPortField = new JTextField(String.valueOf(Data.serverPort.get().getValue()));
 		var rateField = new JTextField(String.valueOf(Data.serverUploadRate.get().value));
 		var rateUnitBox = new JComboBox<>(Unit.values()) {{setSelectedItem(Data.serverUploadRate.get().unit);}};
 		var serverSyncField = new JTextField(Data.serverSyncPath.get().toString());
-		var serverAutoStartBox = new JCheckBox(HexSync.get("Settings.autoStartServer"), Data.serverAuto.get());
+		var serverAutoStartBox = new JCheckBox(HexSync.get("Settings.autoStart"), Data.serverAuto.get());
 		serverPanel.add(new JLabel(HexSync.get("Settings.port")));
 		serverPanel.add(serverPortField);
 		serverPanel.add(new JLabel(HexSync.get("Settings.maxUploadRate")));
@@ -33,11 +35,11 @@ public class SettingJDialog extends JDialog {
 		serverPanel.add(serverSyncField);
 		serverPanel.add(serverAutoStartBox);
 		// 客户端选项卡
-		var clientPortField = new JTextField(String.valueOf(Data.clientPort));
+		var clientPortField = new JTextField(String.valueOf(Data.clientPort.get().getValue()));
 		var remoteAddressField = new JTextField(Data.remoteAddress.get());
 		var clientSyncField = new JTextField(Data.clientSyncPath.get().toString());
 		var clientOnlyField = new JTextField(Data.clientOnlyPath.get().toString());
-		var clientAutoStartBox = new JCheckBox(HexSync.get("Settings.autoStartClient"), Data.clientAuto.get());
+		var clientAutoStartBox = new JCheckBox(HexSync.get("Settings.autoStart"), Data.clientAuto.get());
 		var clientPanel = new JPanel(layout);
 		clientPanel.add(new JLabel(HexSync.get("Settings.port")));
 		clientPanel.add(clientPortField);
@@ -85,7 +87,7 @@ public class SettingJDialog extends JDialog {
 			SettingUtil.setPort(new Port(clientPortField.getText().trim()), false);
 			// 检测最大上传速率
 			var rateText = rateField.getText().trim();
-			if (SettingUtil.isInvalidLong(rateText) || Long.parseLong(rateText) < 0) {
+			if (!TypeConverter.tryToLong(rateText).isSuccess || Long.parseLong(rateText) < 0) {
 				Log.warn("%s%s%s".formatted(HexSync.get("Error.invalidFormat"), HexSync.get("Settings.maxUploadRate"), rateText));
 				tabbedPane.setSelectedIndex(0);
 				Component.selectAndFocus(rateField);

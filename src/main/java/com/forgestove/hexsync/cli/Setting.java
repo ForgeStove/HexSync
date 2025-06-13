@@ -1,8 +1,9 @@
 package com.forgestove.hexsync.cli;
 import com.forgestove.hexsync.cli.Setting.*;
 import com.forgestove.hexsync.config.*;
-import com.forgestove.hexsync.util.*;
-import com.forgestove.hexsync.util.Rate.Unit;
+import com.forgestove.hexsync.util.SettingUtil;
+import com.forgestove.hexsync.util.object.*;
+import com.forgestove.hexsync.util.object.Rate.Unit;
 import picocli.CommandLine;
 import picocli.CommandLine.*;
 

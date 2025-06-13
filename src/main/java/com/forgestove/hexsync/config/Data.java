@@ -1,8 +1,8 @@
 package com.forgestove.hexsync.config;
 import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.config.ConfigEntry.*;
-import com.forgestove.hexsync.util.*;
-import com.forgestove.hexsync.util.Rate.Unit;
+import com.forgestove.hexsync.util.object.*;
+import com.forgestove.hexsync.util.object.Rate.Unit;
 import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMTGitHubDarkIJTheme;
 
 import java.nio.file.Path;
