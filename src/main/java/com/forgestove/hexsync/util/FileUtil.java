@@ -23,7 +23,7 @@ public class FileUtil {
 		}
 	}
 	// 初始化文件名校验码键值对表
-	public static @NotNull Map<String, String> initMap(Path directory) {
+	public static @NotNull Map<String, String> initMap(@NotNull Path directory) {
 		var fileList = directory.toFile().listFiles();
 		if (fileList == null) return new HashMap<>();
 		return Arrays.stream(fileList)
@@ -86,15 +86,6 @@ public class FileUtil {
 			Log.error("写入文件失败: %s %s".formatted(targetFile, error.getMessage()));
 			return false;
 		}
-	}
-	/**
-	 * 创建包含平台特定分隔符的路径
-	 *
-	 * @param parts 路径组成部分
-	 * @return 连接后的路径
-	 */
-	public static @NotNull String path(String... parts) {
-		return Path.of("", parts).toString();
 	}
 	/**
 	 * 按行处理文件内容

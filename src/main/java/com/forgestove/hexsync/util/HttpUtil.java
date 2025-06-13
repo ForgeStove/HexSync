@@ -19,7 +19,7 @@ public class HttpUtil {
 	 * @return HttpClient 实例
 	 */
 	public static synchronized HttpClient getClient() {
-		if (httpClient == null) httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(3)).build();
+		if (httpClient == null) httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
 		return httpClient;
 	}
 	/**
@@ -38,7 +38,7 @@ public class HttpUtil {
 	 * @throws InterruptedException 如果请求被中断
 	 */
 	public static <T> HttpResponse<T> sendGet(String url, BodyHandler<T> bodyHandler) throws IOException, InterruptedException {
-		return getClient().send(HttpRequest.newBuilder().uri(URI.create(url)).timeout(Duration.ofSeconds(3)).build(), bodyHandler);
+		return getClient().send(HttpRequest.newBuilder().uri(URI.create(url)).timeout(Duration.ofSeconds(5)).build(), bodyHandler);
 	}
 	/**
 	 * 获取 HTTP 请求的远程地址

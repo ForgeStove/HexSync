@@ -16,6 +16,7 @@ dependencies {
 	implementation("com.formdev:flatlaf-intellij-themes:+")
 	implementation("com.formdev:flatlaf-extras:+")
 	implementation("info.picocli:picocli:+")
+	implementation("org.json:json:+")
 }
 tasks.shadowJar {
 	archiveClassifier.set("")
