@@ -6,7 +6,8 @@ import com.forgestove.hexsync.gui.GUI;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
 import java.awt.Color;
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.*;
 import java.time.LocalTime;
 import java.util.concurrent.*;
 public class Log {
@@ -20,10 +21,14 @@ public class Log {
 	private static void log(Level level, String message) {
 		logExecutor.submit(() -> {
 			var log = "[%s] [%s] %s%n".formatted(LocalTime.now().withNano(0), HexSync.get(level.resourceName), message);
-			FileUtil.appendLine(new File(Data.LOG_PATH), log);
 			if (!HexSync.HEADLESS) {
 				SwingUtilities.invokeLater(() -> writeToLogPane(level, log));
 				return;
+			}
+			try {
+				Files.writeString(Data.LOG_PATH, log, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+			} catch (IOException error) {
+				throw new RuntimeException(error);
 			}
 			System.out.printf(HexSync.ANSI ? log : "%s%s\u001B[0m", level.ansi, log);
 		});
@@ -44,12 +49,14 @@ public class Log {
 	// 初始化日志
 	public static void initLog() {
 		FileUtil.makeDirectory(HexSync.NAME);
+		Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> error(throwable.getMessage()));
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			flushScheduler.shutdown();
 			logExecutor.shutdown();
 		}));
-		Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> error(throwable.getMessage()));
-		FileUtil.writeFile(new File(Data.LOG_PATH), "");
+		var file = Data.LOG_PATH.toFile();
+		if (file.exists() && file.isFile()) FileUtil.writeFile(file, "");
+		info("日志文件路径: " + file.getAbsolutePath());
 	}
 	public enum Level {
 		INFO("Log.info", "\u001B[32m", new Color(0, 165, 0)),

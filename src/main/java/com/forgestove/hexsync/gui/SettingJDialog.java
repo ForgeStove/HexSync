@@ -7,7 +7,7 @@ import com.forgestove.hexsync.util.Rate.Unit;
 import javax.swing.*;
 import javax.swing.UIManager.LookAndFeelInfo;
 import java.awt.*;
-import java.util.Arrays;
+import java.util.*;
 public class SettingJDialog extends JDialog {
 	// 打开设置对话框
 	public SettingJDialog(Window owner, String title) {
@@ -91,7 +91,7 @@ public class SettingJDialog extends JDialog {
 				return;
 			}
 			Data.serverAuto.set(serverAutoStartBox.isSelected());
-			Data.serverUploadRate.set(new Rate(Long.parseLong(rateText), (Unit) rateUnitBox.getSelectedItem()));
+			Data.serverUploadRate.set(new Rate(rateText, (Unit) Objects.requireNonNull(rateUnitBox.getSelectedItem())));
 			Data.serverSyncPath.set(serverSyncField.getText().trim());
 			Data.clientAuto.set(clientAutoStartBox.isSelected());
 			Data.remoteAddress.set(remoteAddressField.getText().trim());

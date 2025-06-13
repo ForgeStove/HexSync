@@ -5,10 +5,11 @@ import com.forgestove.hexsync.util.*;
 import com.forgestove.hexsync.util.Rate.Unit;
 import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMTGitHubDarkIJTheme;
 
+import java.nio.file.*;
 import java.util.List;
 public class Data {
-	public static final String CONFIG_PATH = FileUtil.path(HexSync.NAME, "config.properties");
-	public static final String LOG_PATH = FileUtil.path(HexSync.NAME, "latest.log");
+	public static final Path CONFIG_PATH = Paths.get(HexSync.NAME, "config.properties");
+	public static final Path LOG_PATH = Paths.get(HexSync.NAME, "latest.log");
 	public static final Config<String> serverSyncPath = new Config<>("mods");
 	public static final Config<String> clientSyncPath = new Config<>("mods");
 	public static final Config<String> clientOnlyPath = new Config<>("clientMods");

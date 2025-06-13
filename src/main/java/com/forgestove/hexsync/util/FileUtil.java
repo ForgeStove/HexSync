@@ -106,7 +106,7 @@ public class FileUtil {
 		try (var reader = Files.newBufferedReader(file.toPath())) {
 			String line;
 			while ((line = reader.readLine()) != null) consumer.accept(line);
-		} catch (IOException error) {Log.error("文件读取失败: " + error.getMessage());}
+		} catch (Exception error) {Log.error("文件读取失败: " + error.getMessage());}
 	}
 	/**
 	 * 将字符串内容写入文件
@@ -115,17 +115,8 @@ public class FileUtil {
 	 * @param content 要写入的内容
 	 */
 	public static void writeFile(@NotNull File file, @NotNull String content) {
-		try {Files.writeString(file.toPath(), content);} catch (IOException error) {Log.error("文件写入失败: " + error.getMessage());}
-	}
-	/**
-	 * 向文件末尾追加内容
-	 *
-	 * @param file    目标文件
-	 * @param content 追加内容
-	 */
-	public static void appendLine(@NotNull File file, @NotNull String content) {
 		try {
-			Files.writeString(file.toPath(), content, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-		} catch (IOException error) {Log.error("文件写入失败: " + error.getMessage());}
+			Files.writeString(file.toPath(), content, StandardOpenOption.CREATE);
+		} catch (Exception error) {Log.error("文件写入失败: " + error.getMessage());}
 	}
 }

@@ -2,12 +2,11 @@ package com.forgestove.hexsync.config;
 import com.forgestove.hexsync.config.ConfigEntry.ValueEntry;
 import com.forgestove.hexsync.util.*;
 
-import java.io.File;
 import java.util.stream.Collectors;
 public class ConfigUtil {
 	// 加载配置
 	public static void loadConfig() {
-		var configFile = new File(Data.CONFIG_PATH);
+		var configFile = Data.CONFIG_PATH.toFile();
 		if (!configFile.isFile()) {
 			saveConfig();
 			return;
@@ -32,7 +31,7 @@ public class ConfigUtil {
 			.map(config -> config[0].toString().startsWith("#")
 				? config[0].toString() : "%s=%s".formatted(config[0], config.length > 1 ? config[1] : ""))
 			.collect(Collectors.joining(System.lineSeparator()));
-		FileUtil.writeFile(new File(Data.CONFIG_PATH), configContent);
+		FileUtil.writeFile(Data.CONFIG_PATH.toFile(), configContent);
 		Log.info("配置已保存: %n%s".formatted(configContent));
 	}
 }
