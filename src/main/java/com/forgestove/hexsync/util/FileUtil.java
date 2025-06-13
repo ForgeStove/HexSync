@@ -107,7 +107,7 @@ public class FileUtil {
 	 */
 	public static void writeFile(@NotNull File file, @NotNull String content) {
 		try {
-			Files.writeString(file.toPath(), content, StandardOpenOption.CREATE);
+			Files.writeString(file.toPath(), content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 		} catch (Exception error) {Log.error("文件写入失败: " + error.getMessage());}
 	}
 }
