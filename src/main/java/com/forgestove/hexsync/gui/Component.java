@@ -35,7 +35,7 @@ public class Component {
 	// 设置窗口属性
 	public static void setWindow(@NotNull Window window) {
 		setFont(window, new Font("Microsoft YaHei", Font.PLAIN, 14));
-		window.setIconImage(SVGIcon.icon.getImage());
+		window.setIconImage(IconManager.icon.getImage());
 		window.pack();
 		window.setLocationRelativeTo(window.getOwner());
 		window.setVisible(true);
@@ -51,9 +51,9 @@ public class Component {
 		} catch (Exception error) {
 			Log.error("设置主题 %s 时出错: %s".formatted(name, error.getMessage()));
 		}
-		SVGIconManager.getInstance().updateIconColors();
+		IconManager.updateIconColors();
 		Arrays.stream(Window.getWindows()).forEach(window -> {
-			window.setIconImage(SVGIcon.icon.getImage());
+			window.setIconImage(IconManager.icon.getImage());
 			SwingUtilities.updateComponentTreeUI(window);
 		});
 	}

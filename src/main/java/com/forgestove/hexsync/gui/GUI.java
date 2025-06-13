@@ -24,11 +24,10 @@ public class GUI implements Runnable {
 		buttonPanel.add(new CButton(HexSync.get("GUI.startServer"), event -> Server.start()));
 		buttonPanel.add(new CButton(HexSync.get("GUI.startClient"), event -> Client.start()));
 		buttonPanel.add(new CButton(HexSync.get("GUI.settings"),
-			event -> new SettingJDialog(frame, HexSync.get("Settings.title")),
-			SVGIcon.cog));
+			event -> new SettingJDialog(frame, HexSync.get("Settings.title")), IconManager.cog));
 		buttonPanel.add(new CButton(HexSync.get("GUI.stopServer"), event -> Server.stop()));
 		buttonPanel.add(new CButton(HexSync.get("GUI.stopClient"), event -> Client.stop()));
-		buttonPanel.add(new CButton(HexSync.get("GUI.exit"), event -> System.exit(0), SVGIcon.exit));
+		buttonPanel.add(new CButton(HexSync.get("GUI.exit"), event -> System.exit(0), IconManager.exit));
 		frame.setLayout(new BorderLayout(10, 10));
 		frame.add(scrollPane, BorderLayout.CENTER);
 		frame.add(buttonPanel, BorderLayout.SOUTH);
