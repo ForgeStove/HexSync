@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.UIManager.LookAndFeelInfo;
-import java.awt.*;
+import java.awt.Window;
 import java.util.Arrays;
 public class Component {
 	static {
@@ -24,17 +24,8 @@ public class Component {
 		textField.requestFocus(); // 聚焦输入框
 		textField.selectAll(); // 选中输入框
 	}
-	// 设置字体的通用方法
-	public static void setFont(@NotNull Container container, Font font) {
-		for (var component : container.getComponents()) {
-			if (component instanceof Container) setFont((Container) component, font); // 递归设置子组件的字体
-			if (font.equals(component.getFont())) continue;
-			component.setFont(font); // 设置字体
-		}
-	}
 	// 设置窗口属性
 	public static void setWindow(@NotNull Window window) {
-		setFont(window, new Font("Microsoft YaHei", Font.PLAIN, 14));
 		window.setIconImage(IconManager.icon.getImage());
 		window.pack();
 		window.setLocationRelativeTo(window.getOwner());
@@ -52,10 +43,10 @@ public class Component {
 			Log.error("设置主题 %s 时出错: %s".formatted(name, error.getMessage()));
 		}
 		IconManager.updateIconColors();
-		Arrays.stream(Window.getWindows()).forEach(window -> {
+		for (var window : Window.getWindows()) {
 			window.setIconImage(IconManager.icon.getImage());
 			SwingUtilities.updateComponentTreeUI(window);
-		});
+		}
 	}
 	/**
 	 * 从主题名称获取对应的主题类名

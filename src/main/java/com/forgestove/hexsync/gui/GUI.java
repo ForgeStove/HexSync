@@ -16,7 +16,6 @@ public class GUI implements Runnable {
 	private GUI() {}
 	public static void start() {SwingUtilities.invokeLater(() -> new GUI().run());}
 	public void run() {
-		Component.setTheme(Data.theme.get());
 		var frame = new JFrame(HexSync.NAME); // 主窗口
 		var scrollPane = new JScrollPane(logPane); // 日志滚动面板
 		var buttonPanel = new JPanel(new GridLayout(0, 3)); // 按钮面板
@@ -24,7 +23,8 @@ public class GUI implements Runnable {
 		buttonPanel.add(new CButton(HexSync.get("GUI.startServer"), event -> Server.start()));
 		buttonPanel.add(new CButton(HexSync.get("GUI.startClient"), event -> Client.start()));
 		buttonPanel.add(new CButton(HexSync.get("GUI.settings"),
-			event -> new SettingJDialog(frame, HexSync.get("Settings.title")), IconManager.cog));
+			event -> new SettingJDialog(frame, HexSync.get("Settings.title")),
+			IconManager.cog));
 		buttonPanel.add(new CButton(HexSync.get("GUI.stopServer"), event -> Server.stop()));
 		buttonPanel.add(new CButton(HexSync.get("GUI.stopClient"), event -> Client.stop()));
 		buttonPanel.add(new CButton(HexSync.get("GUI.exit"), event -> System.exit(0), IconManager.exit));
@@ -44,7 +44,8 @@ public class GUI implements Runnable {
 		var popupMenu = new JPopupMenu();
 		popupMenu.add(copyItem);
 		popupMenu.add(clearItem);
-		logPane.setComponentPopupMenu(popupMenu); // 为日志面板添加鼠标事件监听器
-		Component.setWindow(frame); // 设置窗口属性
+		logPane.setComponentPopupMenu(popupMenu);
+		Component.setTheme(Data.theme.get());
+		Component.setWindow(frame);
 	}
 }
