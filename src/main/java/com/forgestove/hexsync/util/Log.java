@@ -49,6 +49,7 @@ public class Log {
 			logExecutor.shutdown();
 		}));
 		Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> error(throwable.getMessage()));
+		FileUtil.writeFile(new File(Data.LOG_PATH), "");
 	}
 	public enum Level {
 		INFO("Log.info", "\u001B[32m", new Color(0, 165, 0)),
