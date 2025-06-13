@@ -14,7 +14,7 @@ public class FileUtil {
 	// 初始化文件
 	public static void initFiles(boolean isServer) {
 		makeDirectory(isServer ? Data.serverSyncPath.get() : Data.clientSyncPath.get());
-		makeDirectory(HexSync.NAME);
+		makeDirectory(Path.of(HexSync.NAME));
 		ConfigUtil.loadConfig();
 		if (isServer) Server.serverMap = initMap(Data.serverSyncPath.get());
 		else {
@@ -23,8 +23,8 @@ public class FileUtil {
 		}
 	}
 	// 初始化文件名校验码键值对表
-	public static @NotNull Map<String, String> initMap(String directory) {
-		var fileList = new File(directory).listFiles();
+	public static @NotNull Map<String, String> initMap(Path directory) {
+		var fileList = directory.toFile().listFiles();
 		if (fileList == null) return new HashMap<>();
 		return Arrays.stream(fileList)
 			.parallel()
@@ -32,15 +32,15 @@ public class FileUtil {
 			.collect(Collectors.toConcurrentMap(File::getName, HashUtil::calculateSHA1, (existing, replacement) -> existing));
 	}
 	// 创建文件夹
-	public static void makeDirectory(String directoryPath) {
-		var directory = new File(directoryPath);
+	public static void makeDirectory(@NotNull Path directoryPath) {
+		var directory = directoryPath.toFile();
 		if (directory.isDirectory()) return;
 		if (directory.mkdirs()) Log.info("文件夹已创建: " + directoryPath);
 		else Log.error("无法创建文件夹: " + directoryPath);
 	}
 	// 删除指定路径下的文件
 	public static void deleteFilesNotInMaps(Map<String, String> requestMap, Map<String, String> clientOnlyMap) {
-		var fileList = new File(Data.clientSyncPath.get()).listFiles();
+		var fileList = Data.clientSyncPath.get().toFile().listFiles();
 		if (fileList == null) return;
 		Arrays.stream(fileList).parallel().filter(File::isFile).forEach(file -> {
 			var SHA1 = HashUtil.calculateSHA1(file);
@@ -58,15 +58,15 @@ public class FileUtil {
 		else Log.error("删除文件失败: " + file);
 	}
 	// 复制文件夹
-	public static void copyDirectory(String source, String target) {
+	public static void copyDirectory(@NotNull Path source, Path target) {
 		makeDirectory(target);
-		var fileList = new File(source).listFiles();
+		var fileList = source.toFile().listFiles();
 		if (fileList == null) return;
 		Arrays.stream(fileList).parallel().forEach(file -> {
 			var targetFileName = file.getName();
-			var targetFile = new File(target, targetFileName);
-			if (new File(target, targetFileName + ".disable").exists()) return; // 跳过此文件
-			if (file.isDirectory()) copyDirectory(String.valueOf(file), String.valueOf(targetFile));
+			var targetFile = target.resolve(targetFileName).toFile();
+			if (target.resolve(targetFileName + ".disable").toFile().exists()) return; // 跳过此文件
+			if (file.isDirectory()) copyDirectory(file.toPath(), targetFile.toPath());
 			else if (!targetFile.exists()) try {
 				Files.copy(file.toPath(), targetFile.toPath());
 				Log.info("已复制: %s -> %s".formatted(file, target));

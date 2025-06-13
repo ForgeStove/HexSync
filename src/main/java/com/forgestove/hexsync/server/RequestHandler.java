@@ -24,7 +24,7 @@ public class RequestHandler {
 			.map(Entry::getKey)
 			.orElse(null);
 		if (fileName == null) return;
-		var file = new File(FileUtil.path(Data.serverSyncPath.get(), fileName));
+		var file = Data.serverSyncPath.get().resolve(fileName).toFile();
 		try (var inputStream = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
 			ResponseSender.sendResponse(exchange, inputStream, file.length());
 			Log.info("发送文件: %s 至: %s".formatted(file, HttpUtil.getHostAddress(exchange)));

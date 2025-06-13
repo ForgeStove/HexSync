@@ -7,6 +7,7 @@ import com.forgestove.hexsync.util.Rate.Unit;
 import javax.swing.*;
 import javax.swing.UIManager.LookAndFeelInfo;
 import java.awt.*;
+import java.nio.file.Path;
 import java.util.*;
 public class SettingJDialog extends JDialog {
 	// 打开设置对话框
@@ -20,7 +21,7 @@ public class SettingJDialog extends JDialog {
 		var serverPortField = new JTextField(String.valueOf(Data.serverPort));
 		var rateField = new JTextField(String.valueOf(Data.serverUploadRate.get().value));
 		var rateUnitBox = new JComboBox<>(Unit.values()) {{setSelectedItem(Data.serverUploadRate.get().unit);}};
-		var serverSyncField = new JTextField(Data.serverSyncPath.get());
+		var serverSyncField = new JTextField(Data.serverSyncPath.get().toString());
 		var serverAutoStartBox = new JCheckBox(HexSync.get("Settings.autoStartServer"), Data.serverAuto.get());
 		serverPanel.add(new JLabel(HexSync.get("Settings.port")));
 		serverPanel.add(serverPortField);
@@ -34,8 +35,8 @@ public class SettingJDialog extends JDialog {
 		// 客户端选项卡
 		var clientPortField = new JTextField(String.valueOf(Data.clientPort));
 		var remoteAddressField = new JTextField(Data.remoteAddress.get());
-		var clientSyncField = new JTextField(Data.clientSyncPath.get());
-		var clientOnlyField = new JTextField(Data.clientOnlyPath.get());
+		var clientSyncField = new JTextField(Data.clientSyncPath.get().toString());
+		var clientOnlyField = new JTextField(Data.clientOnlyPath.get().toString());
 		var clientAutoStartBox = new JCheckBox(HexSync.get("Settings.autoStartClient"), Data.clientAuto.get());
 		var clientPanel = new JPanel(layout);
 		clientPanel.add(new JLabel(HexSync.get("Settings.port")));
@@ -92,11 +93,11 @@ public class SettingJDialog extends JDialog {
 			}
 			Data.serverAuto.set(serverAutoStartBox.isSelected());
 			Data.serverUploadRate.set(new Rate(rateText, (Unit) Objects.requireNonNull(rateUnitBox.getSelectedItem())));
-			Data.serverSyncPath.set(serverSyncField.getText().trim());
+			Data.serverSyncPath.set(Path.of(serverSyncField.getText()));
 			Data.clientAuto.set(clientAutoStartBox.isSelected());
-			Data.remoteAddress.set(remoteAddressField.getText().trim());
-			Data.clientSyncPath.set(clientSyncField.getText().trim());
-			Data.clientOnlyPath.set(clientOnlyField.getText().trim());
+			Data.remoteAddress.set(remoteAddressField.getText());
+			Data.clientSyncPath.set(Path.of(clientSyncField.getText()));
+			Data.clientOnlyPath.set(Path.of(clientOnlyField.getText()));
 			var themeItem = (String) themeBox.getSelectedItem();
 			if (!Data.theme.get().equals(themeItem)) {
 				Data.theme.set(themeItem);

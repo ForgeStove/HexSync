@@ -7,6 +7,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 public class Downloader {
@@ -20,7 +21,7 @@ public class Downloader {
 		Log.info("开始下载 [%d] 个文件".formatted(size));
 		var count = new AtomicInteger(0);
 		toDownloadMap.entrySet().parallelStream().forEach(entry -> {
-			var filePath = FileUtil.path(Data.clientSyncPath.get(), entry.getKey());
+			var filePath = Data.clientSyncPath.get().resolve(entry.getKey());
 			if (downloadAndCheckFile(filePath, entry.getValue()))
 				Log.info("已下载: [%d/%d] %s".formatted(count.incrementAndGet(), size, filePath));
 			else {
@@ -31,9 +32,9 @@ public class Downloader {
 		Log.info("%s: [%d/%d]".formatted(Client.errorDownload ? "下载失败" : "下载完成", count.get(), size));
 		if (Data.clientAuto.get()) System.exit(0);
 	}
-	private static boolean downloadAndCheckFile(String filePath, String requestSHA1) {
+	private static boolean downloadAndCheckFile(Path filePath, String requestSHA1) {
 		if (!Client.isRunning()) return false;
-		var clientFile = new File(filePath);
+		var clientFile = filePath.toFile();
 		if (requestSHA1 == null) {
 			Log.error("无法获取请求的校验码: " + clientFile);
 			return false;

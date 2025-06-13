@@ -3,7 +3,7 @@ import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.config.Data;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.function.Consumer;
 public class SettingUtil {
 	// 字符串转端口
@@ -24,10 +24,8 @@ public class SettingUtil {
 		}
 	}
 	// 设置文件夹路径
-	public static void setDirectory(@NotNull String directory, String log, Consumer<String> consumer) {
-		if (!directory.isEmpty() && !directory.contains(File.separator)) {
-			consumer.accept(directory);
-			System.out.printf("%s文件夹路径已设置为: %s%n", log, directory);
-		} else System.err.println("路径格式错误,请输入绝对路径或相对路径.");
+	public static void setDirectory(Path directory, String log, @NotNull Consumer<Path> consumer) {
+		consumer.accept(directory);
+		System.out.printf("%s文件夹路径已设置为: %s%n", log, directory);
 	}
 }

@@ -5,6 +5,8 @@ import com.forgestove.hexsync.util.*;
 import com.forgestove.hexsync.util.Rate.Unit;
 import picocli.CommandLine;
 import picocli.CommandLine.*;
+
+import java.nio.file.Path;
 @Command(
 	name = "set", description = "设置相关参数", subcommands = {
 	ServerPort.class,
@@ -34,7 +36,7 @@ public class Setting implements Runnable {
 	}
 	@Command(name = "sd", description = "设置服务端同步目录")
 	static class ServerDirectory implements Runnable {
-		@Parameters(description = "目录") String dir;
+		@Parameters(description = "目录") Path dir;
 		public void run() {SettingUtil.setDirectory(dir, "服务端同步", Data.serverSyncPath::set);}
 	}
 	@Command(name = "ss", description = "设置服务端自动启动")
@@ -57,12 +59,12 @@ public class Setting implements Runnable {
 	}
 	@Command(name = "cd", description = "设置客户端同步目录")
 	static class ClientSyncDirectory implements Runnable {
-		@Parameters(description = "目录") String dir;
+		@Parameters(description = "目录") Path dir;
 		public void run() {SettingUtil.setDirectory(dir, "客户端同步", Data.clientSyncPath::set);}
 	}
 	@Command(name = "co", description = "设置仅客户端模组目录")
 	static class ClientOnlyDirectory implements Runnable {
-		@Parameters(description = "目录") String dir;
+		@Parameters(description = "目录") Path dir;
 		public void run() {SettingUtil.setDirectory(dir, "仅客户端模组", Data.clientOnlyPath::set);}
 	}
 	@Command(name = "cs", description = "设置客户端自动启动")

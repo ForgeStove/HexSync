@@ -48,7 +48,7 @@ public class Log {
 	}
 	// 初始化日志
 	public static void initLog() {
-		FileUtil.makeDirectory(HexSync.NAME);
+		FileUtil.makeDirectory(Path.of(HexSync.NAME));
 		Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> error(throwable.getMessage()));
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			flushScheduler.shutdown();
