@@ -28,7 +28,6 @@ tasks.shadowJar {
 	}
 	from("LICENSE") { rename { "${it}_${project.name}" } }
 }
-tasks.build { dependsOn(tasks.shadowJar) }
 tasks.named("githubRelease") { dependsOn(tasks.build) }
 githubRelease {
 	token(System.getenv("GITHUB_TOKEN"))

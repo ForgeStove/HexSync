@@ -2,6 +2,7 @@ package com.forgestove.hexsync.client;
 import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.config.Data;
 import com.forgestove.hexsync.util.*;
+import com.forgestove.hexsync.util.network.HttpUtil;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import org.jetbrains.annotations.Contract;
 /**

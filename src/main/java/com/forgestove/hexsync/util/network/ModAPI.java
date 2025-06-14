@@ -1,4 +1,5 @@
-package com.forgestove.hexsync.util;
+package com.forgestove.hexsync.util.network;
+import com.forgestove.hexsync.util.Log;
 import it.unimi.dsi.fastutil.objects.*;
 import org.jetbrains.annotations.*;
 import org.json.JSONObject;

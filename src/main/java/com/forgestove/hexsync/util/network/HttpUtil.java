@@ -1,4 +1,4 @@
-package com.forgestove.hexsync.util;
+package com.forgestove.hexsync.util.network;
 import com.sun.net.httpserver.HttpExchange;
 import org.jetbrains.annotations.NotNull;
 

@@ -10,7 +10,6 @@ import java.awt.Color;
 import java.io.*;
 import java.nio.file.Path;
 import java.time.LocalTime;
-import java.util.Arrays;
 import java.util.concurrent.*;
 public class Log {
 	public static final ScheduledExecutorService flushScheduler = Executors.newSingleThreadScheduledExecutor();
@@ -25,7 +24,7 @@ public class Log {
 		if (!HexSync.HEADLESS) SwingUtilities.invokeLater(() -> writeToLogPane(level, log));
 		if (HexSync.ANSI) System.out.printf("%s%s\u001B[0m", level.ansi, log);
 		else System.out.print(log);
-		printStream.print(log);
+		if (printStream != null) printStream.print(log);
 	}
 	// 在日志面板中追加日志
 	private static void writeToLogPane(Level level, String log) {
@@ -46,14 +45,10 @@ public class Log {
 		Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
 			var writer = new StringWriter();
 			throwable.printStackTrace(new PrintWriter(writer));
-			Arrays.stream(writer.toString().split("\\n")).map(line -> "\t" + line.trim()).forEach(Log::error);
+			error(writer.toString());
 		});
 		Runtime.getRuntime().addShutdownHook(new Thread(flushScheduler::shutdown));
-		try {
-			printStream = new PrintStream(Data.LOG_PATH.toFile());
-		} catch (Exception error) {
-			throw new RuntimeException(error);
-		}
+		try {printStream = new PrintStream(Data.LOG_PATH.toFile());} catch (Exception error) {throw new RuntimeException(error);}
 	}
 	public enum Level {
 		INFO("Log.info", "\u001B[32m", new Color(0, 165, 0)),

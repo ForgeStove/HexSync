@@ -1,6 +1,7 @@
 package com.forgestove.hexsync.client;
 import com.forgestove.hexsync.config.Data;
 import com.forgestove.hexsync.util.*;
+import com.forgestove.hexsync.util.network.*;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 
