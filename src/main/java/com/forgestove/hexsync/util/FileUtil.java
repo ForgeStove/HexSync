@@ -1,8 +1,5 @@
 package com.forgestove.hexsync.util;
-import com.forgestove.hexsync.HexSync;
-import com.forgestove.hexsync.client.Client;
-import com.forgestove.hexsync.config.*;
-import com.forgestove.hexsync.server.Server;
+import com.forgestove.hexsync.config.Data;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 
@@ -12,17 +9,6 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 public class FileUtil {
-	// 初始化文件
-	public static void initFiles(boolean isServer) {
-		makeDirectory(isServer ? Data.serverSyncPath.get() : Data.clientSyncPath.get());
-		makeDirectory(Path.of(HexSync.NAME));
-		ConfigUtil.loadConfig();
-		if (isServer) Server.serverMap = initMap(Data.serverSyncPath.get());
-		else {
-			makeDirectory(Data.clientOnlyPath.get());
-			Client.errorDownload = false;
-		}
-	}
 	// 初始化文件名校验码键值对表
 	public static @NotNull Map<String, String> initMap(@NotNull Path directory) {
 		var fileList = directory.toFile().listFiles();
@@ -35,10 +21,13 @@ public class FileUtil {
 	}
 	// 创建文件夹
 	public static void makeDirectory(@NotNull Path directoryPath) {
-		var directory = directoryPath.toFile();
-		if (directory.isDirectory()) return;
-		if (directory.mkdirs()) Log.info("文件夹已创建: " + directoryPath);
-		else Log.error("无法创建文件夹: " + directoryPath);
+		try {
+			if (Files.isDirectory(directoryPath)) return;
+			Files.createDirectories(directoryPath);
+			Log.info("文件夹已创建: " + directoryPath);
+		} catch (IOException error) {
+			Log.error("无法创建文件夹: %s, 原因: %s".formatted(directoryPath, error.getMessage()));
+		}
 	}
 	// 删除指定路径下的文件
 	public static void deleteFilesNotInMaps(Map<String, String> requestMap, Map<String, String> clientOnlyMap) {

@@ -13,7 +13,6 @@ import java.util.concurrent.Executors;
  * 负责服务器的启动、停止和状态管理
  */
 public class Server implements Runnable {
-	// TODO: 改为本地临时文件
 	public static volatile Map<String, String> serverMap; // 服务端文件名和校验码映射
 	public static volatile Thread serverThread; // 服务器线程
 	public static volatile HttpServer httpServer; // 服务器实例
@@ -83,8 +82,9 @@ public class Server implements Runnable {
 			return;
 		}
 		Log.info(HexSync.NAME + "Server 正在启动...");
-		// 初始化文件
-		FileUtil.initFiles(true);
+		// 初始化
+		FileUtil.makeDirectory(Data.serverSyncPath.get());
+		serverMap = FileUtil.initMap(Data.serverSyncPath.get());
 		// 检查是否有文件可以同步
 		if (serverMap == null || serverMap.isEmpty()) {
 			Log.warn(Data.serverSyncPath.get() + " 没有文件，无法启动服务器");

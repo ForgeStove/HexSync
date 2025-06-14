@@ -7,9 +7,10 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
 import java.awt.Color;
-import java.io.PrintStream;
+import java.io.*;
 import java.nio.file.Path;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.concurrent.*;
 public class Log {
 	public static final ScheduledExecutorService flushScheduler = Executors.newSingleThreadScheduledExecutor();
@@ -40,7 +41,11 @@ public class Log {
 	// 初始化日志
 	public static void initLog() {
 		FileUtil.makeDirectory(Path.of(HexSync.NAME));
-		//		Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> error(throwable.getMessage()));
+		Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+			var writer = new StringWriter();
+			throwable.printStackTrace(new PrintWriter(writer));
+			Arrays.stream(writer.toString().split("\\n")).map(line -> "\t" + line.trim()).forEach(Log::error);
+		});
 		Runtime.getRuntime().addShutdownHook(new Thread(flushScheduler::shutdown));
 		var file = Data.LOG_PATH.toFile();
 		if (file.exists() && file.isFile()) FileUtil.writeFile(file, "");

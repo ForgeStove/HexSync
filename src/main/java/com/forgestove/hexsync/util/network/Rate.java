@@ -3,12 +3,12 @@ import org.jetbrains.annotations.*;
 
 import java.math.BigInteger;
 public class Rate {
-	public final long value; // 存储为普通 long
+	public final long value;
 	public final Unit unit;
-	public final long bps;   // 存储为普通 long
+	public final long bps;
 	@Contract(pure = true)
 	public Rate(long value, @NotNull Unit unit) {
-		this.value = value; // 按无符号方式处理
+		this.value = value;
 		this.unit = unit;
 		bps = multiplyUnsigned(value, unit.multiplier);
 	}
@@ -33,13 +33,11 @@ public class Rate {
 		this.unit = unit;
 		bps = multiplyUnsigned(value, unit.multiplier);
 	}
-	// 安全处理无符号乘法溢出
 	public static long multiplyUnsigned(long a, long b) {
 		var bigA = new BigInteger(Long.toUnsignedString(a));
 		var bigB = new BigInteger(Long.toUnsignedString(b));
 		var result = bigA.multiply(bigB);
-		// 如果结果超过无符号 long 范围，将返回最大无符号 long 值
-		if (result.compareTo(new BigInteger("18446744073709551615")) > 0) return -1; // 表示最大无符号 long
+		if (result.compareTo(new BigInteger("18446744073709551615")) > 0) return -1;
 		return result.longValue();
 	}
 	@Override
