@@ -32,6 +32,7 @@ tasks.register<JavaExec>("runHeadless") {
 	mainClass.set("com.forgestove.hexsync.HexSync")
 	classpath = sourceSets["main"].runtimeClasspath
 	workingDir = project.file("run")
+	standardInput = System.`in`
 	jvmArgs("-Djava.awt.headless=true")
 }
 tasks.shadowJar {
