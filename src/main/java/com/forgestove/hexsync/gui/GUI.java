@@ -22,8 +22,7 @@ public class GUI implements Runnable {
 		scrollPane.setBorder(BorderFactory.createTitledBorder(HexSync.get("GUI.log")));
 		buttonPanel.add(new CButton(HexSync.get("GUI.startServer"), event -> Server.start()));
 		buttonPanel.add(new CButton(HexSync.get("GUI.startClient"), event -> Client.start()));
-		buttonPanel.add(new CButton(HexSync.get("GUI.settings"),
-			event -> new SettingJDialog(frame, HexSync.get("Settings.title")),
+		buttonPanel.add(new CButton(HexSync.get("GUI.settings"), event -> new SettingJDialog(frame, HexSync.get("Setting.title")),
 			IconManager.cog));
 		buttonPanel.add(new CButton(HexSync.get("GUI.stopServer"), event -> Server.stop()));
 		buttonPanel.add(new CButton(HexSync.get("GUI.stopClient"), event -> Client.stop()));

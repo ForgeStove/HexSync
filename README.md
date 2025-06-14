@@ -55,7 +55,7 @@
 
 - 无头环境下自动切换为无头模式，如需手动切换可加参数：
 
-      java -Djava.awt.headless=true -jar HexSync.jar
+      java -Dheadless=true -jar HexSync.jar
 
 - 通过“设置”按钮进入设置界面，配置服务端和客户端参数。
 - 服务端：将需同步文件放入同步文件夹（默认 `mods`），点击“启动服务端”。

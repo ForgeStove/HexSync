@@ -2,6 +2,7 @@
   <configuration default="false" name="HexSync" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="com.forgestove.hexsync.HexSync" />
     <module name="HexSync.main" />
+    <option name="VM_PARAMETERS" value="-Dansi=true" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/run" />
     <extension name="coverage">
       <pattern>

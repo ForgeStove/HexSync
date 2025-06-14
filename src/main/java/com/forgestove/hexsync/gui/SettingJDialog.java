@@ -22,16 +22,16 @@ public class SettingJDialog extends JDialog {
 		var rateField = new JTextField(String.valueOf(Data.serverUploadRate.get().value));
 		var rateUnitBox = new JComboBox<>(Unit.values()) {{setSelectedItem(Data.serverUploadRate.get().unit);}};
 		var serverSyncField = new JTextField(Data.serverSyncPath.get().toString());
-		var serverAutoBox = new JCheckBox(HexSync.get("Settings.autoStart"), Data.serverAuto.get());
+		var serverAutoBox = new JCheckBox(HexSync.get("Setting.autoStart"), Data.serverAuto.get());
 		var serverPanel = new JPanel(layout) {{
 			setFocusable(false);
-			add(new JLabel(HexSync.get("Settings.port")));
+			add(new JLabel(HexSync.get("Setting.port")));
 			add(serverPortField);
-			add(new JLabel(HexSync.get("Settings.maxUploadRate")));
+			add(new JLabel(HexSync.get("Setting.maxUploadRate")));
 			add(rateField);
-			add(new JLabel(HexSync.get("Settings.rateUnit")));
+			add(new JLabel(HexSync.get("Setting.rateUnit")));
 			add(rateUnitBox);
-			add(new JLabel(HexSync.get("Settings.serverSyncPath")));
+			add(new JLabel(HexSync.get("Setting.serverSyncPath")));
 			add(serverSyncField);
 			add(serverAutoBox);
 		}};
@@ -40,16 +40,16 @@ public class SettingJDialog extends JDialog {
 		var remoteAddressField = new JTextField(Data.remoteAddress.get());
 		var clientSyncField = new JTextField(Data.clientSyncPath.get().toString());
 		var clientOnlyField = new JTextField(Data.clientOnlyPath.get().toString());
-		var clientAutoBox = new JCheckBox(HexSync.get("Settings.autoStart"), Data.clientAuto.get());
+		var clientAutoBox = new JCheckBox(HexSync.get("Setting.autoStart"), Data.clientAuto.get());
 		var clientPanel = new JPanel(layout) {{
 			setFocusable(false);
-			add(new JLabel(HexSync.get("Settings.port")));
+			add(new JLabel(HexSync.get("Setting.port")));
 			add(clientPortField);
-			add(new JLabel(HexSync.get("Settings.remoteAddress")));
+			add(new JLabel(HexSync.get("Setting.remoteAddress")));
 			add(remoteAddressField);
-			add(new JLabel(HexSync.get("Settings.clientSyncPath")));
+			add(new JLabel(HexSync.get("Setting.clientSyncPath")));
 			add(clientSyncField);
-			add(new JLabel(HexSync.get("Settings.clientOnlyPath")));
+			add(new JLabel(HexSync.get("Setting.clientOnlyPath")));
 			add(clientOnlyField);
 			add(clientAutoBox);
 		}};
@@ -59,26 +59,26 @@ public class SettingJDialog extends JDialog {
 			.toArray(String[]::new)) {{setSelectedItem(Data.theme.get());}};
 		var uiPanel = new JPanel(layout);
 		uiPanel.setFocusable(false);
-		uiPanel.add(new JLabel(HexSync.get("Settings.theme")));
+		uiPanel.add(new JLabel(HexSync.get("Setting.theme")));
 		uiPanel.add(themeBox);
 		// 选项卡
 		var tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT) {{
 			addChangeListener(event -> SwingUtilities.invokeLater(SettingJDialog.this::pack));
-			addTab(HexSync.get("Settings.serverSettings"), serverPanel);
-			addTab(HexSync.get("Settings.clientSettings"), clientPanel);
-			addTab(HexSync.get("Settings.uiSettings"), uiPanel);
+			addTab(HexSync.get("Setting.serverSettings"), serverPanel);
+			addTab(HexSync.get("Setting.clientSettings"), clientPanel);
+			addTab(HexSync.get("Setting.uiSettings"), uiPanel);
 		}};
 		// 按钮
-		var save = new CButton(HexSync.get("Settings.save"), event -> {
+		var save = new CButton(HexSync.get("Setting.save"), event -> {
 			for (var input : new Object[][]{
-				{HexSync.get("Settings.port"), serverPortField, 0},
-				{HexSync.get("Settings.maxUploadRate"), rateField, 0},
-				{HexSync.get("Settings.rateUnit"), rateUnitBox, 0},
-				{HexSync.get("Settings.serverSyncPath"), serverSyncField, 0},
-				{HexSync.get("Settings.port"), clientPortField, 1},
-				{HexSync.get("Settings.remoteAddress"), remoteAddressField, 1},
-				{HexSync.get("Settings.clientSyncPath"), clientSyncField, 1},
-				{HexSync.get("Settings.clientOnlyPath"), clientOnlyField, 1}
+				{HexSync.get("Setting.port"), serverPortField, 0},
+				{HexSync.get("Setting.maxUploadRate"), rateField, 0},
+				{HexSync.get("Setting.rateUnit"), rateUnitBox, 0},
+				{HexSync.get("Setting.serverSyncPath"), serverSyncField, 0},
+				{HexSync.get("Setting.port"), clientPortField, 1},
+				{HexSync.get("Setting.remoteAddress"), remoteAddressField, 1},
+				{HexSync.get("Setting.clientSyncPath"), clientSyncField, 1},
+				{HexSync.get("Setting.clientOnlyPath"), clientOnlyField, 1}
 			})
 				if (input[1] instanceof JTextField textField && textField.getText().isEmpty()) {
 					tabbedPane.setSelectedIndex((int) input[2]); // 跳转到对应的选项卡
@@ -89,7 +89,7 @@ public class SettingJDialog extends JDialog {
 			// 检测输入框是否为数字且在合法范围内并尝试转换
 			var serverPortResult = TypeConverter.tryConvertWithResult(serverPortField.getText(), Port::new);
 			if (!serverPortResult.isSuccess) {
-				Log.warn("%s%s%s".formatted(HexSync.get("Error.invalidFormat"), HexSync.get("Settings.port"), serverPortField.getText()));
+				Log.warn("%s%s%s".formatted(HexSync.get("Error.invalidFormat"), HexSync.get("Setting.port"), serverPortField.getText()));
 				tabbedPane.setSelectedIndex(0);
 				Component.selectAndFocus(serverPortField);
 				return;
@@ -98,7 +98,7 @@ public class SettingJDialog extends JDialog {
 			var rateText = rateField.getText();
 			var rateResult = TypeConverter.tryToLong(rateText);
 			if (!rateResult.isSuccess || rateResult.value < 0) {
-				Log.warn("%s%s%s".formatted(HexSync.get("Error.invalidFormat"), HexSync.get("Settings.maxUploadRate"), rateText));
+				Log.warn("%s%s%s".formatted(HexSync.get("Error.invalidFormat"), HexSync.get("Setting.maxUploadRate"), rateText));
 				tabbedPane.setSelectedIndex(0);
 				Component.selectAndFocus(rateField);
 				return;
@@ -120,8 +120,8 @@ public class SettingJDialog extends JDialog {
 			ConfigUtil.saveConfig(); // 保存配置
 			dispose(); // 关闭对话框
 		});
-		var cancel = new CButton(HexSync.get("Settings.cancel"), event -> dispose());
-		var about = new CButton(HexSync.get("Settings.about"), event -> new AboutJDialog(owner, HexSync.get("About.title")));
+		var cancel = new CButton(HexSync.get("Setting.cancel"), event -> dispose());
+		var about = new CButton(HexSync.get("Setting.about"), event -> new AboutJDialog(owner, HexSync.get("About.title")));
 		// 按钮面板
 		add(new JPanel(new BorderLayout()) {{
 			setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
