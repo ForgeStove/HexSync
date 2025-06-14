@@ -31,8 +31,8 @@ tasks.shadowJar {
 tasks.named("githubRelease") { dependsOn(tasks.build) }
 githubRelease {
 	token(System.getenv("GITHUB_TOKEN"))
-	owner = e("github.owner")
-	repo = e("github.repo")
+	owner = "ForgeStove"
+	repo = "HexSync"
 	tagName = "v${e("app.version")}"
 	releaseName = tagName
 	generateReleaseNotes = true
@@ -41,8 +41,8 @@ githubRelease {
 	overwrite = true
 }
 tasks.register("packageApp") {
+	group = "shadow"
 	description = "打包应用程序为可执行镜像"
-	group = "distribution"
 	dependsOn(tasks.shadowJar)
 	doLast {
 		val jarName = e("app.jarName")
