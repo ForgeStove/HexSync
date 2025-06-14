@@ -32,8 +32,6 @@ public class Client implements Runnable {
 			Log.info(HexSync.NAME + "Client 已经在运行中");
 			return;
 		}
-		// 确保 HttpClient 可用
-		HttpUtil.getClient();
 		clientThread = new Thread(getInstance());
 		clientThread.setName("HexSync-ClientThread");
 		clientThread.setDaemon(false); // 设置为用户线程，确保任务完成
