@@ -26,7 +26,6 @@ public class CLI implements Runnable {
 		cmd.setCaseInsensitiveEnumValuesAllowed(true);
 		var scanner = new Scanner(System.in);
 		while (true) {
-			System.out.print("HexSync> ");
 			var line = scanner.nextLine().trim();
 			if (line.isEmpty()) continue;
 			cmd.execute(line.split("\\s+"));

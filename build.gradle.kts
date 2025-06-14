@@ -19,6 +19,21 @@ dependencies {
 	implementation("org.json:json:+")
 	implementation("it.unimi.dsi:fastutil:+")
 }
+tasks.register<JavaExec>("run") {
+	group = "application"
+	description = "运行HexSync应用"
+	mainClass.set("com.forgestove.hexsync.HexSync")
+	classpath = sourceSets["main"].runtimeClasspath
+	workingDir = project.file("run")
+}
+tasks.register<JavaExec>("runHeadless") {
+	group = "application"
+	description = "以无头模式运行HexSync应用"
+	mainClass.set("com.forgestove.hexsync.HexSync")
+	classpath = sourceSets["main"].runtimeClasspath
+	workingDir = project.file("run")
+	jvmArgs("-Djava.awt.headless=true")
+}
 tasks.shadowJar {
 	archiveClassifier.set("")
 	manifest { attributes(mapOf("Main-Class" to "com.forgestove.hexsync.HexSync")) }
@@ -57,11 +72,7 @@ tasks.register("packageApp") {
 		val javaPath = javaToolchains.launcherFor(java.toolchain).get().metadata.installationPath.toString()
 		val modules = providers.exec {
 			commandLine(
-				"$javaPath/bin/jdeps",
-				"--multi-release", "17",
-				"--print-module-deps",
-				"--ignore-missing-deps",
-				"$inputDir/$jarName"
+				"$javaPath/bin/jdeps", "--multi-release", "17", "--print-module-deps", "--ignore-missing-deps", "$inputDir/$jarName"
 			)
 		}.standardOutput.asText.get().trim()
 		println("依赖模块: $modules")
@@ -69,9 +80,12 @@ tasks.register("packageApp") {
 		exec {
 			commandLine(
 				"$javaPath/bin/jlink",
-				"--module-path", "$javaPath/jmods",
-				"--add-modules", modules,
-				"--output", runtimeDir,
+				"--module-path",
+				"$javaPath/jmods",
+				"--add-modules",
+				modules,
+				"--output",
+				runtimeDir,
 				"--strip-debug",
 				"--compress=2",
 				"--no-header-files",
@@ -83,18 +97,30 @@ tasks.register("packageApp") {
 		exec {
 			commandLine(
 				"$javaPath/bin/jpackage",
-				"--input", inputDir,
-				"--name", "HexSync",
-				"--main-jar", jarName,
-				"--main-class", e("app.mainClass"),
-				"--icon", e("app.iconFile"),
-				"--type", "app-image",
-				"--runtime-image", runtimeDir,
-				"--dest", outputDir,
-				"--vendor", e("app.vendor"),
-				"--description", e("app.description"),
-				"--copyright", e("app.copyright"),
-				"--app-version", e("app.version")
+				"--input",
+				inputDir,
+				"--name",
+				"HexSync",
+				"--main-jar",
+				jarName,
+				"--main-class",
+				e("app.mainClass"),
+				"--icon",
+				e("app.iconFile"),
+				"--type",
+				"app-image",
+				"--runtime-image",
+				runtimeDir,
+				"--dest",
+				outputDir,
+				"--vendor",
+				e("app.vendor"),
+				"--description",
+				e("app.description"),
+				"--copyright",
+				e("app.copyright"),
+				"--app-version",
+				e("app.version")
 			)
 		}
 		println("应用已打包到: $outputDir")
