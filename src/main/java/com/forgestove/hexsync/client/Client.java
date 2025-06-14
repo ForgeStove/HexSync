@@ -90,6 +90,7 @@ public class Client implements Runnable {
 		} catch (Exception error) {
 			Log.error("客户端启动失败: " + error.getMessage());
 			errorDownload = true; // 标记下载错误
+		} finally {
 			stop();
 		}
 	}
