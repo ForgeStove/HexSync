@@ -16,7 +16,7 @@ public class HexSync {
 		LICENSE_URL = GITHUB_URL + "/blob/main/LICENSE"; // 许可证地址
 	public static final boolean //
 		HEADLESS = Boolean.getBoolean("java.awt.headless"), // 是否处于无头模式
-		ANSI = Boolean.getBoolean("ansi"); // 是否启用ANSI控制台输出
+		ANSI = !Boolean.getBoolean("ansi.disable"); // 是否启用ANSI控制台输出
 	public static final ResourceBundle lang = ResourceBundle.getBundle(NAME, Locale.getDefault()); // 语言
 	public static void main(String[] args) {
 		Log.initLog();
