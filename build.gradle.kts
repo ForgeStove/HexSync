@@ -43,7 +43,7 @@ githubRelease {
 tasks.register("packageApp") {
 	description = "打包应用程序为可执行镜像"
 	group = "distribution"
-	dependsOn("build")
+	dependsOn(tasks.shadowJar)
 	doLast {
 		val jarName = e("app.jarName")
 		val inputDir = e("app.inputDir")
