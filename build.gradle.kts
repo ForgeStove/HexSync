@@ -17,6 +17,7 @@ dependencies {
 	implementation("com.formdev:flatlaf-extras:+")
 	implementation("info.picocli:picocli:+")
 	implementation("org.json:json:+")
+	implementation("it.unimi.dsi:fastutil:+")
 }
 tasks.shadowJar {
 	archiveClassifier.set("")

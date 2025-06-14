@@ -1,13 +1,12 @@
 package com.forgestove.hexsync.util;
+import it.unimi.dsi.fastutil.objects.*;
 import org.jetbrains.annotations.*;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 public class ModAPI {
-	private static final Map<String, String> CACHE = new ConcurrentHashMap<>(); // SHA1 -> URL 缓存
+	private static final Object2ObjectMap<String, String> CACHE = new Object2ObjectOpenHashMap<>(); // SHA1 -> URL 缓存
 	public static @Nullable String getURL(@NotNull String SHA1) {
 		if (CACHE.containsKey(SHA1)) return CACHE.get(SHA1); // 缓存命中直接返回
 		try {

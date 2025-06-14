@@ -14,7 +14,8 @@ public class HashUtil {
 	 * @return SHA1哈希值，如果文件不存在或不是文件则返回null
 	 */
 	public static String getSHA1(@NotNull File file) {
-		return CACHE.get(file.getAbsolutePath() + ":" + file.lastModified());
+		var key = file.getAbsolutePath() + ":" + file.lastModified();
+		return CACHE.get(key);
 	}
 	/**
 	 * 将SHA1哈希值放入缓存
@@ -23,7 +24,8 @@ public class HashUtil {
 	 * @param sha1 SHA1哈希值
 	 */
 	public static void putSHA1(@NotNull File file, String sha1) {
-		CACHE.put(file.getAbsolutePath() + ":" + file.lastModified(), sha1);
+		var key = file.getAbsolutePath() + ":" + file.lastModified();
+		CACHE.put(key, sha1);
 	}
 	// 计算文件SHA1哈希值（带缓存）
 	public static String calculateSHA1(File file) {
@@ -31,7 +33,7 @@ public class HashUtil {
 		if (cache != null) return cache;
 		try (var fileInputStream = new FileInputStream(file)) {
 			var digest = MessageDigest.getInstance("SHA-1");
-			var buffer = new byte[16384];
+			var buffer = new byte[4096];
 			int bytesRead;
 			while ((bytesRead = fileInputStream.read(buffer)) != -1) digest.update(buffer, 0, bytesRead);
 			var sha1 = HexFormat.of().formatHex(digest.digest());

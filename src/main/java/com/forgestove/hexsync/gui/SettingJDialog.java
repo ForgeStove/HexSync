@@ -2,9 +2,8 @@ package com.forgestove.hexsync.gui;
 import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.config.*;
 import com.forgestove.hexsync.util.*;
-import com.forgestove.hexsync.util.converter.TypeConverter;
-import com.forgestove.hexsync.util.object.*;
-import com.forgestove.hexsync.util.object.Rate.Unit;
+import com.forgestove.hexsync.util.network.*;
+import com.forgestove.hexsync.util.network.Rate.Unit;
 
 import javax.swing.*;
 import javax.swing.UIManager.LookAndFeelInfo;
@@ -19,42 +18,47 @@ public class SettingJDialog extends JDialog {
 		// 设置布局
 		var layout = new GridLayout(0, 2);
 		// 服务端选项卡
-		var serverPanel = new JPanel(layout);
 		var serverPortField = new JTextField(String.valueOf(Data.serverPort.get().getValue()));
 		var rateField = new JTextField(String.valueOf(Data.serverUploadRate.get().value));
 		var rateUnitBox = new JComboBox<>(Unit.values()) {{setSelectedItem(Data.serverUploadRate.get().unit);}};
 		var serverSyncField = new JTextField(Data.serverSyncPath.get().toString());
-		var serverAutoStartBox = new JCheckBox(HexSync.get("Settings.autoStart"), Data.serverAuto.get());
-		serverPanel.add(new JLabel(HexSync.get("Settings.port")));
-		serverPanel.add(serverPortField);
-		serverPanel.add(new JLabel(HexSync.get("Settings.maxUploadRate")));
-		serverPanel.add(rateField);
-		serverPanel.add(new JLabel(HexSync.get("Settings.rateUnit")));
-		serverPanel.add(rateUnitBox);
-		serverPanel.add(new JLabel(HexSync.get("Settings.serverSyncPath")));
-		serverPanel.add(serverSyncField);
-		serverPanel.add(serverAutoStartBox);
+		var serverAutoBox = new JCheckBox(HexSync.get("Settings.autoStart"), Data.serverAuto.get());
+		var serverPanel = new JPanel(layout) {{
+			setFocusable(false);
+			add(new JLabel(HexSync.get("Settings.port")));
+			add(serverPortField);
+			add(new JLabel(HexSync.get("Settings.maxUploadRate")));
+			add(rateField);
+			add(new JLabel(HexSync.get("Settings.rateUnit")));
+			add(rateUnitBox);
+			add(new JLabel(HexSync.get("Settings.serverSyncPath")));
+			add(serverSyncField);
+			add(serverAutoBox);
+		}};
 		// 客户端选项卡
 		var clientPortField = new JTextField(String.valueOf(Data.clientPort.get().getValue()));
 		var remoteAddressField = new JTextField(Data.remoteAddress.get());
 		var clientSyncField = new JTextField(Data.clientSyncPath.get().toString());
 		var clientOnlyField = new JTextField(Data.clientOnlyPath.get().toString());
-		var clientAutoStartBox = new JCheckBox(HexSync.get("Settings.autoStart"), Data.clientAuto.get());
-		var clientPanel = new JPanel(layout);
-		clientPanel.add(new JLabel(HexSync.get("Settings.port")));
-		clientPanel.add(clientPortField);
-		clientPanel.add(new JLabel(HexSync.get("Settings.remoteAddress")));
-		clientPanel.add(remoteAddressField);
-		clientPanel.add(new JLabel(HexSync.get("Settings.clientSyncPath")));
-		clientPanel.add(clientSyncField);
-		clientPanel.add(new JLabel(HexSync.get("Settings.clientOnlyPath")));
-		clientPanel.add(clientOnlyField);
-		clientPanel.add(clientAutoStartBox);
+		var clientAutoBox = new JCheckBox(HexSync.get("Settings.autoStart"), Data.clientAuto.get());
+		var clientPanel = new JPanel(layout) {{
+			setFocusable(false);
+			add(new JLabel(HexSync.get("Settings.port")));
+			add(clientPortField);
+			add(new JLabel(HexSync.get("Settings.remoteAddress")));
+			add(remoteAddressField);
+			add(new JLabel(HexSync.get("Settings.clientSyncPath")));
+			add(clientSyncField);
+			add(new JLabel(HexSync.get("Settings.clientOnlyPath")));
+			add(clientOnlyField);
+			add(clientAutoBox);
+		}};
 		// 界面选项卡
 		var themeBox = new JComboBox<>(Arrays.stream(UIManager.getInstalledLookAndFeels())
 			.map(LookAndFeelInfo::getName)
 			.toArray(String[]::new)) {{setSelectedItem(Data.theme.get());}};
 		var uiPanel = new JPanel(layout);
+		uiPanel.setFocusable(false);
 		uiPanel.add(new JLabel(HexSync.get("Settings.theme")));
 		uiPanel.add(themeBox);
 		// 选项卡
@@ -76,27 +80,35 @@ public class SettingJDialog extends JDialog {
 				{HexSync.get("Settings.clientSyncPath"), clientSyncField, 1},
 				{HexSync.get("Settings.clientOnlyPath"), clientOnlyField, 1}
 			})
-				if (input[1] instanceof JTextField textField && textField.getText().trim().isEmpty()) {
+				if (input[1] instanceof JTextField textField && textField.getText().isEmpty()) {
 					tabbedPane.setSelectedIndex((int) input[2]); // 跳转到对应的选项卡
 					Component.selectAndFocus(textField);
 					Log.warn(HexSync.get("Error.invalidFormat") + input[0]);
 					return;
 				}
 			// 检测输入框是否为数字且在合法范围内并尝试转换
-			SettingUtil.setPort(new Port(serverPortField.getText().trim()), true);
-			SettingUtil.setPort(new Port(clientPortField.getText().trim()), false);
+			var serverPortResult = TypeConverter.tryConvertWithResult(serverPortField.getText(), Port::new);
+			if (!serverPortResult.isSuccess) {
+				Log.warn("%s%s%s".formatted(HexSync.get("Error.invalidFormat"), HexSync.get("Settings.port"), serverPortField.getText()));
+				tabbedPane.setSelectedIndex(0);
+				Component.selectAndFocus(serverPortField);
+				return;
+			}
 			// 检测最大上传速率
-			var rateText = rateField.getText().trim();
-			if (!TypeConverter.tryToLong(rateText).isSuccess || Long.parseLong(rateText) < 0) {
+			var rateText = rateField.getText();
+			var rateResult = TypeConverter.tryToLong(rateText);
+			if (!rateResult.isSuccess || rateResult.value < 0) {
 				Log.warn("%s%s%s".formatted(HexSync.get("Error.invalidFormat"), HexSync.get("Settings.maxUploadRate"), rateText));
 				tabbedPane.setSelectedIndex(0);
 				Component.selectAndFocus(rateField);
 				return;
 			}
-			Data.serverAuto.set(serverAutoStartBox.isSelected());
+			Data.serverPort.set(new Port(serverPortField.getText()));
+			Data.serverAuto.set(serverAutoBox.isSelected());
 			Data.serverUploadRate.set(new Rate(rateText, (Unit) Objects.requireNonNull(rateUnitBox.getSelectedItem())));
 			Data.serverSyncPath.set(Path.of(serverSyncField.getText()));
-			Data.clientAuto.set(clientAutoStartBox.isSelected());
+			Data.clientPort.set(new Port(clientPortField.getText()));
+			Data.clientAuto.set(clientAutoBox.isSelected());
 			Data.remoteAddress.set(remoteAddressField.getText());
 			Data.clientSyncPath.set(Path.of(clientSyncField.getText()));
 			Data.clientOnlyPath.set(Path.of(clientOnlyField.getText()));

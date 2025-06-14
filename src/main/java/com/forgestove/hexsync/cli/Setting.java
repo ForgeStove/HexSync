@@ -1,9 +1,8 @@
 package com.forgestove.hexsync.cli;
 import com.forgestove.hexsync.cli.Setting.*;
 import com.forgestove.hexsync.config.*;
-import com.forgestove.hexsync.util.SettingUtil;
-import com.forgestove.hexsync.util.object.*;
-import com.forgestove.hexsync.util.object.Rate.Unit;
+import com.forgestove.hexsync.util.network.*;
+import com.forgestove.hexsync.util.network.Rate.Unit;
 import picocli.CommandLine;
 import picocli.CommandLine.*;
 
@@ -27,7 +26,7 @@ public class Setting implements Runnable {
 	@Command(name = "sp", description = "设置服务端端口")
 	static class ServerPort implements Runnable {
 		@Parameters(description = "端口") Port port;
-		public void run() {SettingUtil.setPort(port, true);}
+		public void run() {Data.serverPort.set(port);}
 	}
 	@Command(name = "sl", description = "设置限速")
 	static class ServerLimit implements Runnable {
@@ -38,7 +37,7 @@ public class Setting implements Runnable {
 	@Command(name = "sd", description = "设置服务端同步目录")
 	static class ServerDirectory implements Runnable {
 		@Parameters(description = "目录") Path dir;
-		public void run() {SettingUtil.setDirectory(dir, "服务端同步", Data.serverSyncPath::set);}
+		public void run() {Data.serverSyncPath.set(dir);}
 	}
 	@Command(name = "ss", description = "设置服务端自动启动")
 	static class ServerAutoStart implements Runnable {
@@ -48,25 +47,22 @@ public class Setting implements Runnable {
 	@Command(name = "cp", description = "设置客户端端口")
 	static class ClientPort implements Runnable {
 		@Parameters(description = "端口") Port port;
-		public void run() {SettingUtil.setPort(port, false);}
+		public void run() {Data.clientPort.set(port);}
 	}
 	@Command(name = "ra", description = "设置远程地址")
 	static class RemoteAddress implements Runnable {
 		@Parameters(description = "地址") String address;
-		public void run() {
-			Data.remoteAddress.set(address);
-			System.out.println("远程地址已设置为: " + address);
-		}
+		public void run() {Data.remoteAddress.set(address);}
 	}
 	@Command(name = "cd", description = "设置客户端同步目录")
 	static class ClientSyncDirectory implements Runnable {
 		@Parameters(description = "目录") Path dir;
-		public void run() {SettingUtil.setDirectory(dir, "客户端同步", Data.clientSyncPath::set);}
+		public void run() {Data.clientSyncPath.set(dir);}
 	}
 	@Command(name = "co", description = "设置仅客户端模组目录")
 	static class ClientOnlyDirectory implements Runnable {
 		@Parameters(description = "目录") Path dir;
-		public void run() {SettingUtil.setDirectory(dir, "仅客户端模组", Data.clientOnlyPath::set);}
+		public void run() {Data.clientOnlyPath.set(dir);}
 	}
 	@Command(name = "cs", description = "设置客户端自动启动")
 	static class ClientAutoStart implements Runnable {

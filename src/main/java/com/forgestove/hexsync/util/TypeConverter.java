@@ -1,5 +1,4 @@
-package com.forgestove.hexsync.util.converter;
-import com.forgestove.hexsync.util.Log;
+package com.forgestove.hexsync.util;
 import org.jetbrains.annotations.*;
 
 import java.util.function.Function;
@@ -17,6 +16,7 @@ public class TypeConverter {
 	 * @param <T>          目标类型
 	 * @return 转换后的值，如果转换失败则返回默认值
 	 */
+	@Contract("null, _, _ -> param3")
 	public static <T> T convert(String value, Function<String, T> converter, T defaultValue) {
 		if (value == null || value.trim().isEmpty()) return defaultValue;
 		try {
@@ -29,24 +29,28 @@ public class TypeConverter {
 	/**
 	 * 将字符串转换为整数
 	 */
+	@Contract("null, _ -> param2")
 	public static int toInt(String value, int defaultValue) {
 		return convert(value, Integer::parseInt, defaultValue);
 	}
 	/**
 	 * 将字符串转换为长整型
 	 */
+	@Contract("null, _ -> param2")
 	public static long toLong(String value, long defaultValue) {
 		return convert(value, Long::parseLong, defaultValue);
 	}
 	/**
 	 * 将字符串转换为双精度浮点型
 	 */
+	@Contract("null, _ -> param2")
 	public static double toDouble(String value, double defaultValue) {
 		return convert(value, Double::parseDouble, defaultValue);
 	}
 	/**
 	 * 将字符串转换为布尔型
 	 */
+	@Contract("null, true -> true; null, false -> false")
 	public static boolean toBoolean(String value, boolean defaultValue) {
 		if (value == null || value.trim().isEmpty()) return defaultValue;
 		value = value.toLowerCase().trim();
@@ -57,6 +61,7 @@ public class TypeConverter {
 	/**
 	 * 将字符串转换为枚举类型
 	 */
+	@Contract("null, _, _ -> param3")
 	public static <T extends Enum<T>> T toEnum(String value, Class<T> enumType, T defaultValue) {
 		if (value == null || value.trim().isEmpty()) return defaultValue;
 		try {
@@ -69,6 +74,7 @@ public class TypeConverter {
 	/**
 	 * 尝试将字符串转换为指定类型，如果失败则返回null
 	 */
+	@Contract("null, _ -> null")
 	@Nullable
 	public static <T> T tryConvert(String value, Function<String, T> converter) {
 		return convert(value, converter, null);
@@ -76,6 +82,7 @@ public class TypeConverter {
 	/**
 	 * 尝试将字符串转换为指定类型，如果失败则抛出异常
 	 */
+	@Contract("null, _ -> fail")
 	@NotNull
 	public static <T> T convertOrThrow(String value, Function<String, T> converter) throws IllegalArgumentException {
 		if (value == null || value.trim().isEmpty()) throw new IllegalArgumentException("Input string is null or empty");
@@ -88,6 +95,7 @@ public class TypeConverter {
 	/**
 	 * 尝试将字符串转换为指定类型，返回转换结果包装类
 	 */
+	@Contract("null, _ -> !null")
 	public static <T> ConversionResult<T> tryConvertWithResult(String value, Function<String, T> converter) {
 		if (value == null || value.trim().isEmpty()) return ConversionResult.failure("输入字符串为空");
 		try {
@@ -100,24 +108,28 @@ public class TypeConverter {
 	/**
 	 * 尝试将字符串转换为整数，返回结果包装类
 	 */
+	@Contract("null -> !null")
 	public static ConversionResult<Integer> tryToInt(String value) {
 		return tryConvertWithResult(value, Integer::parseInt);
 	}
 	/**
 	 * 尝试将字符串转换为长整型，返回结果包装类
 	 */
+	@Contract("null -> !null")
 	public static ConversionResult<Long> tryToLong(String value) {
 		return tryConvertWithResult(value, Long::parseLong);
 	}
 	/**
 	 * 尝试将字符串转换为双精度浮点型，返回结果包装类
 	 */
+	@Contract("null -> !null")
 	public static ConversionResult<Double> tryToDouble(String value) {
 		return tryConvertWithResult(value, Double::parseDouble);
 	}
 	/**
 	 * 尝试将字符串转换为布尔值，返回结果包装类
 	 */
+	@Contract("null -> !null")
 	public static ConversionResult<Boolean> tryToBoolean(String value) {
 		if (value == null || value.trim().isEmpty()) return ConversionResult.failure("输入字符串为空");
 		value = value.toLowerCase().trim();
@@ -128,6 +140,7 @@ public class TypeConverter {
 	/**
 	 * 尝试将字符串转换为枚举类型，返回结果包装类
 	 */
+	@Contract("null, _ -> !null")
 	public static <T extends Enum<T>> ConversionResult<T> tryToEnum(String value, Class<T> enumType) {
 		if (value == null || value.trim().isEmpty()) return ConversionResult.failure("输入字符串为空");
 		try {
@@ -139,19 +152,77 @@ public class TypeConverter {
 	/**
 	 * 尝试将字符串转换为浮点型，返回结果包装类
 	 */
+	@Contract("null -> !null")
 	public static ConversionResult<Float> tryToFloat(String value) {
 		return tryConvertWithResult(value, Float::parseFloat);
 	}
 	/**
 	 * 尝试将字符串转换为字节，返回结果包装类
 	 */
+	@Contract("null -> !null")
 	public static ConversionResult<Byte> tryToByte(String value) {
 		return tryConvertWithResult(value, Byte::parseByte);
 	}
 	/**
 	 * 获取转换值，如果转换失败则返回默认值
 	 */
-	public static <T> T getValueOrDefault(ConversionResult<T> result, T defaultValue) {
+	@Contract(pure = true)
+	public static <T> T getValueOrDefault(@NotNull ConversionResult<T> result, T defaultValue) {
 		return result.isSuccess ? result.value : defaultValue;
+	}
+	/**
+	 * 类型转换结果包装类，用于封装类型转换的结果。
+	 * 包括转换是否成功、转换后的值以及错误信息。
+	 *
+	 * @param <T> 转换结果的类型
+	 */
+	public static class ConversionResult<T> {
+		/**
+		 * 表示转换是否成功。
+		 */
+		public final boolean isSuccess;
+		/**
+		 * 转换后的值。如果转换失败，则为null。
+		 */
+		public final T value;
+		/**
+		 * 错误信息。如果转换成功，则为null。
+		 */
+		public final String errorMessage;
+		/**
+		 * 构造函数，用于创建一个类型转换结果对象。
+		 *
+		 * @param isSuccess    转换是否成功
+		 * @param value        转换后的值
+		 * @param errorMessage 错误信息
+		 */
+		@Contract(pure = true)
+		private ConversionResult(boolean isSuccess, T value, String errorMessage) {
+			this.isSuccess = isSuccess;
+			this.value = value;
+			this.errorMessage = errorMessage;
+		}
+		/**
+		 * 创建一个成功的类型转换结果对象。
+		 *
+		 * @param value 转换后的值
+		 * @param <T>   转换结果的类型
+		 * @return 成功的类型转换结果对象
+		 */
+		@Contract(value = "_ -> new", pure = true)
+		public static <T> @NotNull ConversionResult<T> success(T value) {
+			return new ConversionResult<>(true, value, null);
+		}
+		/**
+		 * 创建一个失败的类型转换结果对象。
+		 *
+		 * @param errorMessage 错误信息
+		 * @param <T>          转换结果的类型
+		 * @return 失败的类型转换结果对象
+		 */
+		@Contract(value = "_ -> new", pure = true)
+		public static <T> @NotNull ConversionResult<T> failure(String errorMessage) {
+			return new ConversionResult<>(false, null, errorMessage);
+		}
 	}
 }

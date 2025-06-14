@@ -1,6 +1,7 @@
 package com.forgestove.hexsync.client;
 import com.forgestove.hexsync.config.Data;
 import com.forgestove.hexsync.util.*;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -8,7 +9,7 @@ import java.net.HttpURLConnection;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 public class Downloader {
 	// 从服务端同步文件夹下载客户端缺少的文件
@@ -67,7 +68,7 @@ public class Downloader {
 	public static Map<String, String> fetchFileSHA1List() {
 		var url = "%s:%d/%s".formatted(HttpUtil.formatHTTP(Data.remoteAddress.get()), Data.clientPort.get().getValue(), HttpUtil.LIST);
 		Log.info("正在连接至: " + url);
-		var requestMap = new HashMap<String, String>();
+		var requestMap = new Object2ObjectOpenHashMap<String, String>();
 		HttpResponse<String> response;
 		try {
 			response = HttpUtil.sendGet(url, BodyHandlers.ofString());
@@ -85,7 +86,7 @@ public class Downloader {
 			String fileName;
 			while ((fileName = bufferedReader.readLine()) != null) {
 				var sha1 = bufferedReader.readLine();
-				if (sha1 != null && sha1.matches("^[a-fA-F0-9]{40}$")) requestMap.put(fileName, sha1);
+				if (sha1 != null) requestMap.put(fileName, sha1);
 			}
 		} catch (Exception error) {
 			Log.error("读取响应时出错: " + (error.getMessage() != null ? error.getMessage() : "无响应内容"));

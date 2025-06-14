@@ -1,6 +1,7 @@
 package com.forgestove.hexsync.server;
 import com.forgestove.hexsync.config.Data;
 import com.forgestove.hexsync.util.Log;
+import com.forgestove.hexsync.util.network.Rate;
 import com.sun.net.httpserver.HttpExchange;
 import org.jetbrains.annotations.NotNull;
 
@@ -69,12 +70,11 @@ public class ResponseSender {
 		var now = Instant.now().toEpochMilli();
 		var elapsed = now - lastRefillTime;
 		if (elapsed <= 0) return;
-		// 计算应该添加的令牌数量
 		var rateLimit = Data.serverUploadRate.get();
-		var tokensToAdd = elapsed * rateLimit.bps / 1000;
+		var tokensToAdd = elapsed * rateLimit.bps / 1000L;
 		if (tokensToAdd <= 0) return;
 		// 限制最大令牌数为速率的2秒容量
-		var maxTokens = rateLimit.bps * 2L;
+		var maxTokens = Rate.multiplyUnsigned(rateLimit.bps, 2L);
 		// 更新令牌数和最后补充时间
 		var newTokens = Math.min(availableTokens.get() + tokensToAdd, maxTokens);
 		availableTokens.set(newTokens);

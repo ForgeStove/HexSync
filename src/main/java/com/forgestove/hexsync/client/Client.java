@@ -2,9 +2,8 @@ package com.forgestove.hexsync.client;
 import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.config.Data;
 import com.forgestove.hexsync.util.*;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import org.jetbrains.annotations.Contract;
-
-import java.util.HashSet;
 /**
  * HexSync 客户端管理类<p>
  * 负责客户端的启动、停止和状态管理
@@ -77,21 +76,15 @@ public class Client implements Runnable {
 		}
 		isRunning = true;
 		Log.info(HexSync.NAME + "Client 正在启动...");
-		try {
-			FileUtil.initFiles(false); // 初始化文件
-			var requestMap = Downloader.fetchFileSHA1List(); // 获取服务器文件列表
-			if (!requestMap.isEmpty()) {
-				FileUtil.deleteFilesNotInMaps(requestMap, FileUtil.initMap(Data.clientOnlyPath.get())); // 删除不在服务器列表中的文件
-				var clientSHA1Set = new HashSet<>(FileUtil.initMap(Data.clientSyncPath.get()).values()); // 获取客户端已有文件的 SHA1 列表
-				requestMap.entrySet().removeIf(entry -> clientSHA1Set.contains(entry.getValue())); // 过滤掉客户端已有的文件
-				Downloader.downloadMissingFiles(requestMap); // 下载缺失的文件
-				FileUtil.copyDirectory(Data.clientOnlyPath.get(), Data.clientSyncPath.get()); // 复制文件到客户端同步目录
-			}
-		} catch (Exception error) {
-			Log.error("客户端运行过程中出现错误: %s".formatted(error.getMessage()));
-			errorDownload = true;
-		} finally {
-			stop();
+		FileUtil.initFiles(false); // 初始化文件
+		var requestMap = Downloader.fetchFileSHA1List(); // 获取服务器文件列表
+		if (!requestMap.isEmpty()) {
+			FileUtil.deleteFilesNotInMaps(requestMap, FileUtil.initMap(Data.clientOnlyPath.get())); // 删除不在服务器列表中的文件
+			var clientSHA1Set = new ObjectOpenHashSet<>(FileUtil.initMap(Data.clientSyncPath.get()).values()); // 获取客户端已有文件的 SHA1 列表
+			requestMap.entrySet().removeIf(entry -> clientSHA1Set.contains(entry.getValue())); // 过滤掉客户端已有的文件
+			Downloader.downloadMissingFiles(requestMap); // 下载缺失的文件
+			FileUtil.copyDirectory(Data.clientOnlyPath.get(), Data.clientSyncPath.get()); // 复制文件到客户端同步目录
 		}
+		stop();
 	}
 }

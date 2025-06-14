@@ -3,6 +3,7 @@ import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.client.Client;
 import com.forgestove.hexsync.config.*;
 import com.forgestove.hexsync.server.Server;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -25,11 +26,12 @@ public class FileUtil {
 	// 初始化文件名校验码键值对表
 	public static @NotNull Map<String, String> initMap(@NotNull Path directory) {
 		var fileList = directory.toFile().listFiles();
-		if (fileList == null) return new HashMap<>();
-		return Arrays.stream(fileList)
-			.parallel()
-			.filter(File::isFile)
+		var resultMap = new Object2ObjectOpenHashMap<String, String>();
+		if (fileList == null) return resultMap;
+		var concurrentResults = Arrays.stream(fileList).filter(File::isFile).parallel()
 			.collect(Collectors.toConcurrentMap(File::getName, HashUtil::calculateSHA1, (existing, replacement) -> existing));
+		resultMap.putAll(concurrentResults);
+		return resultMap;
 	}
 	// 创建文件夹
 	public static void makeDirectory(@NotNull Path directoryPath) {

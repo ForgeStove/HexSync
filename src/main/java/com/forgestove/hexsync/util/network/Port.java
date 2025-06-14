@@ -1,4 +1,4 @@
-package com.forgestove.hexsync.util.object;
+package com.forgestove.hexsync.util.network;
 import org.jetbrains.annotations.Contract;
 public class Port {
 	public static final int MAX_VALUE = 65535;
