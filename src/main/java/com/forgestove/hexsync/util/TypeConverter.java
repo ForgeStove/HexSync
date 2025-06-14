@@ -8,76 +8,23 @@ import java.util.function.Function;
 @SuppressWarnings("unused")
 public class TypeConverter {
 	/**
-	 * 将字符串转换为指定类型
+	 * 尝试将字符串转换为指定类型
 	 *
-	 * @param value        要转换的字符串
-	 * @param converter    转换函数
-	 * @param defaultValue 转换失败时的默认值
-	 * @param <T>          目标类型
-	 * @return 转换后的值，如果转换失败则返回默认值
-	 */
-	@Contract("null, _, _ -> param3")
-	public static <T> T convert(String value, Function<String, T> converter, T defaultValue) {
-		if (value == null || value.trim().isEmpty()) return defaultValue;
-		try {
-			return converter.apply(value);
-		} catch (Exception error) {
-			Log.warn("Type conversion failed: " + error.getMessage());
-			return defaultValue;
-		}
-	}
-	/**
-	 * 将字符串转换为整数
-	 */
-	@Contract("null, _ -> param2")
-	public static int toInt(String value, int defaultValue) {
-		return convert(value, Integer::parseInt, defaultValue);
-	}
-	/**
-	 * 将字符串转换为长整型
-	 */
-	@Contract("null, _ -> param2")
-	public static long toLong(String value, long defaultValue) {
-		return convert(value, Long::parseLong, defaultValue);
-	}
-	/**
-	 * 将字符串转换为双精度浮点型
-	 */
-	@Contract("null, _ -> param2")
-	public static double toDouble(String value, double defaultValue) {
-		return convert(value, Double::parseDouble, defaultValue);
-	}
-	/**
-	 * 将字符串转换为布尔型
-	 */
-	@Contract("null, true -> true; null, false -> false")
-	public static boolean toBoolean(String value, boolean defaultValue) {
-		if (value == null || value.trim().isEmpty()) return defaultValue;
-		value = value.toLowerCase().trim();
-		if (value.equals("true") || value.equals("yes") || value.equals("1")) return true;
-		else if (value.equals("false") || value.equals("no") || value.equals("0")) return false;
-		else return defaultValue;
-	}
-	/**
-	 * 将字符串转换为枚举类型
-	 */
-	@Contract("null, _, _ -> param3")
-	public static <T extends Enum<T>> T toEnum(String value, Class<T> enumType, T defaultValue) {
-		if (value == null || value.trim().isEmpty()) return defaultValue;
-		try {
-			return Enum.valueOf(enumType, value.toUpperCase());
-		} catch (Exception error) {
-			Log.warn("Invalid enum value: " + value + " for type " + enumType.getSimpleName());
-			return defaultValue;
-		}
-	}
-	/**
-	 * 尝试将字符串转换为指定类型，如果失败则返回null
+	 * @param value     要转换的字符串
+	 * @param converter 转换函数
+	 * @param <T>       目标类型
+	 * @return 转换后的值，如果转换失败则返回{@code null}
 	 */
 	@Contract("null, _ -> null")
 	@Nullable
 	public static <T> T tryConvert(String value, Function<String, T> converter) {
-		return convert(value, converter, null);
+		if (value == null || value.trim().isEmpty()) return null;
+		try {
+			return converter.apply(value);
+		} catch (Exception error) {
+			Log.warn("Type conversion failed: " + error.getMessage());
+			return null;
+		}
 	}
 	/**
 	 * 尝试将字符串转换为指定类型，如果失败则抛出异常
@@ -171,37 +118,14 @@ public class TypeConverter {
 		return result.isSuccess ? result.value : defaultValue;
 	}
 	/**
-	 * 类型转换结果包装类，用于封装类型转换的结果。
-	 * 包括转换是否成功、转换后的值以及错误信息。
-	 *
-	 * @param <T> 转换结果的类型
+	 * 类型转换结果包装类。<p>
+	 * 此记录类封装了类型转换操作的结果
+	 * @param isSuccess    转换是否成功
+	 * @param value        转换后的值，转换失败时为{@code null}
+	 * @param errorMessage 错误信息，转换成功时为{@code null}
+	 * @param <T>          转换结果的类型
 	 */
-	public static class Result<T> {
-		/**
-		 * 表示转换是否成功。
-		 */
-		public final boolean isSuccess;
-		/**
-		 * 转换后的值。如果转换失败，则为null。
-		 */
-		public final T value;
-		/**
-		 * 错误信息。如果转换成功，则为null。
-		 */
-		public final String errorMessage;
-		/**
-		 * 构造函数，用于创建一个类型转换结果对象。
-		 *
-		 * @param isSuccess    转换是否成功
-		 * @param value        转换后的值
-		 * @param errorMessage 错误信息
-		 */
-		@Contract(pure = true)
-		private Result(boolean isSuccess, T value, String errorMessage) {
-			this.isSuccess = isSuccess;
-			this.value = value;
-			this.errorMessage = errorMessage;
-		}
+	public record Result<T>(boolean isSuccess, T value, String errorMessage) {
 		/**
 		 * 创建一个成功的类型转换结果对象。
 		 *

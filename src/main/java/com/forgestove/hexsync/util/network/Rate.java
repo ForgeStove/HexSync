@@ -2,7 +2,7 @@ package com.forgestove.hexsync.util.network;
 import org.jetbrains.annotations.*;
 
 import java.math.BigInteger;
-public class Rate {
+public class Rate implements Comparable<Rate> {
 	public final long value;
 	public final Unit unit;
 	public final long bps;
@@ -40,10 +40,8 @@ public class Rate {
 		if (result.compareTo(new BigInteger("18446744073709551615")) > 0) return -1;
 		return result.longValue();
 	}
-	@Override
-	public String toString() {
-		return Long.toUnsignedString(value) + " " + unit;
-	}
+	public String toString() {return Long.toUnsignedString(value) + " " + unit;}
+	public int compareTo(@NotNull Rate rate) {return Long.compareUnsigned(bps, rate.bps);}
 	public enum Unit {
 		bps(1L),
 		Kbps(1000L),
