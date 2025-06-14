@@ -18,6 +18,11 @@ public class Log {
 	public static void info(String message) {log(Level.INFO, message);}
 	public static void warn(String message) {log(Level.WARN, message);}
 	public static void error(String message) {log(Level.ERROR, message);}
+	public static void stackTrace(@NotNull Throwable throwable) {
+		var writer = new StringWriter();
+		throwable.printStackTrace(new PrintWriter(writer));
+		error(writer.toString());
+	}
 	// 日志核心方法
 	private static void log(@NotNull Level level, String message) {
 		var log = "[%s] [%s] %s%n".formatted(LocalTime.now().withNano(0), HexSync.get(level.resourceName), message);
@@ -42,11 +47,7 @@ public class Log {
 	// 初始化日志
 	public static void initLog() {
 		FileUtil.makeDirectory(Path.of(HexSync.NAME));
-		Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
-			var writer = new StringWriter();
-			throwable.printStackTrace(new PrintWriter(writer));
-			error(writer.toString());
-		});
+		Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> stackTrace(throwable));
 		Runtime.getRuntime().addShutdownHook(new Thread(flushScheduler::shutdown));
 		try {printStream = new PrintStream(Data.LOG_PATH.toFile());} catch (Exception error) {throw new RuntimeException(error);}
 	}
