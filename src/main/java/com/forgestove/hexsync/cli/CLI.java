@@ -9,6 +9,7 @@ import com.forgestove.hexsync.util.Log;
 import org.jetbrains.annotations.Contract;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Help.Ansi;
 
 import java.util.Scanner;
 @Command(name = HexSync.NAME, subcommands = {Run.class, Stop.class, Setting.class, Help.class, Exit.class})
@@ -20,15 +21,15 @@ public class CLI implements Runnable {
 	public void run() {
 		System.out.printf("欢迎使用%s!%n输入 help 获取帮助，输入 exit 退出。%n", HexSync.NAME);
 		new Help().run();
-		var cmd = new CommandLine(new CLI());
-		cmd.setAbbreviatedOptionsAllowed(true);
-		cmd.setAbbreviatedSubcommandsAllowed(true);
-		cmd.setCaseInsensitiveEnumValuesAllowed(true);
+		var cmd = new CommandLine(this).setColorScheme(CommandLine.Help.defaultColorScheme(Ansi.AUTO))
+			.setAbbreviatedOptionsAllowed(true)
+			.setAbbreviatedSubcommandsAllowed(true)
+			.setCaseInsensitiveEnumValuesAllowed(true);
 		var scanner = new Scanner(System.in);
 		while (true) {
 			var line = scanner.nextLine().trim();
 			if (line.isEmpty()) continue;
-			cmd.execute(line.split("\\s+"));
+			cmd.execute(line);
 		}
 	}
 	@Command(name = "run", description = "运行实例", subcommands = {RunServer.class, RunClient.class})

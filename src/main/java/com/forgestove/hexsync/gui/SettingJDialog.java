@@ -13,7 +13,7 @@ public class SettingJDialog extends JDialog {
 	// 打开设置对话框
 	public SettingJDialog(Window owner, String title) {
 		super(owner, title, ModalityType.MODELESS);
-		ConfigUtil.loadConfig();
+		ConfigUtil.load();
 		// 服务端选项
 		var serverPortField = new JTextField(String.valueOf(Data.serverPort.get().getValue()));
 		var rateField = new JTextField(String.valueOf(Data.serverUploadRate.get().value));
@@ -88,7 +88,7 @@ public class SettingJDialog extends JDialog {
 						Data.theme.set(themeItem);
 						Component.setTheme(themeItem);
 					}
-					ConfigUtil.saveConfig(); // 保存配置
+					ConfigUtil.save(); // 保存配置
 					dispose(); // 关闭对话框
 				}));
 				add(new CButton(HexSync.get("Setting.cancel"), event1 -> dispose()));

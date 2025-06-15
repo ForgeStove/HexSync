@@ -71,6 +71,6 @@ public class Setting implements Runnable {
 	}
 	@Command(name = "save", description = "保存设置")
 	static class Save implements Runnable {
-		public void run() {ConfigUtil.saveConfig();}
+		public void run() {ConfigUtil.save();}
 	}
 }

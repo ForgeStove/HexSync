@@ -2,10 +2,15 @@
 
 plugins {
 	java
+	idea
 	id("com.github.johnrengelman.shadow") version "+"
 	id("com.github.breadmoirai.github-release") version "+"
 }
 java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+idea.module {
+	isDownloadJavadoc = true
+	isDownloadSources = true
+}
 repositories {
 	mavenLocal()
 	mavenCentral()
@@ -19,32 +24,6 @@ dependencies {
 	implementation("org.json:json:+")
 	implementation("it.unimi.dsi:fastutil:+")
 }
-tasks.register<JavaExec>("run") {
-	group = "application"
-	description = "运行HexSync应用"
-	mainClass.set("com.forgestove.hexsync.HexSync")
-	classpath = sourceSets["main"].runtimeClasspath
-	workingDir = project.file("run")
-}
-tasks.register<JavaExec>("runHeadless") {
-	group = "application"
-	description = "以无头模式运行HexSync应用"
-	mainClass.set("com.forgestove.hexsync.HexSync")
-	classpath = sourceSets["main"].runtimeClasspath
-	workingDir = project.file("run")
-	standardInput = System.`in`
-	jvmArgs("-Djava.awt.headless=true")
-}
-tasks.shadowJar {
-	archiveClassifier.set("")
-	manifest { attributes(mapOf("Main-Class" to "com.forgestove.hexsync.HexSync")) }
-	mergeServiceFiles()
-	minimize {
-		exclude(dependency("com.formdev:flatlaf-intellij-themes"))
-	}
-	from("LICENSE") { rename { "${it}_${project.name}" } }
-}
-tasks.named("githubRelease") { dependsOn(tasks.build) }
 githubRelease {
 	token(System.getenv("GITHUB_TOKEN"))
 	owner = "ForgeStove"
@@ -56,8 +35,17 @@ githubRelease {
 	releaseAssets(tasks.shadowJar.get().outputs.files)
 	overwrite = true
 }
+tasks.shadowJar {
+	archiveClassifier.set("")
+	manifest { attributes(mapOf("Main-Class" to "com.forgestove.hexsync.HexSync")) }
+	mergeServiceFiles()
+	minimize {
+		exclude(dependency("com.formdev:flatlaf-intellij-themes"))
+	}
+	from("LICENSE") { rename { "${it}_${project.name}" } }
+}
 tasks.register("packageApp") {
-	group = "shadow"
+	group = tasks.shadowJar.get().group
 	description = "打包应用程序为可执行镜像"
 	dependsOn(tasks.shadowJar)
 	doLast {

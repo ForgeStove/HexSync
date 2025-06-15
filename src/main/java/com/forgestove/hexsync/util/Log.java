@@ -3,6 +3,7 @@ import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.config.Data;
 import com.forgestove.hexsync.gui.GUI;
 import org.jetbrains.annotations.NotNull;
+import picocli.CommandLine.Help.Ansi;
 
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
@@ -27,7 +28,7 @@ public class Log {
 	private static void log(@NotNull Level level, String message) {
 		var log = "[%s] [%s] %s%n".formatted(LocalTime.now().withNano(0), HexSync.get(level.resourceName), message);
 		if (!HexSync.HEADLESS) SwingUtilities.invokeLater(() -> writeToLogPane(level, log));
-		if (HexSync.ANSI) System.out.printf("%s%s\u001B[0m", level.ansi, log);
+		if (Ansi.AUTO.enabled()) System.out.printf("%s%s\u001B[0m", level.ansi, log);
 		else System.out.print(log);
 		if (printStream != null) printStream.print(log);
 	}
@@ -45,7 +46,7 @@ public class Log {
 		}
 	}
 	// 初始化日志
-	public static void initLog() {
+	public static void init() {
 		FileUtil.makeDirectory(Path.of(HexSync.NAME));
 		Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> stackTrace(throwable));
 		Runtime.getRuntime().addShutdownHook(new Thread(flushScheduler::shutdown));

@@ -9,9 +9,19 @@ import javax.swing.*;
 import java.awt.*;
 public class GUI implements Runnable {
 	public static final JTextPane logPane = new JTextPane() {{
-		setEditable(false);
 		setOpaque(false);
-	}}; // 日志面板
+		setEditable(false);
+		// 弹出菜单
+		setComponentPopupMenu(new JPopupMenu() {{
+			add(new JMenuItem(HexSync.get("GUI.copy")) {{
+				addActionListener(event -> {
+					if (getSelectedText() == null) selectAll();
+					copy();
+				});
+			}});
+			add(new JMenuItem(HexSync.get("GUI.clear")) {{addActionListener(event -> setText(""));}});
+		}});
+	}};
 	@Contract(pure = true)
 	private GUI() {}
 	public static void start() {SwingUtilities.invokeLater(() -> new GUI().run());}
@@ -32,18 +42,6 @@ public class GUI implements Runnable {
 		frame.add(buttonPanel, BorderLayout.SOUTH);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setMinimumSize(new Dimension(640, 480));
-		// 弹出菜单
-		var copyItem = new JMenuItem(HexSync.get("GUI.copy"));
-		var clearItem = new JMenuItem(HexSync.get("GUI.clear"));
-		copyItem.addActionListener(event -> {
-			if (logPane.getSelectedText() == null) logPane.selectAll();
-			logPane.copy();
-		});
-		clearItem.addActionListener(event -> logPane.setText(""));
-		var popupMenu = new JPopupMenu();
-		popupMenu.add(copyItem);
-		popupMenu.add(clearItem);
-		logPane.setComponentPopupMenu(popupMenu);
 		Component.setTheme(Data.theme.get());
 		Component.setWindow(frame);
 	}
