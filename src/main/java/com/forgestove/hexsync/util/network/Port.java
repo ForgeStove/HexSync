@@ -28,6 +28,11 @@ public class Port extends Number implements Comparable<Port> {
 	 * @return 0 到 {@link #MAX_VALUE} 范围内的端口整数值
 	 */
 	public int getValue() {return value & MAX_VALUE;}
+	/**
+	 * 返回此端口的字符串表示形式。
+	 *
+	 * @return 表示端口值的非空字符串
+	 */
 	public @NotNull String toString() {return String.valueOf(getValue());}
 	public int compareTo(@NotNull Port port) {return Integer.compare(getValue(), port.getValue());}
 	@Contract(pure = true)

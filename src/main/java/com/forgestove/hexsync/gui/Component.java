@@ -9,6 +9,9 @@ import javax.swing.*;
 import javax.swing.UIManager.LookAndFeelInfo;
 import java.awt.Window;
 import java.util.Arrays;
+/**
+ * GUI组件工具类
+ */
 public class Component {
 	static {
 		FlatLightLaf.installLafInfo();
@@ -19,7 +22,14 @@ public class Component {
 		FlatDarculaLaf.installLafInfo();
 		Arrays.stream(FlatAllIJThemes.INFOS).toList().forEach(UIManager::installLookAndFeel);
 	}
-	// 设置窗口属性
+	/**
+	 * 设置窗口的通用属性
+	 * <p>
+	 * 该方法为窗口设置图标、调整窗口大小、居中定位并使其可见。
+	 * 通常在创建新窗口后调用此方法完成窗口的基本设置。
+	 *
+	 * @param window 需要设置属性的窗口实例
+	 */
 	public static void setWindow(@NotNull Window window) {
 		window.setIconImage(Icons.icon.getImage());
 		window.pack();

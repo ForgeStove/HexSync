@@ -19,13 +19,13 @@ public class SettingJDialog extends JDialog {
 		super(owner, title, ModalityType.MODELESS);
 		ConfigUtil.load();
 		// 服务端选项
-		var serverPortField = new JTextField(String.valueOf(Data.serverPort.get().getValue()));
+		var serverPortField = new JTextField(Data.serverPort.get().toString());
 		var rateField = new JTextField(String.valueOf(Data.serverUploadRate.get().value));
 		var rateUnitBox = new JComboBox<>(Unit.values()) {{setSelectedItem(Data.serverUploadRate.get().unit);}};
 		var serverSyncField = new JTextField(Data.serverSyncPath.get().toString());
 		var serverAutoBox = new JCheckBox(HexSync.get("Setting.autoStart"), Data.serverAuto.get());
 		// 客户端选项
-		var clientPortField = new JTextField(String.valueOf(Data.clientPort.get().getValue()));
+		var clientPortField = new JTextField(Data.clientPort.get().toString());
 		var remoteAddressField = new JTextField(Data.remoteAddress.get());
 		var clientSyncField = new JTextField(Data.clientSyncPath.get().toString());
 		var clientOnlyField = new JTextField(Data.clientOnlyPath.get().toString());
@@ -34,14 +34,15 @@ public class SettingJDialog extends JDialog {
 		var themeBox = new JComboBox<>(Arrays.stream(UIManager.getInstalledLookAndFeels())
 			.map(LookAndFeelInfo::getName)
 			.toArray(String[]::new)) {{setSelectedItem(Data.theme.get());}};
-		//
-		serverPortField.setInputVerifier(new InputVerifier() {
+		// 设置输入验证器
+		serverPortField.setInputVerifier(new CInputVerifier());
+		clientPortField.setInputVerifier(new CInputVerifier());
+		rateField.setInputVerifier(new InputVerifier() {
 			@Override
 			public boolean verify(JComponent input) {
 				var textField = (JTextField) input;
-				var text = textField.getText();
 				try {
-					new Port(text);
+					new Rate(textField.getText(), (Unit) Objects.requireNonNull(rateUnitBox.getSelectedItem()));
 					textField.setToolTipText(null);
 					return true;
 				} catch (Exception error) {
@@ -108,7 +109,7 @@ public class SettingJDialog extends JDialog {
 			// 按钮面板
 			add(new JPanel(new GridLayout(1, 0, 5, 0)) {{
 				add(new CButton(HexSync.get("Setting.save"), event -> {
-					if (!validateAllFields(serverPortField, clientPortField)) return;
+					if (!validateAllFields(serverPortField, clientPortField, rateField)) return;
 					Data.serverPort.set(new Port(serverPortField.getText()));
 					Data.serverAuto.set(serverAutoBox.isSelected());
 					Data.serverUploadRate.set(new Rate(rateField.getText(), (Unit) Objects.requireNonNull(rateUnitBox.getSelectedItem())));
@@ -132,13 +133,14 @@ public class SettingJDialog extends JDialog {
 			}}, BorderLayout.SOUTH);
 		}});
 		Component.setWindow(this);
+		requestFocusInWindow(); // 阻止聚焦到其他组件
 	}
 	@Contract("_ -> new")
 	public static @NotNull CompoundBorder getBorder(String key) {
 		return BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder(new FlatRoundBorder(), HexSync.get(key)),
 			BorderFactory.createEmptyBorder(5, 5, 5, 5));
 	}
-	public boolean validateAllFields(JTextField... fields) {
+	public boolean validateAllFields(JTextField @NotNull ... fields) {
 		for (var field : fields) {
 			var verifier = field.getInputVerifier();
 			if (verifier != null && !verifier.verify(field)) {
@@ -151,5 +153,34 @@ public class SettingJDialog extends JDialog {
 			}
 		}
 		return true;
+	}
+	private static class CInputVerifier extends InputVerifier {
+		@Override
+		public boolean verify(JComponent input) {
+			var textField = (JTextField) input;
+			var text = textField.getText();
+			try {
+				new Port(text);
+				textField.setToolTipText(null);
+				return true;
+			} catch (Exception error) {
+				textField.setToolTipText(error.getMessage());
+				return false;
+			}
+		}
+		@Override
+		public boolean shouldYieldFocus(JComponent source, JComponent target) {
+			if (verify(source)) return true;
+			if (!(source instanceof JTextField textField)) return false;
+			ToolTipManager.sharedInstance().setInitialDelay(0);
+			var tip = textField.getToolTipText();
+			if (tip != null) {
+				var toolTip = textField.createToolTip();
+				toolTip.setTipText(tip);
+				toolTip.setVisible(true);
+			}
+			if (target instanceof JTextField) target.getInputVerifier();
+			return false;
+		}
 	}
 }

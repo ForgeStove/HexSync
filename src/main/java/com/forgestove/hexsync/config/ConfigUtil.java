@@ -3,8 +3,20 @@ import com.forgestove.hexsync.config.ConfigEntry.ValueEntry;
 import com.forgestove.hexsync.util.*;
 
 import java.util.stream.Collectors;
+/**
+ * 配置工具类
+ * <p>
+ * 提供加载和保存配置文件的功能
+ * </p>
+ */
 public class ConfigUtil {
-	// 加载配置
+	/**
+	 * 加载配置
+	 * <p>
+	 * 从配置文件中加载配置项。如果配置文件不存在，则创建默认配置文件。
+	 * 配置文件中的每一行应当是"键=值"的格式。
+	 * </p>
+	 */
 	public static void load() {
 		var configFile = Data.CONFIG_PATH.toFile();
 		if (!configFile.isFile()) {
@@ -24,7 +36,13 @@ public class ConfigUtil {
 			else Log.warn("配置项错误: " + line);
 		});
 	}
-	// 保存配置
+	/**
+	 * 保存配置
+	 * <p>
+	 * 将当前配置保存到配置文件中。
+	 * 配置项会以"键=值"的格式写入，以#开头的配置项会作为注释保存。
+	 * </p>
+	 */
 	public static void save() {
 		var configContent = Data.CONFIG_ENTRIES.stream()
 			.map(ConfigEntry::toObjectArray)

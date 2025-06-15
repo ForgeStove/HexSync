@@ -34,7 +34,18 @@ public class GUI extends JFrame implements Runnable {
 		}});
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setMinimumSize(new Dimension(640, 480));
-	}	/**
+	}
+	/** 在 Swing 事件调度线程中启动 GUI。 */
+	public static void start() {SwingUtilities.invokeLater(() -> new GUI().run());}
+	/**
+	 * 实现 Runnable 接口的 run 方法。<p>
+	 * 设置应用程序的主题并初始化窗口。
+	 */
+	public void run() {
+		Component.setTheme(Data.theme.get());
+		Component.setWindow(this);
+	}
+	/**
 	 * 日志文本面板，用于显示应用程序日志信息。
 	 * 面板不可编辑，并添加了复制和清除功能的右键菜单。
 	 */
@@ -53,15 +64,4 @@ public class GUI extends JFrame implements Runnable {
 			add(new JMenuItem(HexSync.get("GUI.selectAll")) {{addActionListener(event -> selectAll());}});
 		}});
 	}};
-	/** 在 Swing 事件调度线程中启动 GUI。 */
-	public static void start() {SwingUtilities.invokeLater(() -> new GUI().run());}
-
-	/**
-	 * 实现 Runnable 接口的 run 方法。<p>
-	 * 设置应用程序的主题并初始化窗口。
-	 */
-	public void run() {
-		Component.setTheme(Data.theme.get());
-		Component.setWindow(this);
-	}
 }
