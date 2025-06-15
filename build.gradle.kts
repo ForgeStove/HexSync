@@ -2,15 +2,10 @@
 
 plugins {
 	java
-	idea
 	id("com.github.johnrengelman.shadow") version "+"
 	id("com.github.breadmoirai.github-release") version "+"
 }
 java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-idea.module {
-	isDownloadJavadoc = true
-	isDownloadSources = true
-}
 repositories {
 	mavenLocal()
 	mavenCentral()

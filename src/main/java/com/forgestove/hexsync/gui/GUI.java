@@ -7,7 +7,10 @@ import com.forgestove.hexsync.util.Log;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.Dialog.ModalityType;
+import java.awt.event.*;
 public class GUI extends JFrame implements Runnable {
+	private static GUI instance;
 	/**
 	 * 私有构造函数，用于初始化 GUI 界面。
 	 * 创建了主要布局，包括日志显示区域和控制按钮面板。
@@ -36,8 +39,12 @@ public class GUI extends JFrame implements Runnable {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setMinimumSize(new Dimension(640, 480));
 	}
+	public static GUI getInstance() {
+		if (instance == null) instance = new GUI();
+		return instance;
+	}
 	/** 在 Swing 事件调度线程中启动 GUI。 */
-	public static void start() {SwingUtilities.invokeLater(() -> new GUI().run());}
+	public static void start() {SwingUtilities.invokeLater(() -> getInstance().run());}
 	/**
 	 * 实现 Runnable 接口的 run 方法。<p>
 	 * 设置应用程序的主题并初始化窗口。
@@ -64,7 +71,39 @@ public class GUI extends JFrame implements Runnable {
 			add(new JMenuItem(HexSync.get("GUI.clear"), Icons.clear) {{addActionListener(event -> logPane.setText(""));}});
 			add(new JMenuItem(HexSync.get("GUI.refresh"), Icons.refresh) {{addActionListener(event -> System.gc());}});
 			add(new JMenuItem(HexSync.get("GUI.memory"), Icons.memory) {{
-				addActionListener(event -> Log.logMemory());
+				addActionListener(event -> {
+					var memBar = new JProgressBar(0, 100) {{
+						setStringPainted(true);
+						setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+					}};
+					var timer = new Timer(100, e -> {
+						var runtime = Runtime.getRuntime();
+						var used = runtime.totalMemory() - runtime.freeMemory();
+						var total = runtime.totalMemory();
+						var percentage = (int) ((used * 100) / total);
+						memBar.setValue(percentage);
+						memBar.setString("%d%% (%dMB/%dMB)".formatted(percentage, used / 1024 / 1024, total / 1024 / 1024));
+					}) {{start();}};
+					new JDialog(instance, HexSync.get("GUI.memoryUsage"), ModalityType.MODELESS) {{
+						setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+						addWindowListener(new WindowAdapter() {
+							public void windowClosing(WindowEvent e) {timer.stop();}
+						});
+						add(memBar);
+						setSize(360, 90);
+						setLocationRelativeTo(instance);
+						setVisible(true);
+					}};
+				});
+			}});
+			add(new JMenuItem(HexSync.get("GUI.openLog"), Icons.open) {{
+				addActionListener(event -> {
+					try {
+						Desktop.getDesktop().open(Data.LOG_PATH.getParent().toFile());
+					} catch (Exception error) {
+						Log.error("无法打开日志: " + error);
+					}
+				});
 			}});
 		}});
 	}};
