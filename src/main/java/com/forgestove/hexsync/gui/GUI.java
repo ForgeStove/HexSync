@@ -3,6 +3,7 @@ import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.client.Client;
 import com.forgestove.hexsync.config.Data;
 import com.forgestove.hexsync.server.Server;
+import com.forgestove.hexsync.util.Log;
 
 import javax.swing.*;
 import java.awt.*;
@@ -54,14 +55,27 @@ public class GUI extends JFrame implements Runnable {
 		setEditable(false);
 		// 弹出菜单
 		setComponentPopupMenu(new JPopupMenu() {{
-			add(new JMenuItem(HexSync.get("GUI.copy")) {{
+			add(new JMenuItem(HexSync.get("GUI.copy"), Icons.copy) {{
 				addActionListener(event -> {
 					if (getSelectedText() == null) selectAll();
 					copy();
 				});
 			}});
-			add(new JMenuItem(HexSync.get("GUI.clear")) {{addActionListener(event -> logPane.setText(""));}});
-			add(new JMenuItem(HexSync.get("GUI.selectAll")) {{addActionListener(event -> selectAll());}});
+			add(new JMenuItem(HexSync.get("GUI.clear"), Icons.clear) {{addActionListener(event -> logPane.setText(""));}});
+			add(new JMenuItem(HexSync.get("GUI.refresh"), Icons.refresh) {{
+				addActionListener(event -> {
+					System.gc();
+					System.runFinalization();
+				});
+			}});
+			add(new JMenuItem(HexSync.get("GUI.memory"), Icons.memory) {{
+				addActionListener(event -> {
+					var rt = Runtime.getRuntime();
+					var usedMemory = (rt.totalMemory() - rt.freeMemory()) / 1024 / 1024;
+					var totalMemory = rt.totalMemory() / 1024 / 1024;
+					Log.info("%s: %dMB / %dMB".formatted(HexSync.get("GUI.memoryUsage"), usedMemory, totalMemory));
+				});
+			}});
 		}});
 	}};
 }

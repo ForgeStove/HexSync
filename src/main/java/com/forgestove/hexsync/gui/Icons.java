@@ -14,6 +14,10 @@ public class Icons {
 	public static final FlatSVGIcon icon = get("icon.svg");
 	public static final FlatSVGIcon cog = get("cog.svg");
 	public static final FlatSVGIcon exit = get("exit.svg");
+	public static final FlatSVGIcon copy = get("copy.svg");
+	public static final FlatSVGIcon clear = get("clear.svg");
+	public static final FlatSVGIcon refresh = get("refresh.svg");
+	public static final FlatSVGIcon memory = get("memory.svg");
 	/**
 	 * 更新所有图标的颜色以适应当前主题
 	 */
