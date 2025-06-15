@@ -36,7 +36,7 @@ public class Log {
 	private static void writeToLogPane(Level level, String log) {
 		var document = GUI.logPane.getDocument();
 		var root = document.getDefaultRootElement();
-		var maxLines = 100;
+		var maxLines = 256;
 		var lineCount = root.getElementCount();
 		try {
 			if (lineCount > maxLines) document.remove(0, root.getElement(lineCount - maxLines - 1).getEndOffset());
