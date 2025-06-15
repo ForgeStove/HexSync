@@ -6,12 +6,35 @@ import com.forgestove.hexsync.server.Server;
 
 import javax.swing.*;
 import java.awt.*;
-/**
- * GUI 类是 HexSync 应用程序的主要图形用户界面。<p>
- * 该类实现了单例模式，提供了日志显示、服务器和客户端控制功能。
- */
 public class GUI extends JFrame implements Runnable {
 	/**
+	 * 私有构造函数，用于初始化 GUI 界面。
+	 * 创建了主要布局，包括日志显示区域和控制按钮面板。
+	 */
+	private GUI() {
+		super(HexSync.NAME);
+		add(new JPanel() {{
+			setLayout(new BorderLayout(10, 5));
+			setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+			// 日志滚动面板
+			add(new JScrollPane(logPane) {{
+				setBorder(BorderFactory.createTitledBorder(HexSync.get("GUI.log")));
+			}}, BorderLayout.CENTER);
+			// 按钮面板
+			add(new JPanel(new GridLayout(0, 3)) {{
+				add(new CButton(HexSync.get("GUI.startServer"), event -> Server.start()));
+				add(new CButton(HexSync.get("GUI.startClient"), event -> Client.start()));
+				add(new CButton(HexSync.get("GUI.settings"),
+					event -> new SettingJDialog(GUI.this, HexSync.get("Setting.title")),
+					Icons.cog));
+				add(new CButton(HexSync.get("GUI.stopServer"), event -> Server.stop()));
+				add(new CButton(HexSync.get("GUI.stopClient"), event -> Client.stop()));
+				add(new CButton(HexSync.get("GUI.exit"), event -> System.exit(0), Icons.exit));
+			}}, BorderLayout.SOUTH);
+		}});
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setMinimumSize(new Dimension(640, 480));
+	}	/**
 	 * 日志文本面板，用于显示应用程序日志信息。
 	 * 面板不可编辑，并添加了复制和清除功能的右键菜单。
 	 */
@@ -26,46 +49,13 @@ public class GUI extends JFrame implements Runnable {
 					copy();
 				});
 			}});
-			add(new JMenuItem(HexSync.get("GUI.clear")) {{addActionListener(event -> setText(""));}});
+			add(new JMenuItem(HexSync.get("GUI.clear")) {{addActionListener(event -> logPane.setText(""));}});
+			add(new JMenuItem(HexSync.get("GUI.selectAll")) {{addActionListener(event -> selectAll());}});
 		}});
 	}};
-	private static GUI instance;
-	/**
-	 * 私有构造函数，用于初始化 GUI 界面。
-	 * 创建了主要布局，包括日志显示区域和控制按钮面板。
-	 */
-	private GUI() {
-		super(HexSync.NAME);
-		setLayout(new BorderLayout(10, 10));
-		// 日志滚动面板
-		add(new JScrollPane(logPane) {{
-			setBorder(BorderFactory.createTitledBorder(HexSync.get("GUI.log")));
-		}}, BorderLayout.CENTER);
-		// 按钮面板
-		add(new JPanel(new GridLayout(0, 3)) {{
-			add(new CButton(HexSync.get("GUI.startServer"), event -> Server.start()));
-			add(new CButton(HexSync.get("GUI.startClient"), event -> Client.start()));
-			add(new CButton(HexSync.get("GUI.settings"),
-				event -> new SettingJDialog(getInstance(), HexSync.get("Setting.title")),
-				Icons.cog));
-			add(new CButton(HexSync.get("GUI.stopServer"), event -> Server.stop()));
-			add(new CButton(HexSync.get("GUI.stopClient"), event -> Client.stop()));
-			add(new CButton(HexSync.get("GUI.exit"), event -> System.exit(0), Icons.exit));
-		}}, BorderLayout.SOUTH);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setMinimumSize(new Dimension(640, 480));
-	}
-	/**
-	 * 获取 GUI 类的单例实例。如果实例不存在，则创建一个新实例。
-	 *
-	 * @return GUI 类的单例实例
-	 */
-	public static synchronized GUI getInstance() {
-		if (instance == null) instance = new GUI();
-		return instance;
-	}
 	/** 在 Swing 事件调度线程中启动 GUI。 */
-	public static void start() {SwingUtilities.invokeLater(() -> getInstance().run());}
+	public static void start() {SwingUtilities.invokeLater(() -> new GUI().run());}
+
 	/**
 	 * 实现 Runnable 接口的 run 方法。<p>
 	 * 设置应用程序的主题并初始化窗口。

@@ -46,7 +46,10 @@ public class Server implements Runnable {
 	 * 停止服务端
 	 */
 	public static synchronized void stop() {
-		if (!isRunning() && serverThread == null && httpServer == null) return;
+		if (!isRunning() && serverThread == null && httpServer == null) {
+			Log.info(HexSync.NAME + "Server 未在运行中");
+			return;
+		}
 		isRunning = false; // 先标记为非运行状态，避免新请求进入
 		Optional.ofNullable(serverMap).ifPresent(Map::clear); // 清理资源
 		if (httpServer != null) try {

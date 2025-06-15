@@ -42,7 +42,10 @@ public class Client implements Runnable {
 	 * 停止客户端
 	 */
 	public static synchronized void stop() {
-		if (!isRunning && clientThread == null) return;
+		if (!isRunning && clientThread == null) {
+			Log.info(HexSync.NAME + "Client 未在运行中");
+			return;
+		}
 		// 中断客户端线程
 		if (clientThread != null) try {
 			clientThread.interrupt();

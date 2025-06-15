@@ -19,7 +19,9 @@ public class Port extends Number implements Comparable<Port> {
 	 * @param value 字符串形式的端口值
 	 * @throws NumberFormatException 如果字符串不包含可解析的数字
 	 */
-	public Port(String value) {this.value = (short) Integer.parseInt(value);}
+	public Port(String value) {
+		this(Integer.parseInt(value));
+	}
 	/**
 	 * 获取端口值。
 	 *

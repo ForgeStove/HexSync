@@ -35,7 +35,13 @@ public class HexSync {
 	 *
 	 * @param key 资源键
 	 * @return 对应的国际化字符串
-	 * @throws MissingResourceException 如果找不到对应的键
 	 */
-	public static @NotNull String get(String key) {return lang.getString(key);}
+	public static @NotNull String get(String key) {
+		try {
+			return lang.getString(key);
+		} catch (Exception error) {
+			Log.warn("Missing resource for key: " + key);
+			return key;
+		}
+	}
 }
