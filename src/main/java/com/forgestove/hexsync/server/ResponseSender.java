@@ -25,7 +25,6 @@ public class ResponseSender {
 	 */
 	public static void sendResponse(@NotNull HttpExchange exchange, InputStream inputStream, long responseBytesLength) {
 		try (var outputStream = exchange.getResponseBody()) {
-			exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=UTF-8");
 			exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytesLength);
 			var buffer = new byte[BUFFER_SIZE];
 			long totalBytesSent = 0; // 记录已发送字节数
