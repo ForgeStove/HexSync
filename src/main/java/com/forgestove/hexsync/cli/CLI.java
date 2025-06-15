@@ -19,9 +19,9 @@ public class CLI implements Runnable {
 	public static void start() {new CLI().run();}
 	@SuppressWarnings("InfiniteLoopStatement")
 	public void run() {
-		System.out.printf("欢迎使用%s!%n输入 help 获取帮助，输入 exit 退出。%n", HexSync.NAME);
+		System.out.printf("======================%n%s CLI%n输入 help 获取帮助，输入 exit 退出。%n======================%n", HexSync.NAME);
 		new Help().run();
-		var cmd = new CommandLine(this).setColorScheme(CommandLine.Help.defaultColorScheme(Ansi.AUTO))
+		var cmd = new CommandLine(this).setColorScheme(CommandLine.Help.defaultColorScheme(Ansi.ON))
 			.setAbbreviatedOptionsAllowed(true)
 			.setAbbreviatedSubcommandsAllowed(true)
 			.setCaseInsensitiveEnumValuesAllowed(true);
@@ -29,7 +29,7 @@ public class CLI implements Runnable {
 		while (true) {
 			var line = scanner.nextLine().trim();
 			if (line.isEmpty()) continue;
-			cmd.execute(line);
+			cmd.execute(line.split("\\s+"));
 		}
 	}
 	@Command(name = "run", description = "运行实例", subcommands = {RunServer.class, RunClient.class})

@@ -19,14 +19,9 @@ public class Component {
 		FlatDarculaLaf.installLafInfo();
 		Arrays.stream(FlatAllIJThemes.INFOS).toList().forEach(UIManager::installLookAndFeel);
 	}
-	// 聚焦并全选输入框
-	public static void selectAndFocus(@NotNull JTextField textField) {
-		textField.requestFocus(); // 聚焦输入框
-		textField.selectAll(); // 选中输入框
-	}
 	// 设置窗口属性
 	public static void setWindow(@NotNull Window window) {
-		window.setIconImage(IconManager.icon.getImage());
+		window.setIconImage(Icons.icon.getImage());
 		window.pack();
 		window.setLocationRelativeTo(window.getOwner());
 		window.setVisible(true);
@@ -42,9 +37,9 @@ public class Component {
 		} catch (Exception error) {
 			Log.error("设置主题 %s 时出错: %s".formatted(name, error.getMessage()));
 		}
-		IconManager.updateIconColors();
+		Icons.updateIconColors();
 		for (var window : Window.getWindows()) {
-			window.setIconImage(IconManager.icon.getImage());
+			window.setIconImage(Icons.icon.getImage());
 			SwingUtilities.updateComponentTreeUI(window);
 		}
 	}

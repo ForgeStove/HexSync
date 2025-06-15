@@ -120,6 +120,7 @@ public class TypeConverter {
 	/**
 	 * 类型转换结果包装类。<p>
 	 * 此记录类封装了类型转换操作的结果
+	 *
 	 * @param isSuccess    转换是否成功
 	 * @param value        转换后的值，转换失败时为{@code null}
 	 * @param errorMessage 错误信息，转换成功时为{@code null}

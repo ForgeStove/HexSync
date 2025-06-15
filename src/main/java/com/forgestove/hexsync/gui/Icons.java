@@ -9,7 +9,7 @@ import java.util.*;
  * 图标管理器，用于集中管理应用中使用的所有图标
  * 并在主题变更时统一更新图标颜色
  */
-public class IconManager {
+public class Icons {
 	private static final Set<FlatSVGIcon> iconSet = new HashSet<>();
 	public static final FlatSVGIcon icon = get("icon.svg");
 	public static final FlatSVGIcon cog = get("cog.svg");
