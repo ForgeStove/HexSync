@@ -73,7 +73,7 @@ public class Server implements Runnable {
 	 * @return true 如果服务器正在运行
 	 */
 	public static boolean isRunning() {
-		return isRunning && httpServer != null && serverThread != null && serverThread.isAlive(); // 判断服务器线程和HTTP服务器是否都有效且运行中
+		return isRunning || httpServer != null && serverThread != null && serverThread.isAlive(); // 判断服务器线程和HTTP服务器是否都有效且运行中
 	}
 	/**
 	 * 启动服务器 (Runnable 接口实现)
