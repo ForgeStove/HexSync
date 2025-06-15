@@ -28,7 +28,7 @@ public class Log {
 	private static void log(@NotNull Level level, String message) {
 		var log = "[%s] [%s] %s%n".formatted(LocalTime.now().withNano(0), HexSync.get(level.resourceName), message);
 		if (!HexSync.HEADLESS) SwingUtilities.invokeLater(() -> writeToLogPane(level, log));
-		if (Ansi.AUTO.enabled()) System.out.printf("%s%s\u001B[0m", level.ansi, log);
+		if (Ansi.ON.enabled()) System.out.printf("%s%s\u001B[0m", level.ansi, log);
 		else System.out.print(log);
 		if (printStream != null) printStream.print(log);
 	}
@@ -51,6 +51,14 @@ public class Log {
 		Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> stackTrace(throwable));
 		Runtime.getRuntime().addShutdownHook(new Thread(flushScheduler::shutdown));
 		try {printStream = new PrintStream(Data.LOG_PATH.toFile());} catch (Exception error) {throw new RuntimeException(error);}
+	}
+	// 记录内存使用情况
+	public static void logMemory() {
+		var rt = Runtime.getRuntime();
+		var usedMemory = (rt.totalMemory() - rt.freeMemory()) / 1024 / 1024;
+		var totalMemory = rt.totalMemory() / 1024 / 1024;
+		var maxMemory = rt.maxMemory() / 1024 / 1024;
+		info("%s: %dMB / %dMB (Max: %dMB)".formatted(HexSync.get("GUI.memoryUsage"), usedMemory, totalMemory, maxMemory));
 	}
 	public enum Level {
 		INFO("Log.info", "\u001B[32m", new Color(0, 165, 0)),

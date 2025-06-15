@@ -62,19 +62,9 @@ public class GUI extends JFrame implements Runnable {
 				});
 			}});
 			add(new JMenuItem(HexSync.get("GUI.clear"), Icons.clear) {{addActionListener(event -> logPane.setText(""));}});
-			add(new JMenuItem(HexSync.get("GUI.refresh"), Icons.refresh) {{
-				addActionListener(event -> {
-					System.gc();
-					System.runFinalization();
-				});
-			}});
+			add(new JMenuItem(HexSync.get("GUI.refresh"), Icons.refresh) {{addActionListener(event -> System.gc());}});
 			add(new JMenuItem(HexSync.get("GUI.memory"), Icons.memory) {{
-				addActionListener(event -> {
-					var rt = Runtime.getRuntime();
-					var usedMemory = (rt.totalMemory() - rt.freeMemory()) / 1024 / 1024;
-					var totalMemory = rt.totalMemory() / 1024 / 1024;
-					Log.info("%s: %dMB / %dMB".formatted(HexSync.get("GUI.memoryUsage"), usedMemory, totalMemory));
-				});
+				addActionListener(event -> Log.logMemory());
 			}});
 		}});
 	}};
