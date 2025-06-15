@@ -1,4 +1,5 @@
 package com.forgestove.hexsync.config;
+import org.jetbrains.annotations.Contract;
 /**
  * 通用配置类，用于包装和管理可变的配置值。
  *
@@ -14,6 +15,7 @@ public class Config<T> {
 	 *
 	 * @param value 初始配置值
 	 */
+	@Contract(pure = true)
 	public Config(T value) {
 		this.value = value;
 	}
