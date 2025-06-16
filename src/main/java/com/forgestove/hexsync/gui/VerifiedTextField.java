@@ -1,32 +1,24 @@
 package com.forgestove.hexsync.gui;
-import javax.swing.*;
-import javax.swing.border.Border;
+import com.formdev.flatlaf.FlatClientProperties;
+
+import javax.swing.ToolTipManager;
 import javax.swing.event.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Point;
+import java.awt.event.MouseEvent;
 public class VerifiedTextField extends UndoAbleTextField {
-	private final Border originalBorder;
-	private final Border errorBorder;
 	private final InputValidator validator;
 	private boolean isValid = true;
-	private String errorMessage = "";
+	private String errorMessage = null;
 	public VerifiedTextField(String text, InputValidator validator) {
 		super(text);
 		this.validator = validator;
-		this.originalBorder = getBorder();
-		this.errorBorder = BorderFactory.createLineBorder(Color.RED, 1);
 		// 初始化工具提示
-		setToolTipText("");
+		setToolTipText(null);
 		// 监听文本变化
 		getDocument().addDocumentListener(new DocumentListener() {
 			public void insertUpdate(DocumentEvent event) {validateInput();}
 			public void removeUpdate(DocumentEvent event) {validateInput();}
 			public void changedUpdate(DocumentEvent event) {validateInput();}
-		});
-		// 添加焦点监听器以在失去焦点时验证
-		addFocusListener(new FocusListener() {
-			public void focusGained(FocusEvent event) {}
-			public void focusLost(FocusEvent event) {validateInput();}
 		});
 	}
 	private void validateInput() {
@@ -39,14 +31,14 @@ public class VerifiedTextField extends UndoAbleTextField {
 		}
 		isValid = validationResult;
 		if (isValid) {
-			setBorder(originalBorder);
+			putClientProperty(FlatClientProperties.OUTLINE, null);
 			setToolTipText(null);
-			errorMessage = "";
+			errorMessage = null;
 			ToolTipManager.sharedInstance().setInitialDelay(ToolTipManager.sharedInstance().getInitialDelay());
 			var exitEvent = new MouseEvent(this, MouseEvent.MOUSE_EXITED, System.currentTimeMillis(), 0, -1, -1, 0, false);
 			ToolTipManager.sharedInstance().mouseExited(exitEvent);
 		} else {
-			setBorder(errorBorder);
+			putClientProperty(FlatClientProperties.OUTLINE, FlatClientProperties.OUTLINE_ERROR);
 			setToolTipText(errorMessage);
 			// 如果当前有焦点，立即显示工具提示
 			if (hasFocus()) {

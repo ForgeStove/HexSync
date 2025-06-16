@@ -34,7 +34,7 @@ public class SettingJDialog extends JDialog {
 		var serverPort = new VerifiedTextField(Data.serverPort.get().toString(),
 			input -> Converter.toOrThrow(input, Port::new).isSuccess());
 		var rate = new VerifiedTextField(String.valueOf(Data.serverUploadRate.get().value),
-			input -> Converter.toOrThrow(input, Rate::new).isSuccess());
+			input -> Converter.toOrThrow(input, string -> new Rate(input, Data.serverUploadRate.get().unit)).isSuccess());
 		var rateUnit = new JComboBox<>(Unit.values()) {{setSelectedItem(Data.serverUploadRate.get().unit);}};
 		var serverSync = new UndoAbleTextField(Data.serverSyncPath.get().toString());
 		var serverAuto = new JCheckBox(HexSync.get("Setting.autoStart"), Data.serverAuto.get());

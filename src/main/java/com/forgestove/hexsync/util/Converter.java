@@ -14,7 +14,7 @@ public class Converter {
 	public static <T> @NotNull Result<T> toOrThrow(String value, Function<String, T> converter) throws IllegalArgumentException {
 		try {
 			return Result.success(converter.apply(value));
-		} catch (Exception error) {
+		} catch (Throwable error) {
 			throw new IllegalArgumentException(error.getMessage());
 		}
 	}
@@ -25,7 +25,7 @@ public class Converter {
 	public static <T> Result<T> to(String value, Function<String, T> converter) {
 		try {
 			return Result.success(converter.apply(value));
-		} catch (Exception error) {
+		} catch (Throwable error) {
 			return Result.failure(error.getMessage());
 		}
 	}
@@ -36,7 +36,7 @@ public class Converter {
 	public static <T> Result<String> from(T value, Function<T, String> converter) {
 		try {
 			return Result.success(converter.apply(value));
-		} catch (Exception error) {
+		} catch (Throwable error) {
 			return Result.failure(error.getMessage());
 		}
 	}

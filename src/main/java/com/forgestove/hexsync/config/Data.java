@@ -32,6 +32,5 @@ public class Data {
 		ValueEntry.value("clientSyncPath", clientSyncPath, Path::of),
 		ValueEntry.value("clientOnlyPath", clientOnlyPath, Path::of),
 		ValueEntry.value("clientAuto", clientAuto, Boolean::parseBoolean),
-		new HeaderEntry("# UI"),
-		ValueEntry.value("theme", theme, String::new));
+		new HeaderEntry("# UI"), ValueEntry.value("theme", theme, String::new));
 }
