@@ -1,6 +1,7 @@
 package com.forgestove.hexsync.gui;
 import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.config.*;
+import com.forgestove.hexsync.util.Converter;
 import com.forgestove.hexsync.util.network.*;
 import com.forgestove.hexsync.util.network.Rate.Unit;
 import com.formdev.flatlaf.ui.FlatRoundBorder;
@@ -10,61 +11,44 @@ import javax.swing.*;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.CompoundBorder;
 import java.awt.*;
-import java.awt.event.MouseEvent;
 import java.nio.file.Path;
 import java.util.*;
+/**
+ * 设置对话框类
+ * <p>
+ * 提供应用程序的配置设置界面，包括服务器配置、客户端配置和UI主题设置。
+ * 允许用户修改和保存各种应用程序参数。
+ * </p>
+ */
 public class SettingJDialog extends JDialog {
-	// 打开设置对话框
+	/**
+	 * 创建一个不会阻止任何顶级窗口的设置对话框实例
+	 *
+	 * @param owner 对话框的所有者窗口
+	 * @param title 对话框的标题
+	 */
 	public SettingJDialog(Window owner, String title) {
 		super(owner, title, ModalityType.MODELESS);
 		ConfigUtil.load();
 		// 服务端选项
-		var serverPortField = new JTextField(Data.serverPort.get().toString());
-		var rateField = new JTextField(String.valueOf(Data.serverUploadRate.get().value));
-		var rateUnitBox = new JComboBox<>(Unit.values()) {{setSelectedItem(Data.serverUploadRate.get().unit);}};
-		var serverSyncField = new JTextField(Data.serverSyncPath.get().toString());
-		var serverAutoBox = new JCheckBox(HexSync.get("Setting.autoStart"), Data.serverAuto.get());
+		var serverPort = new VerifiedTextField(Data.serverPort.get().toString(),
+			input -> Converter.toOrThrow(input, Port::new).isSuccess());
+		var rate = new VerifiedTextField(String.valueOf(Data.serverUploadRate.get().value),
+			input -> Converter.toOrThrow(input, Rate::new).isSuccess());
+		var rateUnit = new JComboBox<>(Unit.values()) {{setSelectedItem(Data.serverUploadRate.get().unit);}};
+		var serverSync = new UndoAbleTextField(Data.serverSyncPath.get().toString());
+		var serverAuto = new JCheckBox(HexSync.get("Setting.autoStart"), Data.serverAuto.get());
 		// 客户端选项
-		var clientPortField = new JTextField(Data.clientPort.get().toString());
-		var remoteAddressField = new JTextField(Data.remoteAddress.get());
-		var clientSyncField = new JTextField(Data.clientSyncPath.get().toString());
-		var clientOnlyField = new JTextField(Data.clientOnlyPath.get().toString());
-		var clientAutoBox = new JCheckBox(HexSync.get("Setting.autoStart"), Data.clientAuto.get());
+		var clientPort = new VerifiedTextField(Data.serverPort.get().toString(),
+			input -> Converter.toOrThrow(input, Port::new).isSuccess());
+		var remoteAddress = new VerifiedTextField(Data.remoteAddress.get(), input -> input != null && !input.trim().isEmpty());
+		var clientSync = new UndoAbleTextField(Data.clientSyncPath.get().toString());
+		var clientOnly = new UndoAbleTextField(Data.clientOnlyPath.get().toString());
+		var clientAuto = new JCheckBox(HexSync.get("Setting.autoStart"), Data.clientAuto.get());
 		// 界面选项
-		var themeBox = new JComboBox<>(Arrays.stream(UIManager.getInstalledLookAndFeels())
+		var theme = new JComboBox<>(Arrays.stream(UIManager.getInstalledLookAndFeels())
 			.map(LookAndFeelInfo::getName)
 			.toArray(String[]::new)) {{setSelectedItem(Data.theme.get());}};
-		// 设置输入验证器
-		serverPortField.setInputVerifier(new CInputVerifier());
-		clientPortField.setInputVerifier(new CInputVerifier());
-		rateField.setInputVerifier(new InputVerifier() {
-			@Override
-			public boolean verify(JComponent input) {
-				var textField = (JTextField) input;
-				try {
-					new Rate(textField.getText(), (Unit) Objects.requireNonNull(rateUnitBox.getSelectedItem()));
-					textField.setToolTipText(null);
-					return true;
-				} catch (Exception error) {
-					textField.setToolTipText(error.getMessage());
-					return false;
-				}
-			}
-			@Override
-			public boolean shouldYieldFocus(JComponent source, JComponent target) {
-				if (verify(source)) return true;
-				if (!(source instanceof JTextField textField)) return false;
-				ToolTipManager.sharedInstance().setInitialDelay(0);
-				var tip = textField.getToolTipText();
-				if (tip != null) {
-					var toolTip = textField.createToolTip();
-					toolTip.setTipText(tip);
-					toolTip.setVisible(true);
-				}
-				if (target instanceof JTextField) target.getInputVerifier();
-				return false;
-			}
-		});
 		// 基础面板
 		add(new JPanel(new BorderLayout()) {{
 			setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -75,51 +59,52 @@ public class SettingJDialog extends JDialog {
 				add(new JPanel(layout) {{
 					setBorder(SettingJDialog.getBorder("Setting.server"));
 					add(new JLabel(HexSync.get("Setting.port")));
-					add(serverPortField);
+					add(serverPort);
 					add(new JLabel(HexSync.get("Setting.maxUploadRate")));
-					add(rateField);
+					add(rate);
 					add(new JLabel(HexSync.get("Setting.rateUnit")));
-					add(rateUnitBox);
+					add(rateUnit);
 					add(new JLabel(HexSync.get("Setting.serverSyncPath")));
-					add(serverSyncField);
-					add(serverAutoBox);
+					add(serverSync);
+					add(serverAuto);
 					add(new JLabel());
 				}});
 				// 客户端设置区域
 				add(new JPanel(layout) {{
 					setBorder(SettingJDialog.getBorder("Setting.client"));
 					add(new JLabel(HexSync.get("Setting.port")));
-					add(clientPortField);
+					add(clientPort);
 					add(new JLabel(HexSync.get("Setting.remoteAddress")));
-					add(remoteAddressField);
+					add(remoteAddress);
 					add(new JLabel(HexSync.get("Setting.clientSyncPath")));
-					add(clientSyncField);
+					add(clientSync);
 					add(new JLabel(HexSync.get("Setting.clientOnlyPath")));
-					add(clientOnlyField);
-					add(clientAutoBox);
+					add(clientOnly);
+					add(clientAuto);
 					add(new JLabel());
 				}});
 				// 界面设置区域
 				add(new JPanel(layout) {{
 					setBorder(SettingJDialog.getBorder("Setting.ui"));
 					add(new JLabel(HexSync.get("Setting.theme")));
-					add(themeBox);
+					add(theme);
 				}});
 			}}, BorderLayout.CENTER);
 			// 按钮面板
 			add(new JPanel(new GridLayout(1, 0, 5, 0)) {{
 				add(new CButton(HexSync.get("Setting.save"), event -> {
-					if (!validateAllFields(serverPortField, clientPortField, rateField)) return;
-					Data.serverPort.set(new Port(serverPortField.getText()));
-					Data.serverAuto.set(serverAutoBox.isSelected());
-					Data.serverUploadRate.set(new Rate(rateField.getText(), (Unit) Objects.requireNonNull(rateUnitBox.getSelectedItem())));
-					Data.serverSyncPath.set(Path.of(serverSyncField.getText()));
-					Data.clientPort.set(new Port(clientPortField.getText()));
-					Data.clientAuto.set(clientAutoBox.isSelected());
-					Data.remoteAddress.set(remoteAddressField.getText());
-					Data.clientSyncPath.set(Path.of(clientSyncField.getText()));
-					Data.clientOnlyPath.set(Path.of(clientOnlyField.getText()));
-					var themeItem = (String) themeBox.getSelectedItem();
+					if (!Arrays.stream(new VerifiedTextField[]{serverPort, clientPort, rate, remoteAddress})
+						.allMatch(VerifiedTextField::isInputValid)) return;
+					Data.serverPort.set(new Port(serverPort.getText()));
+					Data.serverAuto.set(serverAuto.isSelected());
+					Data.serverUploadRate.set(new Rate(rate.getText(), (Unit) Objects.requireNonNull(rateUnit.getSelectedItem())));
+					Data.serverSyncPath.set(Path.of(serverSync.getText()));
+					Data.clientPort.set(new Port(clientPort.getText()));
+					Data.clientAuto.set(clientAuto.isSelected());
+					Data.remoteAddress.set(remoteAddress.getText());
+					Data.clientSyncPath.set(Path.of(clientSync.getText()));
+					Data.clientOnlyPath.set(Path.of(clientOnly.getText()));
+					var themeItem = (String) theme.getSelectedItem();
 					if (!Data.theme.get().equals(themeItem)) {
 						Data.theme.set(themeItem);
 						Component.setTheme(themeItem);
@@ -139,48 +124,5 @@ public class SettingJDialog extends JDialog {
 	public static @NotNull CompoundBorder getBorder(String key) {
 		return BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder(new FlatRoundBorder(), HexSync.get(key)),
 			BorderFactory.createEmptyBorder(5, 5, 5, 5));
-	}
-	public boolean validateAllFields(JTextField @NotNull ... fields) {
-		for (var field : fields) {
-			var verifier = field.getInputVerifier();
-			if (verifier != null && !verifier.verify(field)) {
-				// 验证失败，聚焦到失败的字段
-				field.requestFocusInWindow();
-				// 手动触发显示提示
-				ToolTipManager.sharedInstance()
-					.mouseMoved(new MouseEvent(field, MouseEvent.MOUSE_MOVED, System.currentTimeMillis(), 0, 5, 5, 0, false));
-				return false;
-			}
-		}
-		return true;
-	}
-	private static class CInputVerifier extends InputVerifier {
-		@Override
-		public boolean verify(JComponent input) {
-			var textField = (JTextField) input;
-			var text = textField.getText();
-			try {
-				new Port(text);
-				textField.setToolTipText(null);
-				return true;
-			} catch (Exception error) {
-				textField.setToolTipText(error.getMessage());
-				return false;
-			}
-		}
-		@Override
-		public boolean shouldYieldFocus(JComponent source, JComponent target) {
-			if (verify(source)) return true;
-			if (!(source instanceof JTextField textField)) return false;
-			ToolTipManager.sharedInstance().setInitialDelay(0);
-			var tip = textField.getToolTipText();
-			if (tip != null) {
-				var toolTip = textField.createToolTip();
-				toolTip.setTipText(tip);
-				toolTip.setVisible(true);
-			}
-			if (target instanceof JTextField) target.getInputVerifier();
-			return false;
-		}
 	}
 }

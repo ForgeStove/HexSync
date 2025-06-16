@@ -5,104 +5,40 @@ import java.util.function.Function;
 /**
  * 类型转换工具类，用于安全地将字符串转换为各种数据类型
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class Converter {
 	/**
 	 * 尝试将字符串转换为指定类型，如果失败则抛出异常
 	 */
 	@Contract("null, _ -> fail")
-	@NotNull
-	public static <T> T convertOrThrow(String value, Function<String, T> converter) throws IllegalArgumentException {
-		if (value == null || value.trim().isEmpty()) throw new IllegalArgumentException("Input string is null or empty");
+	public static <T> @NotNull Result<T> toOrThrow(String value, Function<String, T> converter) throws IllegalArgumentException {
 		try {
-			return converter.apply(value);
+			return Result.success(converter.apply(value));
 		} catch (Exception error) {
-			throw new IllegalArgumentException("Failed to convert value: " + value, error);
+			throw new IllegalArgumentException(error.getMessage());
 		}
 	}
 	/**
-	 * 尝试将字符串转换为指定类型，返回转换结果包装类
+	 * 尝试将字符串转换为指定类型
 	 */
 	@Contract("null, _ -> !null")
 	public static <T> Result<T> to(String value, Function<String, T> converter) {
-		if (value == null || value.trim().isEmpty()) return Result.failure("输入字符串为空");
 		try {
-			var result = converter.apply(value);
-			return Result.success(result);
+			return Result.success(converter.apply(value));
 		} catch (Exception error) {
-			return Result.failure("转换失败: " + error.getMessage());
+			return Result.failure(error.getMessage());
 		}
 	}
 	/**
-	 * 尝试将指定类型转换为字符串，返回转换结果包装类
+	 * 尝试将指定类型转换为字符串
 	 */
 	@Contract("null, _ -> !null")
 	public static <T> Result<String> from(T value, Function<T, String> converter) {
-		if (value == null) return Result.failure("输入值为null");
 		try {
-			var result = converter.apply(value);
-			return Result.success(result);
+			return Result.success(converter.apply(value));
 		} catch (Exception error) {
-			return Result.failure("转换失败: " + error.getMessage());
+			return Result.failure(error.getMessage());
 		}
-	}
-	/**
-	 * 尝试将字符串转换为整数，返回结果包装类
-	 */
-	@Contract("null -> !null")
-	public static Result<Integer> toInt(String value) {
-		return to(value, Integer::parseInt);
-	}
-	/**
-	 * 尝试将字符串转换为长整型，返回结果包装类
-	 */
-	@Contract("null -> !null")
-	public static Result<Long> toLong(String value) {
-		return to(value, Long::parseLong);
-	}
-	/**
-	 * 尝试将字符串转换为双精度浮点型，返回结果包装类
-	 */
-	@Contract("null -> !null")
-	public static Result<Double> toDouble(String value) {
-		return to(value, Double::parseDouble);
-	}
-	/**
-	 * 尝试将字符串转换为布尔值，返回结果包装类
-	 */
-	@Contract("null -> !null")
-	public static Result<Boolean> toBoolean(String value) {
-		if (value == null || value.trim().isEmpty()) return Result.failure("输入字符串为空");
-		value = value.toLowerCase().trim();
-		if (value.equals("true") || value.equals("yes") || value.equals("1")) return Result.success(true);
-		else if (value.equals("false") || value.equals("no") || value.equals("0")) return Result.success(false);
-		else return Result.failure("无效的布尔值: " + value);
-	}
-	/**
-	 * 尝试将字符串转换为枚举类型，返回结果包装类
-	 */
-	@Contract("null, _ -> !null")
-	public static <T extends Enum<T>> Result<T> toEnum(String value, Class<T> enumType) {
-		if (value == null || value.trim().isEmpty()) return Result.failure("输入字符串为空");
-		try {
-			return Result.success(Enum.valueOf(enumType, value.toUpperCase()));
-		} catch (Exception error) {
-			return Result.failure("无效的枚举值: " + value + "，对于类型: " + enumType.getSimpleName());
-		}
-	}
-	/**
-	 * 尝试将字符串转换为浮点型，返回结果包装类
-	 */
-	@Contract("null -> !null")
-	public static Result<Float> toFloat(String value) {
-		return to(value, Float::parseFloat);
-	}
-	/**
-	 * 尝试将字符串转换为字节，返回结果包装类
-	 */
-	@Contract("null -> !null")
-	public static Result<Byte> toByte(String value) {
-		return to(value, Byte::parseByte);
 	}
 	/**
 	 * 获取转换值，如果转换失败则返回默认值
