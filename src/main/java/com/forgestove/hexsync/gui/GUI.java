@@ -7,6 +7,8 @@ import com.forgestove.hexsync.server.Server;
 import javax.swing.*;
 import java.awt.*;
 public class GUI extends JFrame implements Runnable {
+	/** 日志文本面板，用于显示应用程序日志信息。 */
+	public static final JTextPane logPane = new LogPane();
 	private static GUI instance;
 	/**
 	 * 私有构造函数，用于初始化 GUI 界面。
@@ -36,23 +38,24 @@ public class GUI extends JFrame implements Runnable {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setMinimumSize(new Dimension(640, 480));
 	}
-	public static GUI getInstance() {
+	/**
+	 * 获取 GUI 的单例实例。
+	 * 如果实例不存在，则创建一个新的 GUI 实例。
+	 *
+	 * @return GUI的单例实例
+	 */
+	public static synchronized GUI getInstance() {
 		if (instance == null) instance = new GUI();
 		return instance;
 	}
 	/** 在 Swing 事件调度线程中启动 GUI。 */
-	public static void start() {SwingUtilities.invokeLater(() -> getInstance().run());}
+	public static synchronized void start() {SwingUtilities.invokeLater(() -> getInstance().run());}
 	/**
 	 * 实现 Runnable 接口的 run 方法。<p>
 	 * 设置应用程序的主题并初始化窗口。
 	 */
-	public void run() {
+	public synchronized void run() {
 		Component.setTheme(Data.theme.get());
 		Component.setWindow(this);
 	}
-	/**
-	 * 日志文本面板，用于显示应用程序日志信息。
-	 * 面板不可编辑，并添加了复制和清除功能的右键菜单。
-	 */
-	public static final JTextPane logPane = new LogPane();
 }

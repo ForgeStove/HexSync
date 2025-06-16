@@ -16,7 +16,7 @@ public class Server implements Runnable {
 	public static volatile Map<String, String> serverMap; // 服务端文件名和校验码映射
 	public static volatile Thread serverThread; // 服务器线程
 	public static volatile HttpServer httpServer; // 服务器实例
-	private static volatile boolean isRunning = false; // 服务器运行状态
+	public static volatile boolean isRunning = false; // 服务器运行状态
 	private static Server instance; // 单例实例
 	@Contract(pure = true)
 	private Server() {}
@@ -32,8 +32,8 @@ public class Server implements Runnable {
 	/**
 	 * 在新线程中启动服务器
 	 */
-	public static void start() {
-		if (isRunning()) {
+	public static synchronized void start() {
+		if (isRunning) {
 			Log.info(HexSync.NAME + "Server 已经在运行中");
 			return;
 		}
@@ -46,11 +46,11 @@ public class Server implements Runnable {
 	 * 停止服务端
 	 */
 	public static synchronized void stop() {
-		if (!isRunning() && serverThread == null && httpServer == null) {
+		if (!isRunning && serverThread == null && httpServer == null) {
 			Log.info(HexSync.NAME + "Server 未在运行中");
 			return;
 		}
-		isRunning = false; // 先标记为非运行状态，避免新请求进入
+		isRunning = false;
 		Optional.ofNullable(serverMap).ifPresent(Map::clear); // 清理资源
 		if (httpServer != null) try {
 			httpServer.stop(0); // 停止HTTP服务器
@@ -68,19 +68,11 @@ public class Server implements Runnable {
 		Log.info(HexSync.NAME + "Server 已关闭");
 	}
 	/**
-	 * 检查服务器是否正在运行
-	 *
-	 * @return true 如果服务器正在运行
-	 */
-	public static boolean isRunning() {
-		return isRunning || httpServer != null && serverThread != null && serverThread.isAlive(); // 判断服务器线程和HTTP服务器是否都有效且运行中
-	}
-	/**
 	 * 启动服务器 (Runnable 接口实现)
 	 */
 	@Override
-	public void run() {
-		if (isRunning()) {
+	public synchronized void run() {
+		if (isRunning) {
 			Log.info(HexSync.NAME + "Server 已经在运行中");
 			return;
 		}

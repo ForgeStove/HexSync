@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Contract;
 public class Client implements Runnable {
 	public static volatile boolean errorDownload; // 下载错误标志
 	private static volatile Thread clientThread; // 客户端线程
-	private static volatile boolean isRunning = false; // 客户端运行状态
+	public static volatile boolean isRunning = false; // 客户端运行状态
 	private static Client instance; // 单例实例
 	@Contract(pure = true)
 	private Client() {}
@@ -28,8 +28,8 @@ public class Client implements Runnable {
 	/**
 	 * 在新线程中启动客户端
 	 */
-	public static void start() {
-		if (isRunning()) {
+	public static synchronized void start() {
+		if (isRunning) {
 			Log.info(HexSync.NAME + "Client 已经在运行中");
 			return;
 		}
@@ -60,19 +60,11 @@ public class Client implements Runnable {
 		if (Data.clientAuto.get() && !errorDownload) System.exit(0); // 如果设置了自动启动且没有下载错误，则退出程序
 	}
 	/**
-	 * 检查客户端是否正在运行
-	 *
-	 * @return true 如果客户端正在运行
-	 */
-	public static boolean isRunning() {
-		return isRunning;
-	}
-	/**
 	 * 启动客户端 (Runnable 接口实现)
 	 */
 	@Override
-	public void run() {
-		if (isRunning()) {
+	public synchronized void run() {
+		if (isRunning) {
 			Log.info(HexSync.NAME + "Client 已经在运行中");
 			return;
 		}
