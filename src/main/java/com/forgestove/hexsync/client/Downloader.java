@@ -24,12 +24,10 @@ public class Downloader {
 		var count = new AtomicInteger(0);
 		toDownloadMap.entrySet().parallelStream().forEach(entry -> {
 			var filePath = Data.clientSyncPath.get().resolve(entry.getKey());
-			if (downloadAndCheckFile(filePath, entry.getValue()))
-				Log.info("已下载: [%d/%d] %s".formatted(count.incrementAndGet(), size, filePath));
-			else {
+			if (!downloadAndCheckFile(filePath, entry.getValue())) {
 				Log.error("下载失败: " + filePath);
 				Client.errorDownload = true;
-			}
+			} else Log.info("已下载: [%d/%d] %s".formatted(count.incrementAndGet(), size, filePath));
 		});
 		Log.info("%s: [%d/%d]".formatted(Client.errorDownload ? "下载失败" : "下载完成", count.get(), size));
 		if (Data.clientAuto.get()) System.exit(0);

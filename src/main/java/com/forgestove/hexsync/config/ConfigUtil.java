@@ -49,6 +49,6 @@ public class ConfigUtil {
 			.map(config -> config[0].toString().startsWith("#") ? config[0].toString() : (config[0] + "=" + config[1]))
 			.collect(Collectors.joining(System.lineSeparator()));
 		FileUtil.writeFile(Data.CONFIG_PATH.toFile(), configContent);
-		Log.info("配置已保存: %n" + configContent);
+		Log.info("配置已保存: " + System.lineSeparator() + configContent);
 	}
 }
