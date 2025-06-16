@@ -38,7 +38,11 @@ public class HttpUtil {
 	 * @throws InterruptedException 如果请求被中断
 	 */
 	public static <T> HttpResponse<T> sendGet(String url, BodyHandler<T> bodyHandler) throws IOException, InterruptedException {
-		return getClient().send(HttpRequest.newBuilder().uri(URI.create(url)).timeout(Duration.ofSeconds(5)).build(), bodyHandler);
+		return getClient().send(HttpRequest.newBuilder()
+			.uri(URI.create(url))
+			.header("Accept-Charset", "UTF-8")
+			.timeout(Duration.ofSeconds(5))
+			.build(), bodyHandler);
 	}
 	/**
 	 * 获取 HTTP 请求的远程地址

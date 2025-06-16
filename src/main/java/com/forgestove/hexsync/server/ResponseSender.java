@@ -23,8 +23,10 @@ public class ResponseSender {
 	 * @param inputStream         输入流
 	 * @param responseBytesLength 响应体长度
 	 */
-	public static void sendResponse(@NotNull HttpExchange exchange, InputStream inputStream, long responseBytesLength) {
+	public static void sendResponse(@NotNull HttpExchange exchange, InputStream inputStream, long responseBytesLength,
+		String contentType) {
 		try (var outputStream = exchange.getResponseBody()) {
+			exchange.getResponseHeaders().set("Content-Type", contentType);
 			exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytesLength);
 			var buffer = new byte[BUFFER_SIZE];
 			long totalBytesSent = 0; // 记录已发送字节数
