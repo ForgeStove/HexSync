@@ -1,5 +1,6 @@
 package com.forgestove.hexsync.util;
 import com.forgestove.hexsync.config.Data;
+import it.unimi.dsi.fastutil.io.FastBufferedOutputStream;
 import it.unimi.dsi.fastutil.objects.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -78,8 +79,8 @@ public class FileUtil {
 	}
 	// 将输入流写入文件
 	public static boolean writeToFile(@NotNull InputStream inputStream, File targetFile) {
-		try (var outputStream = new BufferedOutputStream(new FileOutputStream(targetFile))) {
-			var buffer = new byte[16384];
+		try (var outputStream = new FastBufferedOutputStream(new FileOutputStream(targetFile))) {
+			var buffer = new byte[8192];
 			int bytesRead;
 			while ((bytesRead = inputStream.read(buffer)) != -1) outputStream.write(buffer, 0, bytesRead);
 			return true;

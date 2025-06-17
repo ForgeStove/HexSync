@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * 响应发送器，负责处理HTTP响应发送，支持速率限制
  */
 public class ResponseSender {
-	private static final int BUFFER_SIZE = 16384; // 缓冲区大小：16KB
+	private static final int BUFFER_SIZE = 8192;
 	private static final AtomicLong availableTokens = new AtomicLong(0); // 当前可用令牌数量
 	private static volatile long lastRefillTime = Instant.now().toEpochMilli(); // 最近一次令牌补充时间
 	/**

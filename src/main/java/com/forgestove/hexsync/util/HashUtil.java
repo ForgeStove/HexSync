@@ -53,7 +53,7 @@ public class HashUtil {
 		if (cache != null) return cache;
 		try (var fileInputStream = new FileInputStream(file)) {
 			var digest = MessageDigest.getInstance("SHA-1");
-			var buffer = new byte[4096];
+			var buffer = new byte[8192];
 			int bytesRead;
 			while ((bytesRead = fileInputStream.read(buffer)) != -1) digest.update(buffer, 0, bytesRead);
 			var sha1 = HexFormat.of().formatHex(digest.digest());
