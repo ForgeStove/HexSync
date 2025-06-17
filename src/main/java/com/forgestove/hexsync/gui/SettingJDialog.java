@@ -49,7 +49,8 @@ public class SettingJDialog extends JDialog {
 		var theme = new JComboBox<>(Arrays.stream(UIManager.getInstalledLookAndFeels())
 			.map(LookAndFeelInfo::getName)
 			.toArray(String[]::new)) {{setSelectedItem(Data.theme.get());}};
-		var script = new UndoAbleTextField(Data.script.get().toString());
+		var scriptPath = Data.script.get();
+		var script = new UndoAbleTextField(scriptPath == null ? "" : scriptPath.toString());
 		// 基础面板
 		add(new JPanel(new BorderLayout()) {{
 			setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
