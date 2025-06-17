@@ -45,10 +45,11 @@ public class SettingJDialog extends JDialog {
 		var clientSync = new UndoAbleTextField(Data.clientSyncPath.get().toString());
 		var clientOnly = new UndoAbleTextField(Data.clientOnlyPath.get().toString());
 		var clientAuto = new JCheckBox(HexSync.get("Setting.autoStart"), Data.clientAuto.get());
-		// 界面选项
+		// 其他选项
 		var theme = new JComboBox<>(Arrays.stream(UIManager.getInstalledLookAndFeels())
 			.map(LookAndFeelInfo::getName)
 			.toArray(String[]::new)) {{setSelectedItem(Data.theme.get());}};
+		var script = new UndoAbleTextField(Data.script.get().toString());
 		// 基础面板
 		add(new JPanel(new BorderLayout()) {{
 			setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -83,11 +84,13 @@ public class SettingJDialog extends JDialog {
 					add(clientAuto);
 					add(new JLabel());
 				}});
-				// 界面设置区域
+				// 其他设置区域
 				add(new JPanel(layout) {{
-					setBorder(SettingJDialog.getBorder("Setting.ui"));
+					setBorder(SettingJDialog.getBorder("Setting.other"));
 					add(new JLabel(HexSync.get("Setting.theme")));
 					add(theme);
+					add(new JLabel(HexSync.get("Setting.script")));
+					add(script);
 				}});
 			}}, BorderLayout.CENTER);
 			// 按钮面板
@@ -109,6 +112,7 @@ public class SettingJDialog extends JDialog {
 						Data.theme.set(themeItem);
 						Component.setTheme(themeItem);
 					}
+					Data.script.set(Path.of(script.getText()));
 					ConfigUtil.save(); // 保存配置
 					dispose(); // 关闭对话框
 				}));

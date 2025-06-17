@@ -4,7 +4,7 @@ import com.forgestove.hexsync.client.Client;
 import com.forgestove.hexsync.config.*;
 import com.forgestove.hexsync.gui.GUI;
 import com.forgestove.hexsync.server.Server;
-import com.forgestove.hexsync.util.Log;
+import com.forgestove.hexsync.util.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -29,6 +29,7 @@ public class HexSync {
 		if (Data.clientAuto.get()) Client.start();
 		if (HEADLESS) CLI.start();
 		else GUI.start();
+		if (Data.script.get() != null) FileUtil.runScript();
 	}
 	/**
 	 * 获取指定键的国际化字符串。

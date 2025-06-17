@@ -20,6 +20,7 @@ public class Data {
 	public static final Config<Port> serverPort = new Config<>(new Port(Port.MAX_VALUE));
 	public static final Config<Port> clientPort = new Config<>(new Port(Port.MAX_VALUE));
 	public static final Config<String> theme = new Config<>(FlatMTGitHubDarkIJTheme.NAME);
+	public static final Config<Path> script = new Config<>(null);
 	public static final List<ConfigEntry> CONFIG_ENTRIES = List.of( //
 		new HeaderEntry("# Server"),
 		ValueEntry.value("serverPort", serverPort, Port::new),
@@ -32,6 +33,7 @@ public class Data {
 		ValueEntry.value("clientSyncPath", clientSyncPath, Path::of),
 		ValueEntry.value("clientOnlyPath", clientOnlyPath, Path::of),
 		ValueEntry.value("clientAuto", clientAuto, Boolean::parseBoolean),
-		new HeaderEntry("# UI"),
-		ValueEntry.value("theme", theme, String::new));
+		new HeaderEntry("# Other"),
+		ValueEntry.value("theme", theme, String::new),
+		ValueEntry.value("script", script, Path::of));
 }

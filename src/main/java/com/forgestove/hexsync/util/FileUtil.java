@@ -101,4 +101,28 @@ public class FileUtil {
 			Files.writeString(file.toPath(), content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 		} catch (Exception error) {Log.error("文件写入失败: " + error.getMessage());}
 	}
+	public static void runScript() {
+		try {
+			var script = new File(Data.script.get().toString());
+			ProcessBuilder processBuilder;
+			var osName = System.getProperty("os.name").toLowerCase();
+			if (osName.contains("win")) processBuilder = new ProcessBuilder("cmd", "/c", script.getName());
+			else if (osName.contains("nix") || osName.contains("nux") || osName.contains("mac"))
+				processBuilder = new ProcessBuilder("sh", script.getName());
+			else {
+				Log.error("不支持的操作系统，无法执行预设脚本文件: " + osName);
+				return;
+			}
+			processBuilder.inheritIO();
+			var parentDir = script.getParentFile();
+			if (parentDir != null) {
+				processBuilder.directory(parentDir);
+				Log.info("设置工作目录: " + parentDir.getAbsolutePath());
+			}
+			processBuilder.start();
+			Log.info("执行脚本文件: " + script.getAbsolutePath());
+		} catch (Exception error) {
+			Log.error("脚本文件执行失败: " + error.getMessage());
+		}
+	}
 }
