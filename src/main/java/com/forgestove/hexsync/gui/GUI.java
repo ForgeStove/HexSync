@@ -2,6 +2,7 @@ package com.forgestove.hexsync.gui;
 import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.client.Client;
 import com.forgestove.hexsync.config.Data;
+import com.forgestove.hexsync.gui.common.CButton;
 import com.forgestove.hexsync.server.Server;
 
 import javax.swing.*;

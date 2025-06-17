@@ -1,4 +1,4 @@
-package com.forgestove.hexsync.gui;
+package com.forgestove.hexsync.gui.common;
 import javax.swing.*;
 import java.awt.event.ActionListener;
 public class CButton extends JButton {
