@@ -70,10 +70,12 @@ public class Client implements Runnable {
 		isRunning = true;
 		errorDownload = false;
 		Log.info(HexSync.NAME + "Client 正在启动...");
-		// 初始化
-		FileUtil.makeDirectory(Data.clientOnlyPath.get());
-		FileUtil.makeDirectory(Data.clientSyncPath.get());
+		// 添加GUI进度监听器
+		if (!HexSync.HEADLESS) Downloader.progressListeners.add(new GUIProgressListener());
 		try {
+			// 初始化
+			FileUtil.makeDirectory(Data.clientOnlyPath.get());
+			FileUtil.makeDirectory(Data.clientSyncPath.get());
 			var requestMap = Downloader.fetchFileSHA1List(); // 获取服务器文件列表
 			if (!requestMap.isEmpty()) {
 				FileUtil.deleteFilesNotInMaps(requestMap, FileUtil.initMap(Data.clientOnlyPath.get())); // 删除不在服务器列表中的文件
@@ -85,6 +87,8 @@ public class Client implements Runnable {
 			Log.error("客户端启动失败: " + error.getMessage());
 			errorDownload = true; // 标记下载错误
 		} finally {
+			// 清除下载进度监听器
+			if (!HexSync.HEADLESS) Downloader.progressListeners.clear();
 			stop();
 		}
 	}

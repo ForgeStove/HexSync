@@ -76,7 +76,13 @@ public class FileUtil {
 			}
 		});
 	}
-	// 将输入流写入文件
+	/**
+	 * 将输入流写入文件
+	 *
+	 * @param inputStream 输入流
+	 * @param targetFile  目标文件
+	 * @return 是否成功写入
+	 */
 	public static boolean writeToFile(@NotNull InputStream inputStream, File targetFile) {
 		try (var in = inputStream; var outputStream = new FastBufferedOutputStream(new FileOutputStream(targetFile))) {
 			var buffer = new byte[8192];

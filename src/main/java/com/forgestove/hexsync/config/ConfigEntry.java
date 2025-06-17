@@ -63,7 +63,10 @@ public interface ConfigEntry {
 		 */
 		@Contract("_, _, _, _ -> new")
 		public static <T> @NotNull Value<T> of(
-			String key, @NotNull Config<T> config, @NotNull Function<String, T> parser, @NotNull Function<T, String> serializer
+			String key,
+			@NotNull Config<T> config,
+			@NotNull Function<String, T> parser,
+			@NotNull Function<T, String> serializer
 		) {
 			return new Value<>(key, config, parser, serializer);
 		}

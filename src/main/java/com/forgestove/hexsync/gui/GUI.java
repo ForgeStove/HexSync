@@ -11,6 +11,8 @@ import java.awt.*;
 public class GUI extends JFrame implements Runnable {
 	/** 日志文本面板，用于显示应用程序日志信息。 */
 	public static final JTextPane logPane = new LogPane();
+	/** 进度显示面板，用于显示下载和同步进度 */
+	public static final ProgressPanel progressPanel = new ProgressPanel();
 	private static GUI instance;
 	/**
 	 * 私有构造函数，用于初始化 GUI 界面。
@@ -18,13 +20,16 @@ public class GUI extends JFrame implements Runnable {
 	 */
 	private GUI() {
 		super(HexSync.NAME);
+		setLayout(new BorderLayout(5, 5));
+		// 日志滚动面板
+		add(new JScrollPane(logPane) {{
+			setBorder(BorderFactory.createTitledBorder(HexSync.get("log")));
+		}}, BorderLayout.CENTER);
 		add(new JPanel() {{
-			setLayout(new BorderLayout(10, 5));
+			setLayout(new BorderLayout());
 			setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-			// 日志滚动面板
-			add(new JScrollPane(logPane) {{
-				setBorder(BorderFactory.createTitledBorder(HexSync.get("log")));
-			}}, BorderLayout.CENTER);
+			// 进度显示面板
+			add(progressPanel, BorderLayout.CENTER);
 			// 按钮面板
 			add(new JPanel(new GridLayout(0, 3)) {{
 				add(new CButton(HexSync.get("start", "server"), event -> Server.start()));
@@ -34,7 +39,7 @@ public class GUI extends JFrame implements Runnable {
 				add(new CButton(HexSync.get("stop", "client"), event -> Client.stop()));
 				add(new CButton(HexSync.get("exit"), event -> System.exit(0), Icons.exit));
 			}}, BorderLayout.SOUTH);
-		}});
+		}}, BorderLayout.SOUTH);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setMinimumSize(new Dimension(640, 480));
 	}
