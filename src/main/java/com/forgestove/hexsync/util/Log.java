@@ -61,12 +61,12 @@ public class Log {
 		var usedMemory = (rt.totalMemory() - rt.freeMemory()) / 1024 / 1024;
 		var totalMemory = rt.totalMemory() / 1024 / 1024;
 		var maxMemory = rt.maxMemory() / 1024 / 1024;
-		info("%s: %dMB / %dMB (Max: %dMB)".formatted(HexSync.get("GUI.memoryUsage"), usedMemory, totalMemory, maxMemory));
+		info("%s: %dMB / %dMB (Max: %dMB)".formatted(HexSync.get("memoryUsage"), usedMemory, totalMemory, maxMemory));
 	}
 	public enum Level {
-		INFO("Log.info", "\u001B[32m", new Color(0, 165, 0)),
-		WARN("Log.warn", "\u001B[33m", new Color(255, 140, 0)),
-		ERROR("Log.error", "\u001B[31m", new Color(235, 0, 0));
+		INFO("info", "\u001B[32m", new Color(0, 165, 0)),
+		WARN("warn", "\u001B[33m", new Color(255, 140, 0)),
+		ERROR("error", "\u001B[31m", new Color(235, 0, 0));
 		public final String resourceName;
 		public final String ansi;
 		public final SimpleAttributeSet attr;

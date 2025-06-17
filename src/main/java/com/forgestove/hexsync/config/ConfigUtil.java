@@ -24,9 +24,7 @@ public class ConfigUtil {
 			save();
 			return;
 		}
-		var configMap = Data.CONFIG_ENTRIES.stream()
-			.filter(entry -> entry instanceof Value<?>)
-			.map(entry -> (Value<?>) entry)
+		var configMap = Data.CONFIG_ENTRIES.stream().filter(Value.class::isInstance).map(Value.class::cast)
 			.collect(Collectors.toMap(Value::key, Function.identity()));
 		FileUtil.readLine(configFile, line -> {
 			if (!line.matches("^[a-zA-Z].*")) return;
@@ -45,8 +43,7 @@ public class ConfigUtil {
 	 * </p>
 	 */
 	public static void save() {
-		var configContent = Data.CONFIG_ENTRIES.stream().map(ConfigEntry::toString)
-			.collect(Collectors.joining(System.lineSeparator()));
+		var configContent = Data.CONFIG_ENTRIES.stream().map(ConfigEntry::toString).collect(Collectors.joining(System.lineSeparator()));
 		FileUtil.writeFile(Data.CONFIG_PATH.toFile(), configContent);
 		Log.info("配置已保存: " + System.lineSeparator() + configContent);
 	}

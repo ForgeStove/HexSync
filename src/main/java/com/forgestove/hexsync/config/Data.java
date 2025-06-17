@@ -4,9 +4,9 @@ import com.forgestove.hexsync.config.ConfigEntry.*;
 import com.forgestove.hexsync.util.network.*;
 import com.forgestove.hexsync.util.network.Rate.Unit;
 import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMTGitHubDarkIJTheme;
+import it.unimi.dsi.fastutil.objects.ObjectList;
 
 import java.nio.file.Path;
-import java.util.List;
 public class Data {
 	public static final Path CONFIG_PATH = Path.of(HexSync.NAME, "config.properties");
 	public static final Path LOG_PATH = Path.of(HexSync.NAME, "latest.log");
@@ -21,7 +21,7 @@ public class Data {
 	public static final Config<Port> clientPort = new Config<>(new Port(Port.MAX_VALUE));
 	public static final Config<String> theme = new Config<>(FlatMTGitHubDarkIJTheme.NAME);
 	public static final Config<Path> script = new Config<>(null);
-	public static final List<ConfigEntry> CONFIG_ENTRIES = List.of( //
+	public static final ObjectList<ConfigEntry> CONFIG_ENTRIES = ObjectList.of( //
 		new Header("# Server"),
 		Value.of("serverPort", serverPort, Port::new),
 		Value.of("serverUploadRate", serverUploadRate, Rate::new),

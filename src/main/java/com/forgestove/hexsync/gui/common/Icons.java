@@ -1,16 +1,16 @@
 package com.forgestove.hexsync.gui.common;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.extras.FlatSVGIcon.ColorFilter;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.UIManager;
-import java.util.*;
 /**
  * 图标管理器，用于集中管理应用中使用的所有图标
  * 并在主题变更时统一更新图标颜色
  */
 public class Icons {
-	private static final Set<FlatSVGIcon> iconSet = new HashSet<>();
+	private static final ObjectOpenHashSet<FlatSVGIcon> iconSet = new ObjectOpenHashSet<>();
 	public static final FlatSVGIcon icon = get("icon.svg");
 	public static final FlatSVGIcon cog = get("cog.svg");
 	public static final FlatSVGIcon exit = get("exit.svg");

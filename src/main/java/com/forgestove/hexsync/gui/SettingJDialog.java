@@ -39,14 +39,14 @@ public class SettingJDialog extends JDialog {
 			input -> Converter.toOrThrow(input, string -> new Rate(input, Data.serverUploadRate.get().unit)).isSuccess());
 		var rateUnit = new JComboBox<>(Unit.values()) {{setSelectedItem(Data.serverUploadRate.get().unit);}};
 		var serverSync = new UndoableTextField(Data.serverSyncPath.get().toString());
-		var serverAuto = new JCheckBox(HexSync.get("Setting.autoStart"), Data.serverAuto.get());
+		var serverAuto = new JCheckBox(HexSync.get("autoStart"), Data.serverAuto.get());
 		// 客户端选项
 		var clientPort = new VerifiedTextField(Data.serverPort.get().toString(),
 			input -> Converter.toOrThrow(input, Port::new).isSuccess());
 		var remoteAddress = new VerifiedTextField(Data.remoteAddress.get(), input -> input != null && !input.trim().isEmpty());
 		var clientSync = new UndoableTextField(Data.clientSyncPath.get().toString());
 		var clientOnly = new UndoableTextField(Data.clientOnlyPath.get().toString());
-		var clientAuto = new JCheckBox(HexSync.get("Setting.autoStart"), Data.clientAuto.get());
+		var clientAuto = new JCheckBox(HexSync.get("autoStart"), Data.clientAuto.get());
 		// 其他选项
 		var theme = new JComboBox<>(Arrays.stream(UIManager.getInstalledLookAndFeels())
 			.map(LookAndFeelInfo::getName)
@@ -61,44 +61,44 @@ public class SettingJDialog extends JDialog {
 				var layout = new GridLayout(0, 2);
 				// 服务端设置区域
 				add(new JPanel(layout) {{
-					setBorder(SettingJDialog.getBorder("Setting.server"));
-					add(new JLabel(HexSync.get("Setting.port")));
+					setBorder(SettingJDialog.getBorder("server"));
+					add(new JLabel(HexSync.get("port")));
 					add(serverPort);
-					add(new JLabel(HexSync.get("Setting.maxUploadRate")));
+					add(new JLabel(HexSync.get("maxUploadRate")));
 					add(rate);
-					add(new JLabel(HexSync.get("Setting.rateUnit")));
+					add(new JLabel(HexSync.get("rateUnit")));
 					add(rateUnit);
-					add(new JLabel(HexSync.get("Setting.serverSyncPath")));
+					add(new JLabel(HexSync.get("serverSyncPath")));
 					add(serverSync);
 					add(serverAuto);
 					add(new JLabel());
 				}});
 				// 客户端设置区域
 				add(new JPanel(layout) {{
-					setBorder(SettingJDialog.getBorder("Setting.client"));
-					add(new JLabel(HexSync.get("Setting.port")));
+					setBorder(SettingJDialog.getBorder("client"));
+					add(new JLabel(HexSync.get("port")));
 					add(clientPort);
-					add(new JLabel(HexSync.get("Setting.remoteAddress")));
+					add(new JLabel(HexSync.get("remoteAddress")));
 					add(remoteAddress);
-					add(new JLabel(HexSync.get("Setting.clientSyncPath")));
+					add(new JLabel(HexSync.get("clientSyncPath")));
 					add(clientSync);
-					add(new JLabel(HexSync.get("Setting.clientOnlyPath")));
+					add(new JLabel(HexSync.get("clientOnlyPath")));
 					add(clientOnly);
 					add(clientAuto);
 					add(new JLabel());
 				}});
 				// 其他设置区域
 				add(new JPanel(layout) {{
-					setBorder(SettingJDialog.getBorder("Setting.other"));
-					add(new JLabel(HexSync.get("Setting.theme")));
+					setBorder(SettingJDialog.getBorder("other"));
+					add(new JLabel(HexSync.get("theme")));
 					add(theme);
-					add(new JLabel(HexSync.get("Setting.script")));
+					add(new JLabel(HexSync.get("script")));
 					add(script);
 				}});
 			}}, BorderLayout.CENTER);
 			// 按钮面板
 			add(new JPanel(new GridLayout(1, 0, 5, 0)) {{
-				add(new CButton(HexSync.get("Setting.save"), event -> {
+				add(new CButton(HexSync.get("save"), event -> {
 					if (!Arrays.stream(new VerifiedTextField[]{serverPort, clientPort, rate, remoteAddress})
 						.allMatch(VerifiedTextField::isInputValid)) return;
 					Data.serverPort.set(new Port(serverPort.getText()));
@@ -119,8 +119,8 @@ public class SettingJDialog extends JDialog {
 					ConfigUtil.save(); // 保存配置
 					dispose(); // 关闭对话框
 				}));
-				add(new CButton(HexSync.get("Setting.cancel"), event -> dispose()));
-				add(new CButton(HexSync.get("Setting.about"), event -> new AboutJDialog(SettingJDialog.this, HexSync.get("About.title"))));
+				add(new CButton(HexSync.get("cancel"), event -> dispose()));
+				add(new CButton(HexSync.get("about"), event -> new AboutJDialog(SettingJDialog.this, HexSync.get("about"))));
 				setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 			}}, BorderLayout.SOUTH);
 		}});

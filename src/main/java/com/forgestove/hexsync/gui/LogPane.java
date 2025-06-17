@@ -19,13 +19,13 @@ public class LogPane extends JTextPane {
 		setEditable(false);
 		// 弹出菜单
 		setComponentPopupMenu(new JPopupMenu() {{
-			add(new CMenuItem(HexSync.get("GUI.copy"), Icons.copy, event -> {
+			add(new CMenuItem(HexSync.get("copy"), Icons.copy, event -> {
 				if (getSelectedText() == null) GUI.logPane.selectAll();
 				GUI.logPane.copy();
 			}));
-			add(new CMenuItem(HexSync.get("GUI.clear"), Icons.clear, event -> GUI.logPane.setText("")));
-			add(new CMenuItem(HexSync.get("GUI.refresh"), Icons.refresh, event -> System.gc()));
-			add(new CMenuItem(HexSync.get("GUI.memory"), Icons.memory, event -> {
+			add(new CMenuItem(HexSync.get("clear"), Icons.clear, event -> GUI.logPane.setText("")));
+			add(new CMenuItem(HexSync.get("refresh"), Icons.refresh, event -> System.gc()));
+			add(new CMenuItem(HexSync.get("memoryMonitor"), Icons.memory, event -> {
 				var memBar = new JProgressBar(0, 100) {{
 					setStringPainted(true);
 					setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -38,7 +38,7 @@ public class LogPane extends JTextPane {
 					memBar.setValue(percentage);
 					memBar.setString("%d%% (%dMB/%dMB)".formatted(percentage, used / 1024 / 1024, total / 1024 / 1024));
 				}) {{start();}};
-				new JDialog(GUI.getInstance(), HexSync.get("GUI.memoryUsage"), ModalityType.MODELESS) {{
+				new JDialog(GUI.getInstance(), HexSync.get("memoryUsage"), ModalityType.MODELESS) {{
 					setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 					addWindowListener(new WindowAdapter() {
 						public void windowClosing(WindowEvent windowEvent) {timer.stop();}
@@ -49,7 +49,7 @@ public class LogPane extends JTextPane {
 					setVisible(true);
 				}};
 			}));
-			add(new CMenuItem(HexSync.get("GUI.openLog"), Icons.open, event -> {
+			add(new CMenuItem(HexSync.get("openLog"), Icons.open, event -> {
 				try {
 					Desktop.getDesktop().open(Data.LOG_PATH.getParent().toFile());
 				} catch (Exception error) {

@@ -8,6 +8,7 @@ import com.forgestove.hexsync.util.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.stream.Collectors;
 /**
  * HexSync主类 - 程序的入口点。<p>
  * 提供核心功能并控制服务器、客户端和用户界面组件的初始化和启动。
@@ -44,5 +45,15 @@ public class HexSync {
 			Log.warn("Missing resource for key: " + key);
 			return key;
 		}
+	}
+	/**
+	 * 获取多个键的国际化字符串并连接它们。
+	 *
+	 * @param keys 要获取的资源键数组
+	 * @return 连接后的国际化字符串
+	 */
+	public static @NotNull String get(String @NotNull ... keys) {
+		if (keys.length == 0) return "";
+		return Arrays.stream(keys).map(HexSync::get).collect(Collectors.joining(" "));
 	}
 }

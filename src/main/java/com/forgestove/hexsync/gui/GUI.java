@@ -23,18 +23,16 @@ public class GUI extends JFrame implements Runnable {
 			setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 			// 日志滚动面板
 			add(new JScrollPane(logPane) {{
-				setBorder(BorderFactory.createTitledBorder(HexSync.get("GUI.log")));
+				setBorder(BorderFactory.createTitledBorder(HexSync.get("log")));
 			}}, BorderLayout.CENTER);
 			// 按钮面板
 			add(new JPanel(new GridLayout(0, 3)) {{
-				add(new CButton(HexSync.get("GUI.startServer"), event -> Server.start()));
-				add(new CButton(HexSync.get("GUI.startClient"), event -> Client.start()));
-				add(new CButton(HexSync.get("GUI.settings"),
-					event -> new SettingJDialog(GUI.this, HexSync.get("Setting.title")),
-					Icons.cog));
-				add(new CButton(HexSync.get("GUI.stopServer"), event -> Server.stop()));
-				add(new CButton(HexSync.get("GUI.stopClient"), event -> Client.stop()));
-				add(new CButton(HexSync.get("GUI.exit"), event -> System.exit(0), Icons.exit));
+				add(new CButton(HexSync.get("start", "server"), event -> Server.start()));
+				add(new CButton(HexSync.get("start", "client"), event -> Client.start()));
+				add(new CButton(HexSync.get("settings"), event -> new SettingJDialog(GUI.this, HexSync.get("settings")), Icons.cog));
+				add(new CButton(HexSync.get("stop", "server"), event -> Server.stop()));
+				add(new CButton(HexSync.get("stop", "client"), event -> Client.stop()));
+				add(new CButton(HexSync.get("exit"), event -> System.exit(0), Icons.exit));
 			}}, BorderLayout.SOUTH);
 		}});
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

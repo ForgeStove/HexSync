@@ -35,7 +35,8 @@ public class RequestHandler {
 		var fileName = Server.serverMap.object2ObjectEntrySet()
 			.stream()
 			.filter(entry -> entry.getValue().equals(requestSHA1))
-			.findFirst().map(Object2ObjectMap.Entry::getKey)
+			.findFirst()
+			.map(Object2ObjectMap.Entry::getKey)
 			.orElse(null);
 		if (fileName == null) return;
 		var file = Data.serverSyncPath.get().resolve(fileName).toFile();
