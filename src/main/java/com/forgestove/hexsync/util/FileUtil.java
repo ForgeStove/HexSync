@@ -61,10 +61,9 @@ public class FileUtil {
 		makeDirectory(target);
 		var fileList = source.toFile().listFiles();
 		if (fileList == null) return;
-		Arrays.stream(fileList).parallel().forEach(file -> {
+		new ObjectArrayList<>(fileList).parallelStream().forEach(file -> {
 			var targetFileName = file.getName();
 			var targetPath = target.resolve(targetFileName);
-			// 检查是否存在禁用标记
 			if (Files.exists(target.resolve(targetFileName + ".disable"))) return; // 跳过此文件
 			try {
 				if (file.isDirectory()) copyDirectory(file.toPath(), targetPath);
