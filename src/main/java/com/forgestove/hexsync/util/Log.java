@@ -9,6 +9,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.*;
 import java.awt.Color;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.LocalTime;
 import java.util.concurrent.*;
@@ -50,7 +51,9 @@ public class Log {
 		FileUtil.makeDirectory(Path.of(HexSync.NAME));
 		Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> stackTrace(throwable));
 		Runtime.getRuntime().addShutdownHook(new Thread(flushScheduler::shutdown));
-		try {printStream = new PrintStream(Data.LOG_PATH.toFile());} catch (Exception error) {throw new RuntimeException(error);}
+		try {printStream = new PrintStream(Data.LOG_PATH.toFile(), StandardCharsets.UTF_8);} catch (Exception error) {
+			throw new RuntimeException(error);
+		}
 	}
 	// 记录内存使用情况
 	public static void logMemory() {

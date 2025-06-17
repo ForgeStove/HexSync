@@ -9,6 +9,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -70,7 +71,7 @@ public class Downloader {
 		var requestMap = new Object2ObjectOpenHashMap<String, String>();
 		HttpResponse<String> response;
 		try {
-			response = HttpUtil.sendGet(url, BodyHandlers.ofString());
+			response = HttpUtil.sendGet(url, BodyHandlers.ofString(StandardCharsets.UTF_8));
 		} catch (Exception error) {
 			Log.error("获取文件列表时出错: " + error.getMessage());
 			Client.errorDownload = true;
