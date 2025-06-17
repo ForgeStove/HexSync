@@ -17,8 +17,6 @@ public class GUIProgressListener implements ProgressListener {
 	// 待下载和正在下载的文件队列
 	private final List<Integer> pendingFiles = Collections.synchronizedList(new IntArrayList());
 	private final Set<Integer> activeDownloads = Collections.synchronizedSet(new IntOpenHashSet());
-	// 记录上一次报告的进度值
-	private final AtomicInteger lastReportedProgress = new AtomicInteger(0);
 	/**
 	 * 格式化文件大小显示
 	 *
@@ -163,30 +161,21 @@ public class GUIProgressListener implements ProgressListener {
 	}
 	/**
 	 * 更新总体下载进度
-	 * 采用文件计数方式计算进度：已完成文件数/总文件数
+	 * 采用平等权重方式：每个文件占相同比重，但考虑每个文件的下载进度
 	 */
-	public void updateOverallProgress() {
+	public synchronized void updateOverallProgress() {
 		var total = totalFiles.get();
 		if (total <= 0) return;
-		// 计算总进度：仅基于已完成文件比例
-		var completed = completedFiles.get();
-		// 计算总体进度百分比 = (已完成文件数 / 总文件数) * 100
-		var newProgress = (int) ((completed * 100.0) / total);
-		// 确保进度范围在0-100之间
-		newProgress = Math.max(0, Math.min(100, newProgress));
-		// 确保进度只增不减
-		var currentProgress = lastReportedProgress.get();
-		if (newProgress > currentProgress) {
-			lastReportedProgress.set(newProgress);
-			// 更新总进度条
-			var status = String.format("%d / %d ( %d %% )", completed, total, newProgress);
-			GUI.progressPanel.updateProgress(newProgress, status);
-		} else if (completed > 0 && completed == total) {
-			// 特殊情况：所有文件已完成，强制显示100%
-			lastReportedProgress.set(100);
-			var status = String.format("%d / %d ( 100 %% )", completed, total);
-			GUI.progressPanel.updateProgress(100, status);
+		// 计算总进度：每个文件权重相同，但考虑文件下载进度
+		double totalProgress;
+		// 同步访问文件状态数据
+		synchronized (fileStatusMap) {
+			totalProgress = fileStatusMap.values().stream().mapToDouble(status -> status.progress).sum();
 		}
+		// 计算平均进度，使用总文件数作为除数
+		var newProgress = (int) Math.round(totalProgress / total);
+		var status = String.format("%d / %d ( %d %% )", completedFiles.get(), total, newProgress);
+		GUI.progressPanel.updateProgress(newProgress, status);
 	}
 	/**
 	 * 文件状态内部类
