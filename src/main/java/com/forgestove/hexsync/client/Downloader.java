@@ -2,7 +2,7 @@ package com.forgestove.hexsync.client;
 import com.forgestove.hexsync.config.Data;
 import com.forgestove.hexsync.util.*;
 import com.forgestove.hexsync.util.network.*;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -11,11 +11,10 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 public class Downloader {
 	// 从服务端同步文件夹下载客户端缺少的文件
-	public static void downloadMissingFiles(@NotNull Map<String, String> toDownloadMap) {
+	public static void downloadMissingFiles(@NotNull Object2ObjectMap<String, String> toDownloadMap) {
 		if (toDownloadMap.isEmpty()) {
 			Log.info("没有需要下载的文件");
 			return;
@@ -23,14 +22,15 @@ public class Downloader {
 		var size = toDownloadMap.size();
 		Log.info("开始下载 [%d] 个文件".formatted(size));
 		var count = new AtomicInteger(0);
-		toDownloadMap.entrySet().parallelStream().forEach(entry -> {
+		toDownloadMap.object2ObjectEntrySet().parallelStream().forEach(entry -> {
 			var filePath = Data.clientSyncPath.get().resolve(entry.getKey());
 			if (!downloadAndCheckFile(filePath, entry.getValue())) {
 				Log.error("下载失败: " + filePath);
 				Client.errorDownload = true;
 			} else Log.info("已下载: [%d/%d] %s".formatted(count.incrementAndGet(), size, filePath));
 		});
-		Log.info("%s: [%d/%d]".formatted(Client.errorDownload ? "下载失败" : "下载完成", count.get(), size));
+		if (Client.errorDownload) Log.warn("下载失败: [%d/%d]".formatted(count.get(), size));
+		else Log.info("下载完成: [%d/%d]".formatted(count.get(), size));
 		if (Data.clientAuto.get()) System.exit(0);
 	}
 	private static boolean downloadAndCheckFile(Path filePath, String requestSHA1) {
