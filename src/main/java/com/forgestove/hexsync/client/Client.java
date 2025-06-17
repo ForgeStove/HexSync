@@ -3,7 +3,6 @@ import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.config.Data;
 import com.forgestove.hexsync.util.*;
 import com.forgestove.hexsync.util.network.HttpUtil;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import org.jetbrains.annotations.Contract;
 /**
  * HexSync 客户端管理类<p>
@@ -77,8 +76,7 @@ public class Client implements Runnable {
 			var requestMap = Downloader.fetchFileSHA1List(); // 获取服务器文件列表
 			if (!requestMap.isEmpty()) {
 				FileUtil.deleteFilesNotInMaps(requestMap, FileUtil.initMap(Data.clientOnlyPath.get())); // 删除不在服务器列表中的文件
-				var clientSHA1Set = new ObjectOpenHashSet<>(FileUtil.initMap(Data.clientSyncPath.get()).values()); // 获取客户端已有文件的 SHA1 列表
-				requestMap.object2ObjectEntrySet().removeIf(entry -> clientSHA1Set.contains(entry.getValue())); // 过滤掉客户端已有的文件
+				requestMap.values().removeAll(FileUtil.initMap(Data.clientSyncPath.get()).values()); // 过滤掉客户端已有的文件
 				Downloader.downloadMissingFiles(requestMap); // 下载缺失的文件
 				FileUtil.copyDirectory(Data.clientOnlyPath.get(), Data.clientSyncPath.get()); // 复制文件到客户端同步目录
 			}
