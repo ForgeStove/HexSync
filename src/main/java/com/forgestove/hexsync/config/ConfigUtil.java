@@ -40,13 +40,13 @@ public class ConfigUtil {
 	 * 保存配置
 	 * <p>
 	 * 将当前配置保存到配置文件中。
-	 * 配置项会以"键=值"的格式写入，以#开头的配置项会作为注释保存。
+	 * 配置项会以{@code 键=值}的格式写入，以{@code #}开头的配置项会作为注释保存。
 	 * </p>
 	 */
 	public static void save() {
 		var configContent = Data.CONFIG_ENTRIES.stream()
-			.map(ConfigEntry::toObjectArray)
-			.map(config -> config[0].toString().startsWith("#") ? config[0].toString() : (config[0] + "=" + config[1]))
+			.map(ConfigEntry::toStringArray)
+			.map(config -> config[0].startsWith("#") ? config[0] : (config[0] + "=" + config[1]))
 			.collect(Collectors.joining(System.lineSeparator()));
 		FileUtil.writeFile(Data.CONFIG_PATH.toFile(), configContent);
 		Log.info("配置已保存: " + System.lineSeparator() + configContent);
