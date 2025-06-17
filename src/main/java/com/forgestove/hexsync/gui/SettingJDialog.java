@@ -1,7 +1,8 @@
 package com.forgestove.hexsync.gui;
 import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.config.*;
-import com.forgestove.hexsync.gui.common.CButton;
+import com.forgestove.hexsync.gui.common.*;
+import com.forgestove.hexsync.gui.common.Component;
 import com.forgestove.hexsync.util.Converter;
 import com.forgestove.hexsync.util.network.*;
 import com.forgestove.hexsync.util.network.Rate.Unit;

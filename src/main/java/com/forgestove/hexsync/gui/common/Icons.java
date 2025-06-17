@@ -1,4 +1,4 @@
-package com.forgestove.hexsync.gui;
+package com.forgestove.hexsync.gui.common;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.extras.FlatSVGIcon.ColorFilter;
 import org.jetbrains.annotations.NotNull;

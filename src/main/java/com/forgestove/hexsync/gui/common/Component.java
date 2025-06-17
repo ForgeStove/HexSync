@@ -1,4 +1,4 @@
-package com.forgestove.hexsync.gui;
+package com.forgestove.hexsync.gui.common;
 import com.forgestove.hexsync.util.Log;
 import com.formdev.flatlaf.*;
 import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes;

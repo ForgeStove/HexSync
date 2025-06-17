@@ -1,4 +1,4 @@
-package com.forgestove.hexsync.gui;
+package com.forgestove.hexsync.gui.common;
 import javax.swing.*;
 import javax.swing.undo.UndoManager;
 import java.awt.event.ActionEvent;

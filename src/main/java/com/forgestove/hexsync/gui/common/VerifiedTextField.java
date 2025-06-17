@@ -1,4 +1,4 @@
-package com.forgestove.hexsync.gui;
+package com.forgestove.hexsync.gui.common;
 import com.formdev.flatlaf.FlatClientProperties;
 
 import javax.swing.ToolTipManager;

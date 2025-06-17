@@ -1,5 +1,6 @@
 package com.forgestove.hexsync.gui;
 import com.forgestove.hexsync.HexSync;
+import com.forgestove.hexsync.gui.common.Component;
 import com.forgestove.hexsync.util.Log;
 
 import javax.swing.*;
