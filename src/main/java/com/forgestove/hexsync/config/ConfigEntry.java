@@ -77,7 +77,7 @@ public interface ConfigEntry {
 		@Contract(" -> new")
 		public Object @NotNull [] toObjectArray() {
 			var value = getter.get();
-			return new Object[]{key, serializer != null ? serializer.apply(value) : value};
+			return new Object[]{key, value == null ? "" : serializer.apply(value)};
 		}
 	}
 }
