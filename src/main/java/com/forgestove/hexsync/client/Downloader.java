@@ -34,7 +34,7 @@ public class Downloader {
 		final var size = toDownloadMap.size();
 		Log.info("开始下载 [%d] 个文件".formatted(size));
 		// 通知所有监听器下载开始
-		for (var listener : progressListeners) listener.onDownloadStart(size);
+		progressListeners.forEach(listener -> listener.onDownloadStart(size));
 		// 创建一个包含文件路径和SHA1对的列表
 		List<Entry<String, String>> downloadList = new ArrayList<>(toDownloadMap.object2ObjectEntrySet());
 		// 成功下载的文件数量计数器
@@ -50,7 +50,7 @@ public class Downloader {
 		final var completedTasks = new AtomicInteger(0);
 		try {
 			// 遍历下载列表，提交下载任务
-			IntStream.iterate(0, i -> i < downloadList.size() && Client.isRunning, i -> i + 1).forEachOrdered(i -> {
+			IntStream.iterate(0, i -> i < downloadList.size() && Client.isRunning, i -> i + 1).forEach(i -> {
 				final var entry = downloadList.get(i);
 				final var fileIndex = i + 1;
 				final var fileName = entry.getKey();
