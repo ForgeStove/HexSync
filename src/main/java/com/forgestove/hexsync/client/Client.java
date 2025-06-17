@@ -68,6 +68,7 @@ public class Client implements Runnable {
 			return;
 		}
 		isRunning = true;
+		errorDownload = false;
 		Log.info(HexSync.NAME + "Client 正在启动...");
 		// 初始化
 		FileUtil.makeDirectory(Data.clientOnlyPath.get());
