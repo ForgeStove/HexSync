@@ -25,14 +25,14 @@ public class ResponseSender {
 	 */
 	public static void sendResponse(@NotNull HttpExchange exchange, InputStream inputStream, long responseBytesLength,
 		String contentType) {
-		try (var outputStream = exchange.getResponseBody()) {
+		try (var in = inputStream; var outputStream = exchange.getResponseBody()) {
 			exchange.getResponseHeaders().set("Content-Type", contentType);
 			exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytesLength);
 			var buffer = new byte[BUFFER_SIZE];
 			long totalBytesSent = 0; // 记录已发送字节数
 			if (Data.serverUploadRate.get().value == 0) { // 无限制
 				int bytesRead;
-				while ((bytesRead = inputStream.read(buffer)) != -1 && totalBytesSent < responseBytesLength) {
+				while ((bytesRead = in.read(buffer)) != -1 && totalBytesSent < responseBytesLength) {
 					outputStream.write(buffer, 0, bytesRead); // 写入数据
 					outputStream.flush();
 					totalBytesSent += bytesRead;
@@ -53,7 +53,7 @@ public class ResponseSender {
 					}
 					continue;
 				}
-				var bytesRead = inputStream.read(buffer, 0, bytesToSend);
+				var bytesRead = in.read(buffer, 0, bytesToSend);
 				if (bytesRead == -1) break;
 				outputStream.write(buffer, 0, bytesRead); // 写入数据
 				outputStream.flush();

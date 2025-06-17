@@ -1,7 +1,8 @@
 package com.forgestove.hexsync.config;
-import com.forgestove.hexsync.config.ConfigEntry.ValueEntry;
+import com.forgestove.hexsync.config.ConfigEntry.Value;
 import com.forgestove.hexsync.util.*;
 
+import java.util.function.Function;
 import java.util.stream.Collectors;
 /**
  * 配置工具类
@@ -24,9 +25,9 @@ public class ConfigUtil {
 			return;
 		}
 		var configMap = Data.CONFIG_ENTRIES.stream()
-			.filter(entry -> entry instanceof ValueEntry<?>)
-			.map(entry -> (ValueEntry<?>) entry)
-			.collect(Collectors.toMap(ValueEntry::key, ValueEntry::setter));
+			.filter(entry -> entry instanceof Value<?>)
+			.map(entry -> (Value<?>) entry)
+			.collect(Collectors.toMap(Value::key, Function.identity()));
 		FileUtil.readLine(configFile, line -> {
 			if (!line.matches("^[a-zA-Z].*")) return;
 			var parts = line.trim().split("=");
@@ -44,9 +45,7 @@ public class ConfigUtil {
 	 * </p>
 	 */
 	public static void save() {
-		var configContent = Data.CONFIG_ENTRIES.stream()
-			.map(ConfigEntry::toStringArray)
-			.map(config -> config[0].startsWith("#") ? config[0] : (config[0] + "=" + config[1]))
+		var configContent = Data.CONFIG_ENTRIES.stream().map(ConfigEntry::toString)
 			.collect(Collectors.joining(System.lineSeparator()));
 		FileUtil.writeFile(Data.CONFIG_PATH.toFile(), configContent);
 		Log.info("配置已保存: " + System.lineSeparator() + configContent);

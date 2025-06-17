@@ -11,7 +11,7 @@ public class Port extends Number implements Comparable<Port> {
 	 */
 	public Port(int value) {
 		if (value >= 0 && value <= MAX_VALUE) this.value = (short) value;
-		else throw new IllegalArgumentException("Port value must be between 0 and " + MAX_VALUE);
+		else throw new IllegalArgumentException("Port of must be between 0 and " + MAX_VALUE);
 	}
 	/**
 	 * 使用字符串值创建端口。

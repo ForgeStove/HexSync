@@ -22,18 +22,18 @@ public class Data {
 	public static final Config<String> theme = new Config<>(FlatMTGitHubDarkIJTheme.NAME);
 	public static final Config<Path> script = new Config<>(null);
 	public static final List<ConfigEntry> CONFIG_ENTRIES = List.of( //
-		new HeaderEntry("# Server"),
-		ValueEntry.value("serverPort", serverPort, Port::new),
-		ValueEntry.value("serverUploadRate", serverUploadRate, Rate::new),
-		ValueEntry.value("serverSyncPath", serverSyncPath, Path::of),
-		ValueEntry.value("serverAuto", serverAuto, Boolean::parseBoolean),
-		new HeaderEntry("# Client"),
-		ValueEntry.value("clientPort", clientPort, Port::new),
-		ValueEntry.value("remoteAddress", remoteAddress, String::new),
-		ValueEntry.value("clientSyncPath", clientSyncPath, Path::of),
-		ValueEntry.value("clientOnlyPath", clientOnlyPath, Path::of),
-		ValueEntry.value("clientAuto", clientAuto, Boolean::parseBoolean),
-		new HeaderEntry("# Other"),
-		ValueEntry.value("theme", theme, String::new),
-		ValueEntry.value("script", script, Path::of));
+		new Header("# Server"),
+		Value.of("serverPort", serverPort, Port::new),
+		Value.of("serverUploadRate", serverUploadRate, Rate::new),
+		Value.of("serverSyncPath", serverSyncPath, Path::of),
+		Value.of("serverAuto", serverAuto, Boolean::parseBoolean),
+		new Header("# Client"),
+		Value.of("clientPort", clientPort, Port::new),
+		Value.of("remoteAddress", remoteAddress, String::new),
+		Value.of("clientSyncPath", clientSyncPath, Path::of),
+		Value.of("clientOnlyPath", clientOnlyPath, Path::of),
+		Value.of("clientAuto", clientAuto, Boolean::parseBoolean),
+		new Header("# Other"),
+		Value.of("theme", theme, String::new),
+		Value.of("script", script, Path::of));
 }

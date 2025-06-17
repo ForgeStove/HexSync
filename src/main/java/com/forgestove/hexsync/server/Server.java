@@ -3,17 +3,17 @@ import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.config.Data;
 import com.forgestove.hexsync.util.*;
 import com.sun.net.httpserver.HttpServer;
+import it.unimi.dsi.fastutil.objects.*;
 import org.jetbrains.annotations.Contract;
 
 import java.net.InetSocketAddress;
-import java.util.*;
 import java.util.concurrent.Executors;
 /**
  * HexSync 服务端管理类<p>
  * 负责服务器的启动、停止和状态管理
  */
 public class Server implements Runnable {
-	public static volatile Map<String, String> serverMap; // 服务端文件名和校验码映射
+	public static volatile Object2ObjectMap<String, String> serverMap = new Object2ObjectOpenHashMap<>(); // 服务端文件名和校验码映射
 	public static volatile Thread serverThread; // 服务器线程
 	public static volatile HttpServer httpServer; // 服务器实例
 	public static volatile boolean isRunning = false; // 服务器运行状态
@@ -51,7 +51,7 @@ public class Server implements Runnable {
 			return;
 		}
 		isRunning = false;
-		Optional.ofNullable(serverMap).ifPresent(Map::clear); // 清理资源
+		serverMap = null;
 		if (httpServer != null) try {
 			httpServer.stop(0); // 停止HTTP服务器
 		} catch (Exception error) {

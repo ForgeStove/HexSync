@@ -1,22 +1,22 @@
 package com.forgestove.hexsync.util;
 import com.forgestove.hexsync.config.Data;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 public class FileUtil {
 	// 初始化文件名校验码键值对表
-	public static @NotNull Map<String, String> initMap(@NotNull Path directory) {
+	public static @NotNull Object2ObjectMap<String, String> initMap(@NotNull Path directory) {
 		var fileList = directory.toFile().listFiles();
-		var resultMap = new Object2ObjectOpenHashMap<String, String>();
-		if (fileList == null) return resultMap;
-		var concurrentResults = Arrays.stream(fileList).filter(File::isFile).parallel()
-			.collect(Collectors.toConcurrentMap(File::getName, HashUtil::calculateSHA1, (existing, replacement) -> existing));
-		resultMap.putAll(concurrentResults);
+		if (fileList == null) return new Object2ObjectOpenHashMap<>();
+		var resultMap = new Object2ObjectOpenHashMap<String, String>(fileList.length);
+		Arrays.stream(fileList).filter(File::isFile).parallel().forEach(file -> {
+			var fileName = file.getName();
+			synchronized (resultMap) {if (!resultMap.containsKey(fileName)) resultMap.put(fileName, HashUtil.calculateSHA1(file));}
+		});
 		return resultMap;
 	}
 	// 创建文件夹
@@ -30,23 +30,30 @@ public class FileUtil {
 		}
 	}
 	// 删除指定路径下的文件
-	public static void deleteFilesNotInMaps(Map<String, String> requestMap, Map<String, String> clientOnlyMap) {
+	public static void deleteFilesNotInMaps(Object2ObjectMap<String, String> requestMap, Object2ObjectMap<String, String> clientMap) {
 		var fileList = Data.clientSyncPath.get().toFile().listFiles();
 		if (fileList == null) return;
+		// 预先收集所有有效的SHA1值
+		var validHashes = new HashSet<String>();
+		validHashes.addAll(requestMap.values());
+		validHashes.addAll(clientMap.values());
 		Arrays.stream(fileList).parallel().filter(File::isFile).forEach(file -> {
-			var SHA1 = HashUtil.calculateSHA1(file);
-			if (requestMap.containsValue(SHA1) || clientOnlyMap.containsValue(SHA1)) return;
-			deleteFile(file);
+			var sha1 = HashUtil.calculateSHA1(file);
+			if (!validHashes.contains(sha1)) deleteFile(file);
 		});
 	}
 	// 删除指定文件
 	public static void deleteFile(@NotNull File file) {
-		if (!file.exists() || !file.isFile()) {
+		try {
+			Files.delete(file.toPath());
+			Log.info("已删除文件: " + file);
+		} catch (NoSuchFileException e) {
 			Log.error("文件不存在: " + file);
-			return;
+		} catch (DirectoryNotEmptyException e) {
+			Log.error("目标是非空目录: " + file);
+		} catch (Exception error) {
+			Log.error("删除文件失败: %s, 原因: %s".formatted(file, error.getMessage()));
 		}
-		if (file.delete()) Log.info("已删除文件: " + file);
-		else Log.error("删除文件失败: " + file);
 	}
 	// 复制文件夹
 	public static void copyDirectory(@NotNull Path source, Path target) {
@@ -55,14 +62,17 @@ public class FileUtil {
 		if (fileList == null) return;
 		Arrays.stream(fileList).parallel().forEach(file -> {
 			var targetFileName = file.getName();
-			var targetFile = target.resolve(targetFileName).toFile();
-			if (target.resolve(targetFileName + ".disable").toFile().exists()) return; // 跳过此文件
-			if (file.isDirectory()) copyDirectory(file.toPath(), targetFile.toPath());
-			else if (!targetFile.exists()) try {
-				Files.copy(file.toPath(), targetFile.toPath());
-				Log.info("已复制: %s -> %s".formatted(file, target));
+			var targetPath = target.resolve(targetFileName);
+			// 检查是否存在禁用标记
+			if (Files.exists(target.resolve(targetFileName + ".disable"))) return; // 跳过此文件
+			try {
+				if (file.isDirectory()) copyDirectory(file.toPath(), targetPath);
+				else if (!Files.exists(targetPath)) {
+					Files.copy(file.toPath(), targetPath, StandardCopyOption.COPY_ATTRIBUTES);
+					Log.info("已复制: %s -> %s".formatted(file, targetPath));
+				}
 			} catch (IOException error) {
-				Log.error("复制失败: " + error.getMessage());
+				Log.error("复制失败: %s -> %s, 原因: %s".formatted(file, targetPath, error.getMessage()));
 			}
 		});
 	}
@@ -86,9 +96,10 @@ public class FileUtil {
 	 */
 	public static void readLine(@NotNull File file, @NotNull Consumer<String> consumer) {
 		try (var reader = Files.newBufferedReader(file.toPath())) {
-			String line;
-			while ((line = reader.readLine()) != null) consumer.accept(line);
-		} catch (Exception error) {Log.error("文件读取失败: " + error.getMessage());}
+			reader.lines().forEach(consumer);
+		} catch (Exception error) {
+			Log.error("文件 %s 处理失败: %s".formatted(file, error.getMessage()));
+		}
 	}
 	/**
 	 * 将字符串内容写入文件
@@ -101,6 +112,15 @@ public class FileUtil {
 			Files.writeString(file.toPath(), content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 		} catch (Exception error) {Log.error("文件写入失败: " + error.getMessage());}
 	}
+	/**
+	 * 执行指定的脚本文件<p>
+	 * 根据操作系统类型选择适当的执行方式：<p>
+	 * - Windows系统使用cmd命令执行<p>
+	 * - Linux/Unix/Mac系统使用sh命令执行<p>
+	 * 执行时会使用脚本所在目录作为工作目录，完全隔离IO
+	 *
+	 * @see Data#script
+	 */
 	public static void runScript() {
 		try {
 			var script = new File(Data.script.get().toString());
@@ -113,7 +133,6 @@ public class FileUtil {
 				Log.error("不支持的操作系统，无法执行预设脚本文件: " + osName);
 				return;
 			}
-			processBuilder.inheritIO();
 			var parentDir = script.getParentFile();
 			if (parentDir != null) {
 				processBuilder.directory(parentDir);

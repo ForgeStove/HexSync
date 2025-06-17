@@ -65,7 +65,7 @@ public class Downloader {
 		return true;
 	}
 	// 从服务器获取文件名和校验码列表
-	public static Map<String, String> fetchFileSHA1List() {
+	public static Object2ObjectOpenHashMap<String, String> fetchFileSHA1List() {
 		var url = "%s:%d/%s".formatted(HttpUtil.formatHTTP(Data.remoteAddress.get()), Data.clientPort.get().getValue(), HttpUtil.LIST);
 		Log.info("正在连接至: " + url);
 		var requestMap = new Object2ObjectOpenHashMap<String, String>();

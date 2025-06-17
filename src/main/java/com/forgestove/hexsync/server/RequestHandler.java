@@ -3,11 +3,12 @@ import com.forgestove.hexsync.config.Data;
 import com.forgestove.hexsync.util.Log;
 import com.forgestove.hexsync.util.network.HttpUtil;
 import com.sun.net.httpserver.HttpExchange;
+import it.unimi.dsi.fastutil.io.*;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.util.Map.Entry;
 import java.util.StringJoiner;
 /**
  * 请求处理器类，负责处理来自 HttpExchange 的请求，包括文件下载和文件列表请求。
@@ -31,20 +32,22 @@ public class RequestHandler {
 	 */
 	public static void sendFile(HttpExchange exchange, @NotNull String requestURI) {
 		var requestSHA1 = requestURI.substring(requestURI.lastIndexOf("/") + 1);
-		var fileName = Server.serverMap.entrySet()
+		var fileName = Server.serverMap.object2ObjectEntrySet()
 			.stream()
 			.filter(entry -> entry.getValue().equals(requestSHA1))
-			.findFirst()
-			.map(Entry::getKey)
+			.findFirst().map(Object2ObjectMap.Entry::getKey)
 			.orElse(null);
 		if (fileName == null) return;
 		var file = Data.serverSyncPath.get().resolve(fileName).toFile();
-		try (var inputStream = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
-			ResponseSender.sendResponse(exchange, inputStream, file.length(), "application/java-archive");
-			Log.info("发送文件: %s 至: %s".formatted(file, HttpUtil.getHostAddress(exchange)));
+		InputStream in;
+		try {
+			in = Files.newInputStream(file.toPath());
 		} catch (IOException error) {
-			Log.error("发送文件时出错: " + error.getMessage());
+			Log.error("读取文件时出错: " + error.getMessage());
+			return;
 		}
+		ResponseSender.sendResponse(exchange, new FastBufferedInputStream(in), file.length(), "application/java-archive");
+		Log.info("发送文件: %s 至: %s".formatted(file, HttpUtil.getHostAddress(exchange)));
 	}
 	/**
 	 * 发送服务器文件列表到客户端，每行为文件名和对应的 SHA1。
@@ -54,13 +57,9 @@ public class RequestHandler {
 	public static void sendList(@NotNull HttpExchange exchange) {
 		var separator = System.lineSeparator();
 		var joiner = new StringJoiner(separator);
-		Server.serverMap.entrySet().stream().map(entry -> entry.getKey() + separator + entry.getValue()).forEach(joiner::add);
+		Server.serverMap.object2ObjectEntrySet().forEach(entry -> joiner.add(entry.getKey() + separator + entry.getValue()));
 		var bytes = joiner.toString().getBytes();
-		try (var inputStream = new ByteArrayInputStream(bytes)) {
-			ResponseSender.sendResponse(exchange, inputStream, bytes.length, "application/json");
-			Log.info("发送列表至: " + HttpUtil.getHostAddress(exchange));
-		} catch (IOException error) {
-			Log.error("发送列表至 %s 时出错: %s".formatted(HttpUtil.getHostAddress(exchange), error.getMessage()));
-		}
+		ResponseSender.sendResponse(exchange, new FastByteArrayInputStream(bytes), bytes.length, "application/json");
+		Log.info("发送列表至: " + HttpUtil.getHostAddress(exchange));
 	}
 }

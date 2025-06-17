@@ -11,8 +11,8 @@ import org.jetbrains.annotations.Contract;
  */
 public class Client implements Runnable {
 	public static volatile boolean errorDownload; // 下载错误标志
-	private static volatile Thread clientThread; // 客户端线程
 	public static volatile boolean isRunning = false; // 客户端运行状态
+	private static volatile Thread clientThread; // 客户端线程
 	private static Client instance; // 单例实例
 	@Contract(pure = true)
 	private Client() {}
@@ -78,7 +78,7 @@ public class Client implements Runnable {
 			if (!requestMap.isEmpty()) {
 				FileUtil.deleteFilesNotInMaps(requestMap, FileUtil.initMap(Data.clientOnlyPath.get())); // 删除不在服务器列表中的文件
 				var clientSHA1Set = new ObjectOpenHashSet<>(FileUtil.initMap(Data.clientSyncPath.get()).values()); // 获取客户端已有文件的 SHA1 列表
-				requestMap.entrySet().removeIf(entry -> clientSHA1Set.contains(entry.getValue())); // 过滤掉客户端已有的文件
+				requestMap.object2ObjectEntrySet().removeIf(entry -> clientSHA1Set.contains(entry.getValue())); // 过滤掉客户端已有的文件
 				Downloader.downloadMissingFiles(requestMap); // 下载缺失的文件
 				FileUtil.copyDirectory(Data.clientOnlyPath.get(), Data.clientSyncPath.get()); // 复制文件到客户端同步目录
 			}
