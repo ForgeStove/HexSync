@@ -5,7 +5,7 @@ import javax.swing.ToolTipManager;
 import javax.swing.event.*;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
-public class VerifiedTextField extends UndoAbleTextField {
+public class VerifiedTextField extends UndoableTextField {
 	private final InputValidator validator;
 	private boolean isValid = true;
 	private String errorMessage = null;

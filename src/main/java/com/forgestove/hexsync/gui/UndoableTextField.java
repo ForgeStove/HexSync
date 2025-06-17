@@ -2,9 +2,9 @@ package com.forgestove.hexsync.gui;
 import javax.swing.*;
 import javax.swing.undo.UndoManager;
 import java.awt.event.ActionEvent;
-public class UndoAbleTextField extends JTextField {
+public class UndoableTextField extends JTextField {
 	private final UndoManager undoManager = new UndoManager();
-	public UndoAbleTextField(String text) {
+	public UndoableTextField(String text) {
 		super(text);
 		initUndo();
 	}

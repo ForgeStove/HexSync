@@ -36,21 +36,21 @@ public class SettingJDialog extends JDialog {
 		var rate = new VerifiedTextField(String.valueOf(Data.serverUploadRate.get().value),
 			input -> Converter.toOrThrow(input, string -> new Rate(input, Data.serverUploadRate.get().unit)).isSuccess());
 		var rateUnit = new JComboBox<>(Unit.values()) {{setSelectedItem(Data.serverUploadRate.get().unit);}};
-		var serverSync = new UndoAbleTextField(Data.serverSyncPath.get().toString());
+		var serverSync = new UndoableTextField(Data.serverSyncPath.get().toString());
 		var serverAuto = new JCheckBox(HexSync.get("Setting.autoStart"), Data.serverAuto.get());
 		// 客户端选项
 		var clientPort = new VerifiedTextField(Data.serverPort.get().toString(),
 			input -> Converter.toOrThrow(input, Port::new).isSuccess());
 		var remoteAddress = new VerifiedTextField(Data.remoteAddress.get(), input -> input != null && !input.trim().isEmpty());
-		var clientSync = new UndoAbleTextField(Data.clientSyncPath.get().toString());
-		var clientOnly = new UndoAbleTextField(Data.clientOnlyPath.get().toString());
+		var clientSync = new UndoableTextField(Data.clientSyncPath.get().toString());
+		var clientOnly = new UndoableTextField(Data.clientOnlyPath.get().toString());
 		var clientAuto = new JCheckBox(HexSync.get("Setting.autoStart"), Data.clientAuto.get());
 		// 其他选项
 		var theme = new JComboBox<>(Arrays.stream(UIManager.getInstalledLookAndFeels())
 			.map(LookAndFeelInfo::getName)
 			.toArray(String[]::new)) {{setSelectedItem(Data.theme.get());}};
 		var scriptPath = Data.script.get();
-		var script = new UndoAbleTextField(scriptPath == null ? "" : scriptPath.toString());
+		var script = new UndoableTextField(scriptPath == null ? "" : scriptPath.toString());
 		// 基础面板
 		add(new JPanel(new BorderLayout()) {{
 			setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
