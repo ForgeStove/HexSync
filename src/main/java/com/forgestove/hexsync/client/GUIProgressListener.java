@@ -17,6 +17,8 @@ public class GUIProgressListener implements ProgressListener {
 	// 待下载和正在下载的文件队列
 	private final List<Integer> pendingFiles = Collections.synchronizedList(new IntArrayList());
 	private final Set<Integer> activeDownloads = Collections.synchronizedSet(new IntOpenHashSet());
+	// 记录上一次报告的进度值
+	private final AtomicInteger lastReportedProgress = new AtomicInteger(0);
 	/**
 	 * 格式化文件大小显示
 	 *
@@ -161,36 +163,30 @@ public class GUIProgressListener implements ProgressListener {
 	}
 	/**
 	 * 更新总体下载进度
+	 * 采用文件计数方式计算进度：已完成文件数/总文件数
 	 */
 	public void updateOverallProgress() {
 		var total = totalFiles.get();
 		if (total <= 0) return;
-		// 计算总进度
+		// 计算总进度：仅基于已完成文件比例
 		var completed = completedFiles.get();
-		var inProgressCount = 0;
-		var progressSum = 0;
-		for (var status : fileStatusMap.values())
-			if (!status.completed) {
-				inProgressCount++;
-				progressSum += status.progress;
-			}
-		// 计算总体进度百分比
-		int overallProgress;
-		if (total == completed) overallProgress = 100;
-		else {
-			// 已完成文件贡献的进度
-			var completedProgress = (completed * 100) / total;
-			// 正在下载文件贡献的进度
-			var inProgressPercentage = 0;
-			if (inProgressCount > 0) {
-				inProgressPercentage = progressSum / inProgressCount;
-				inProgressPercentage = (inProgressPercentage * (total - completed)) / total;
-			}
-			overallProgress = completedProgress + inProgressPercentage;
+		// 计算总体进度百分比 = (已完成文件数 / 总文件数) * 100
+		var newProgress = (int) ((completed * 100.0) / total);
+		// 确保进度范围在0-100之间
+		newProgress = Math.max(0, Math.min(100, newProgress));
+		// 确保进度只增不减
+		var currentProgress = lastReportedProgress.get();
+		if (newProgress > currentProgress) {
+			lastReportedProgress.set(newProgress);
+			// 更新总进度条
+			var status = String.format("%d / %d ( %d %% )", completed, total, newProgress);
+			GUI.progressPanel.updateProgress(newProgress, status);
+		} else if (completed > 0 && completed == total) {
+			// 特殊情况：所有文件已完成，强制显示100%
+			lastReportedProgress.set(100);
+			var status = String.format("%d / %d ( 100 %% )", completed, total);
+			GUI.progressPanel.updateProgress(100, status);
 		}
-		// 更新总进度条
-		var status = String.format("%d / %d ( %d %% )", completed, total, overallProgress);
-		GUI.progressPanel.updateProgress(overallProgress, status);
 	}
 	/**
 	 * 文件状态内部类
