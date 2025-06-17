@@ -79,10 +79,10 @@ public class FileUtil {
 	}
 	// 将输入流写入文件
 	public static boolean writeToFile(@NotNull InputStream inputStream, File targetFile) {
-		try (var outputStream = new FastBufferedOutputStream(new FileOutputStream(targetFile))) {
+		try (var in = inputStream; var outputStream = new FastBufferedOutputStream(new FileOutputStream(targetFile))) {
 			var buffer = new byte[8192];
 			int bytesRead;
-			while ((bytesRead = inputStream.read(buffer)) != -1) outputStream.write(buffer, 0, bytesRead);
+			while ((bytesRead = in.read(buffer)) != -1) outputStream.write(buffer, 0, bytesRead);
 			return true;
 		} catch (IOException error) {
 			Log.error("写入文件失败: %s %s".formatted(targetFile, error.getMessage()));
