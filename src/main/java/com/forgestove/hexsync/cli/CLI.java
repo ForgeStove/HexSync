@@ -34,7 +34,7 @@ public class CLI implements Runnable {
 	}
 	@Command(name = "run", description = "运行实例", subcommands = {RunServer.class, RunClient.class})
 	static class Run implements Runnable {
-		public void run() {new CommandLine(new Run()).usage(System.out);}
+		public void run() {new CommandLine(this).usage(System.out);}
 		@Command(name = "server", description = "启动服务端")
 		static class RunServer implements Runnable {
 			public void run() {Server.start();}
@@ -46,7 +46,7 @@ public class CLI implements Runnable {
 	}
 	@Command(name = "stop", description = "关闭实例", subcommands = {StopServer.class, StopClient.class})
 	static class Stop implements Runnable {
-		public void run() {new CommandLine(new Stop()).usage(System.out);}
+		public void run() {new CommandLine(this).usage(System.out);}
 		@Command(name = "server", description = "关闭服务端")
 		static class StopServer implements Runnable {
 			public void run() {Server.stop();}
