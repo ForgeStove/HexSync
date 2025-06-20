@@ -59,6 +59,8 @@ public class HashUtil {
 			var sha1 = HexFormat.of().formatHex(digest.digest());
 			putSHA1(file, sha1); // 写入缓存
 			return sha1;
-		} catch (Exception error) {throw new RuntimeException(error.getCause());}
+		} catch (Exception e) {
+			throw new RuntimeException(e.getCause());
+		}
 	}
 }

@@ -52,8 +52,8 @@ public class LogPane extends JTextPane {
 			add(new CMenuItem(HexSync.get("openLog"), Icons.open, event -> {
 				try {
 					Desktop.getDesktop().open(Data.LOG_PATH.getParent().toFile());
-				} catch (Exception error) {
-					Log.error("无法打开日志: " + error);
+				} catch (Exception e) {
+					Log.error("无法打开日志: " + e);
 				}
 			}));
 		}});

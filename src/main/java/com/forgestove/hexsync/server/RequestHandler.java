@@ -43,8 +43,8 @@ public class RequestHandler {
 		InputStream in;
 		try {
 			in = Files.newInputStream(file.toPath());
-		} catch (IOException error) {
-			Log.error("读取文件时出错: " + error.getMessage());
+		} catch (IOException e) {
+			Log.error("读取文件时出错: " + e.getMessage());
 			return;
 		}
 		ResponseSender.sendResponse(exchange, new FastBufferedInputStream(in), file.length(), "application/java-archive");

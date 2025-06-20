@@ -24,8 +24,8 @@ public class AboutJDialog extends JDialog {
 		aboutTextPane.addHyperlinkListener(event -> {
 			if (EventType.ACTIVATED.equals(event.getEventType())) try {
 				Desktop.getDesktop().browse(event.getURL().toURI());
-			} catch (Exception error) {
-				Log.warn(HexSync.get("linkError") + ": " + error.getMessage());
+			} catch (Exception e) {
+				Log.warn(HexSync.get("linkError") + ": " + e.getMessage());
 			}
 		});
 		add(new JScrollPane(aboutTextPane));

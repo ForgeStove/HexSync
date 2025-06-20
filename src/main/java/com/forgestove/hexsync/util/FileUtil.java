@@ -26,8 +26,8 @@ public class FileUtil {
 			if (Files.isDirectory(directoryPath)) return;
 			Files.createDirectories(directoryPath);
 			Log.info("文件夹已创建: " + directoryPath);
-		} catch (IOException error) {
-			Log.error("无法创建文件夹: %s, 原因: %s".formatted(directoryPath, error.getMessage()));
+		} catch (IOException e) {
+			Log.error("无法创建文件夹: %s, 原因: %s".formatted(directoryPath, e.getMessage()));
 		}
 	}
 	// 删除指定路径下的文件
@@ -52,8 +52,8 @@ public class FileUtil {
 			Log.error("文件不存在: " + file);
 		} catch (DirectoryNotEmptyException e) {
 			Log.error("目标是非空目录: " + file);
-		} catch (Exception error) {
-			Log.error("删除文件失败: %s, 原因: %s".formatted(file, error.getMessage()));
+		} catch (Exception e) {
+			Log.error("删除文件失败: %s, 原因: %s".formatted(file, e.getMessage()));
 		}
 	}
 	// 复制文件夹
@@ -71,8 +71,8 @@ public class FileUtil {
 					Files.copy(file.toPath(), targetPath, StandardCopyOption.COPY_ATTRIBUTES);
 					Log.info("已复制: %s -> %s".formatted(file, targetPath));
 				}
-			} catch (IOException error) {
-				Log.error("复制失败: %s -> %s, 原因: %s".formatted(file, targetPath, error.getMessage()));
+			} catch (IOException e) {
+				Log.error("复制失败: %s -> %s, 原因: %s".formatted(file, targetPath, e.getMessage()));
 			}
 		});
 	}
@@ -89,8 +89,8 @@ public class FileUtil {
 			int bytesRead;
 			while ((bytesRead = in.read(buffer)) != -1) outputStream.write(buffer, 0, bytesRead);
 			return true;
-		} catch (IOException error) {
-			Log.error("写入文件失败: %s %s".formatted(targetFile, error.getMessage()));
+		} catch (IOException e) {
+			Log.error("写入文件失败: %s %s".formatted(targetFile, e.getMessage()));
 			return false;
 		}
 	}
@@ -103,8 +103,8 @@ public class FileUtil {
 	public static void readLine(@NotNull File file, @NotNull Consumer<String> consumer) {
 		try (var reader = Files.newBufferedReader(file.toPath())) {
 			reader.lines().forEach(consumer);
-		} catch (Exception error) {
-			Log.error("文件 %s 处理失败: %s".formatted(file, error.getMessage()));
+		} catch (Exception e) {
+			Log.error("文件 %s 处理失败: %s".formatted(file, e.getMessage()));
 		}
 	}
 	/**
@@ -116,7 +116,7 @@ public class FileUtil {
 	public static void writeFile(@NotNull File file, @NotNull String content) {
 		try {
 			Files.writeString(file.toPath(), content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-		} catch (Exception error) {Log.error("文件写入失败: " + error.getMessage());}
+		} catch (Exception e) {Log.error("文件写入失败: " + e.getMessage());}
 	}
 	/**
 	 * 执行指定的脚本文件<p>
@@ -146,8 +146,8 @@ public class FileUtil {
 			}
 			processBuilder.start();
 			Log.info("执行脚本文件: " + script.getAbsolutePath());
-		} catch (Exception error) {
-			Log.error("脚本文件执行失败: " + error.getMessage());
+		} catch (Exception e) {
+			Log.error("脚本文件执行失败: " + e.getMessage());
 		}
 	}
 }

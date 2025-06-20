@@ -8,7 +8,7 @@ import java.io.*;
  */
 public class ProgressInputStream extends FilterInputStream {
 	public final long totalBytes;
-	private final ProgressCallback callback;
+	public final ProgressCallback callback;
 	public long bytesRead;
 	/**
 	 * 创建一个进度监控输入流
@@ -47,10 +47,9 @@ public class ProgressInputStream extends FilterInputStream {
 	 * @param count 新读取的字节数
 	 */
 	private void updateProgress(long count) {
-		if (count > 0 && callback != null) {
-			this.bytesRead += count;
-			callback.onProgressUpdate(this.bytesRead, this.totalBytes);
-		}
+		if (count <= 0 || callback == null) return;
+		this.bytesRead += count;
+		callback.onProgressUpdate(this.bytesRead, this.totalBytes);
 	}
 	/**
 	 * 进度回调接口

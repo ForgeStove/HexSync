@@ -42,8 +42,8 @@ public class Log {
 		try {
 			if (lineCount > maxLines) document.remove(0, root.getElement(lineCount - maxLines - 1).getEndOffset());
 			document.insertString(document.getLength(), log, level.attr);
-		} catch (Exception error) {
-			System.err.println("日志输出失败: " + error.getMessage());
+		} catch (Exception e) {
+			System.err.println("日志输出失败: " + e.getMessage());
 		}
 	}
 	// 初始化日志
@@ -51,8 +51,10 @@ public class Log {
 		FileUtil.makeDirectory(Path.of(HexSync.NAME));
 		Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> stackTrace(throwable));
 		Runtime.getRuntime().addShutdownHook(new Thread(flushScheduler::shutdown));
-		try {printStream = new PrintStream(Data.LOG_PATH.toFile(), StandardCharsets.UTF_8);} catch (Exception error) {
-			throw new RuntimeException(error);
+		try {
+			printStream = new PrintStream(Data.LOG_PATH.toFile(), StandardCharsets.UTF_8);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 	}
 	// 记录内存使用情况

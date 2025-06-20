@@ -21,8 +21,8 @@ public class ModAPI {
 				CACHE.put(SHA1, url); // 写入缓存
 				return url;
 			}
-		} catch (Exception error) {
-			Log.error("获取 Modrinth 资源时出错: " + error.getMessage());
+		} catch (Exception e) {
+			Log.error("获取 Modrinth 资源时出错: " + e.getMessage());
 		}
 		return null;
 	}

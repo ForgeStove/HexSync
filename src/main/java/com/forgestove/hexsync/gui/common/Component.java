@@ -44,8 +44,8 @@ public class Component {
 	public static void setTheme(String name) {
 		try {
 			UIManager.setLookAndFeel(getClassName(name));
-		} catch (Exception error) {
-			Log.error("设置主题 %s 时出错: %s".formatted(name, error.getMessage()));
+		} catch (Exception e) {
+			Log.error("设置主题 %s 时出错: %s".formatted(name, e.getMessage()));
 		}
 		Icons.updateIconColors();
 		for (var window : Window.getWindows()) {

@@ -46,11 +46,9 @@ public class Client implements Runnable {
 			return;
 		}
 		// 中断客户端线程
-		if (clientThread != null) try {
+		if (clientThread != null) {
 			clientThread.interrupt();
 			clientThread = null;
-		} catch (Exception error) {
-			Log.warn("客户端线程中断失败: %s".formatted(error.getMessage()));
 		}
 		// 重置 HttpClient
 		HttpUtil.resetClient();
@@ -83,8 +81,8 @@ public class Client implements Runnable {
 				Downloader.downloadMissingFiles(requestMap); // 下载缺失的文件
 				FileUtil.copyDirectory(Data.clientOnlyPath.get(), Data.clientSyncPath.get()); // 复制文件到客户端同步目录
 			}
-		} catch (Exception error) {
-			Log.error("客户端启动失败: " + error.getMessage());
+		} catch (Exception e) {
+			Log.error("客户端启动失败: " + e.getMessage());
 			errorDownload = true; // 标记下载错误
 		} finally {
 			// 清除下载进度监听器

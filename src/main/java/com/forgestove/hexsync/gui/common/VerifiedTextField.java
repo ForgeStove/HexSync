@@ -26,8 +26,8 @@ public class VerifiedTextField extends UndoableTextField {
 		var validationResult = false;
 		try {
 			validationResult = validator.isValid(text);
-		} catch (Exception error) {
-			errorMessage = error.getMessage();
+		} catch (Exception e) {
+			errorMessage = e.getMessage();
 		}
 		isValid = validationResult;
 		if (isValid) {

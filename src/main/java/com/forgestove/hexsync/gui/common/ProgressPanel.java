@@ -9,7 +9,7 @@ public class ProgressPanel extends JPanel {
 	private final JProgressBar progressBar;
 	private final JPanel statusPanel;
 	private final Map<Integer, JLabel> fileStatusLabels;
-	private final int maxVisibleFiles = 5; // 最多显示5个文件状态
+	public final static int maxVisibleFiles = 4;
 	/**
 	 * 创建一个新的进度显示面板
 	 */
@@ -69,11 +69,10 @@ public class ProgressPanel extends JPanel {
 	public void removeFileStatus(int fileIndex) {
 		SwingUtilities.invokeLater(() -> {
 			var statusLabel = fileStatusLabels.remove(fileIndex);
-			if (statusLabel != null) {
-				statusPanel.remove(statusLabel);
-				statusPanel.revalidate();
-				statusPanel.repaint();
-			}
+			if (statusLabel == null) return;
+			statusPanel.remove(statusLabel);
+			statusPanel.revalidate();
+			statusPanel.repaint();
 		});
 	}
 	/**

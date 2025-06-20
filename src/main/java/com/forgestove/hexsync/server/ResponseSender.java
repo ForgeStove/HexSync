@@ -46,9 +46,9 @@ public class ResponseSender {
 					var sleepMillis = (bytesToSend - availableTokens.get()) * 1000L / Data.serverUploadRate.get().bps;
 					try {
 						Thread.sleep(Math.max(sleepMillis, 1));
-					} catch (InterruptedException error) {
+					} catch (InterruptedException e) {
 						Thread.currentThread().interrupt();
-						Log.error("发送响应时线程被中断: " + error.getMessage());
+						Log.error("发送响应时线程被中断: " + e.getMessage());
 						break;
 					}
 					continue;
@@ -60,8 +60,8 @@ public class ResponseSender {
 				totalBytesSent += bytesRead; // 更新已发送字节数
 				availableTokens.addAndGet(-bytesRead); // 减少可用令牌
 			}
-		} catch (Exception error) {
-			Log.error("发送响应时出错: " + error);
+		} catch (Exception e) {
+			Log.error("发送响应时出错: " + e);
 		}
 	}
 	/**

@@ -41,7 +41,7 @@ public class HexSync {
 	public static @NotNull String get(String key) {
 		try {
 			return lang.getString(key);
-		} catch (Exception error) {
+		} catch (Exception e) {
 			Log.warn("Missing resource for key: " + key);
 			return key;
 		}

@@ -128,8 +128,8 @@ public class Downloader {
 				FileUtil.deleteFile(clientFile);
 				return false;
 			}
-		} catch (Exception error) {
-			Log.error("下载或校验文件时出错: " + error.getMessage());
+		} catch (Exception e) {
+			Log.error("下载或校验文件时出错: " + e.getMessage());
 			return false;
 		}
 		return true;
@@ -155,8 +155,8 @@ public class Downloader {
 						listener.onFileDownloadProgress(fileName, fileIndex, totalFiles, progress, bytesRead, totalBytes);
 				}
 			});
-		} catch (Exception error) {
-			Log.error("获取下载流时出错: " + error.getMessage());
+		} catch (Exception e) {
+			Log.error("获取下载流时出错: " + e.getMessage());
 			return null;
 		}
 	}
@@ -168,8 +168,8 @@ public class Downloader {
 		HttpResponse<String> response;
 		try {
 			response = HttpUtil.sendGet(url, BodyHandlers.ofString(StandardCharsets.UTF_8));
-		} catch (Exception error) {
-			Log.error("获取文件列表时出错: " + error.getMessage());
+		} catch (Exception e) {
+			Log.error("获取文件列表时出错: " + e.getMessage());
 			Client.errorDownload = true;
 			return requestMap;
 		}
