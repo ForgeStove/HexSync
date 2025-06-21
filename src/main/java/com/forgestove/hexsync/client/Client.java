@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Contract;
  */
 public class Client implements Runnable {
 	public static volatile boolean errorDownload; // 下载错误标志
-	public static volatile boolean isRunning = false; // 客户端运行状态
+	public static volatile boolean isRunning; // 客户端运行状态
 	private static volatile Thread clientThread; // 客户端线程
 	private static Client instance; // 单例实例
 	@Contract(pure = true)

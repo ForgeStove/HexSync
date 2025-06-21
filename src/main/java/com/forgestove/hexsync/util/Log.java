@@ -57,13 +57,6 @@ public class Log {
 			throw new RuntimeException(e);
 		}
 	}
-	// 记录内存使用情况
-	public static void logMemory() {
-		var rt = Runtime.getRuntime();
-		var usedMemory = (rt.totalMemory() - rt.freeMemory()) / 1024 / 1024;
-		var totalMemory = rt.totalMemory() / 1024 / 1024;
-		info("%s: %dMB / %dMB".formatted(HexSync.get("memoryUsage"), usedMemory, totalMemory));
-	}
 	public enum Level {
 		INFO("info", "\u001B[32m", new Color(0, 165, 0)),
 		WARN("warn", "\u001B[33m", new Color(255, 140, 0)),

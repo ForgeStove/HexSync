@@ -42,7 +42,7 @@ public class GUI extends JFrame implements Runnable {
 				add(new CButton(HexSync.get("exit"), event -> System.exit(0), Icons.exit));
 			}}, BorderLayout.SOUTH);
 		}});
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setMinimumSize(new Dimension(640, 480));
 	}
 	/**

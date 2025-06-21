@@ -16,7 +16,7 @@ public class Server implements Runnable {
 	public static volatile Object2ObjectMap<String, String> serverMap = new Object2ObjectOpenHashMap<>(); // 服务端文件名和校验码映射
 	public static volatile Thread serverThread; // 服务器线程
 	public static volatile HttpServer httpServer; // 服务器实例
-	public static volatile boolean isRunning = false; // 服务器运行状态
+	public static volatile boolean isRunning; // 服务器运行状态
 	private static Server instance; // 单例实例
 	@Contract(pure = true)
 	private Server() {}

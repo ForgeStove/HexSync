@@ -4,7 +4,7 @@ import com.forgestove.hexsync.util.Log;
 import com.forgestove.hexsync.util.network.HttpUtil;
 import com.sun.net.httpserver.HttpExchange;
 import it.unimi.dsi.fastutil.io.*;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap.Entry;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -35,8 +35,7 @@ public class RequestHandler {
 		var fileName = Server.serverMap.object2ObjectEntrySet()
 			.stream()
 			.filter(entry -> entry.getValue().equals(requestSHA1))
-			.findFirst()
-			.map(Object2ObjectMap.Entry::getKey)
+			.findFirst().map(Entry::getKey)
 			.orElse(null);
 		if (fileName == null) return;
 		var file = Data.serverSyncPath.get().resolve(fileName).toFile();

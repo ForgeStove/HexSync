@@ -8,7 +8,7 @@ import java.awt.event.MouseEvent;
 public class VerifiedTextField extends UndoableTextField {
 	private final InputValidator validator;
 	private boolean isValid = true;
-	private String errorMessage = null;
+	private String errorMessage;
 	public VerifiedTextField(String text, InputValidator validator) {
 		super(text);
 		this.validator = validator;

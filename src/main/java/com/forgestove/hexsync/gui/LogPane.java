@@ -2,7 +2,7 @@ package com.forgestove.hexsync.gui;
 import com.forgestove.hexsync.HexSync;
 import com.forgestove.hexsync.config.Data;
 import com.forgestove.hexsync.gui.common.*;
-import com.forgestove.hexsync.util.Log;
+import com.forgestove.hexsync.util.*;
 
 import javax.swing.*;
 import java.awt.Desktop;
@@ -31,12 +31,9 @@ public class LogPane extends JTextPane {
 					setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 				}};
 				var timer = new Timer(500, e -> {
-					var runtime = Runtime.getRuntime();
-					var used = runtime.totalMemory() - runtime.freeMemory();
-					var total = runtime.totalMemory();
-					var percentage = (int) ((used * 100) / total);
-					memBar.setValue(percentage);
-					memBar.setString("%d%% (%dMB/%dMB)".formatted(percentage, used / 1024 / 1024, total / 1024 / 1024));
+					var info = new MemoryInfo();
+					memBar.setValue(info.percentage);
+					memBar.setString(info.info);
 				}) {{start();}};
 				new JDialog(GUI.getInstance(), HexSync.get("memoryUsage"), ModalityType.MODELESS) {{
 					setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));

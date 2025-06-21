@@ -22,10 +22,10 @@ public class GUIProgressListener implements ProgressListener {
 	public void onDownloadStart(int totalFiles) {
 		// 初始化状态
 		this.totalFiles.set(totalFiles);
-		this.completedFiles.set(0);
-		this.fileStatusMap.clear();
-		this.pendingFiles.clear();
-		this.activeDownloads.clear();
+		completedFiles.set(0);
+		fileStatusMap.clear();
+		pendingFiles.clear();
+		activeDownloads.clear();
 		// 显示初始进度
 		GUI.progressPanel.updateProgress(0, "准备下载 " + totalFiles + " 个文件...");
 	}
@@ -164,10 +164,10 @@ public class GUIProgressListener implements ProgressListener {
 		@Contract(pure = true)
 		public FileStatus(String fileName) {
 			this.fileName = fileName;
-			this.progress = 0;
-			this.bytesRead = 0;
-			this.totalBytes = -1;
-			this.completed = false;
+			progress = 0;
+			bytesRead = 0;
+			totalBytes = -1;
+			completed = false;
 		}
 		/**
 		 * 格式化文件大小显示

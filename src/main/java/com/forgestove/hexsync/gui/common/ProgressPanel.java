@@ -6,10 +6,10 @@ import java.util.*;
  * 进度显示面板，包含进度条和状态文本
  */
 public class ProgressPanel extends JPanel {
+	public final static int maxVisibleFiles = 4;
 	private final JProgressBar progressBar;
 	private final JPanel statusPanel;
 	private final Map<Integer, JLabel> fileStatusLabels;
-	public final static int maxVisibleFiles = 4;
 	/**
 	 * 创建一个新的进度显示面板
 	 */

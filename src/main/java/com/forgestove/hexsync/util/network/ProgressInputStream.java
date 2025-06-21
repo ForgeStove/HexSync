@@ -20,7 +20,7 @@ public class ProgressInputStream extends FilterInputStream {
 	public ProgressInputStream(InputStream in, long totalBytes, ProgressCallback callback) {
 		super(in);
 		this.totalBytes = totalBytes;
-		this.bytesRead = 0;
+		bytesRead = 0;
 		this.callback = callback;
 	}
 	@Override
@@ -48,8 +48,8 @@ public class ProgressInputStream extends FilterInputStream {
 	 */
 	private void updateProgress(long count) {
 		if (count <= 0 || callback == null) return;
-		this.bytesRead += count;
-		callback.onProgressUpdate(this.bytesRead, this.totalBytes);
+		bytesRead += count;
+		callback.onProgressUpdate(bytesRead, totalBytes);
 	}
 	/**
 	 * 进度回调接口

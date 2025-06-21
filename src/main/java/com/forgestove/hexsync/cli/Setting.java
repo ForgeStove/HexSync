@@ -1,5 +1,7 @@
 package com.forgestove.hexsync.cli;
 import com.forgestove.hexsync.cli.Setting.*;
+import com.forgestove.hexsync.cli.Setting.ClientSetting.*;
+import com.forgestove.hexsync.cli.Setting.ServerSetting.*;
 import com.forgestove.hexsync.config.*;
 import com.forgestove.hexsync.util.network.*;
 import com.forgestove.hexsync.util.network.Rate.Unit;
@@ -16,7 +18,7 @@ public class Setting implements Runnable {
 	public void run() {new CommandLine(this).usage(System.out);}
 	@Command(
 		name = "server", description = "服务端设置", subcommands = {
-		ServerSetting.ServerPort.class, ServerSetting.RateLimit.class, ServerSetting.ServerDirectory.class, ServerSetting.ServerAuto.class
+		ServerPort.class, RateLimit.class, ServerDirectory.class, ServerAuto.class
 	}
 	)
 	static class ServerSetting implements Runnable {
@@ -45,11 +47,7 @@ public class Setting implements Runnable {
 	}
 	@Command(
 		name = "client", description = "客户端设置", subcommands = {
-		ClientSetting.ClientPort.class,
-		ClientSetting.RemoteAddress.class,
-		ClientSetting.ClientSyncDirectory.class,
-		ClientSetting.ClientOnlyDirectory.class,
-		ClientSetting.ClientAutoStart.class
+		ClientPort.class, RemoteAddress.class, ClientSyncDirectory.class, ClientOnlyDirectory.class, ClientAutoStart.class
 	}
 	)
 	static class ClientSetting implements Runnable {

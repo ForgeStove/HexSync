@@ -5,7 +5,7 @@ import com.forgestove.hexsync.cli.CLI.Run.*;
 import com.forgestove.hexsync.cli.CLI.Stop.*;
 import com.forgestove.hexsync.client.Client;
 import com.forgestove.hexsync.server.Server;
-import com.forgestove.hexsync.util.Log;
+import com.forgestove.hexsync.util.*;
 import org.jetbrains.annotations.Contract;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -62,7 +62,7 @@ public class CLI implements Runnable {
 	}
 	@Command(name = "memory", description = "显示内存使用情况")
 	static class Memory implements Runnable {
-		public void run() {Log.logMemory();}
+		public void run() {Log.info(new MemoryInfo().info);}
 	}
 	@Command(name = "help", description = "显示帮助信息")
 	static class Help implements Runnable {
