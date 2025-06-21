@@ -62,8 +62,7 @@ public class Log {
 		var rt = Runtime.getRuntime();
 		var usedMemory = (rt.totalMemory() - rt.freeMemory()) / 1024 / 1024;
 		var totalMemory = rt.totalMemory() / 1024 / 1024;
-		var maxMemory = rt.maxMemory() / 1024 / 1024;
-		info("%s: %dMB / %dMB (Max: %dMB)".formatted(HexSync.get("memoryUsage"), usedMemory, totalMemory, maxMemory));
+		info("%s: %dMB / %dMB".formatted(HexSync.get("memoryUsage"), usedMemory, totalMemory));
 	}
 	public enum Level {
 		INFO("info", "\u001B[32m", new Color(0, 165, 0)),
