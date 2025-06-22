@@ -59,13 +59,13 @@ public class Downloader {
 				downloadExecutor.submit(() -> {
 					// 通知监听器文件开始下载
 					synchronized (progressListeners) {
-						progressListeners.forEach(listener -> listener.onFileDownloadStart(fileName, fileIndex, size));
+						progressListeners.forEach(listener -> listener.onFileDownloadStart(fileName, fileIndex));
 					}
 					// 执行下载
-					var success = downloadAndCheckFile(filePath, entry.getValue(), fileName, fileIndex, size);
+					var success = downloadAndCheckFile(filePath, entry.getValue(), fileName, fileIndex);
 					// 通知监听器文件下载完成
 					synchronized (progressListeners) {
-						progressListeners.forEach(listener -> listener.onFileDownloadComplete(fileName, fileIndex, size, success));
+						progressListeners.forEach(listener -> listener.onFileDownloadComplete(fileName, fileIndex, success));
 					}
 					if (!success) {
 						Log.error("下载失败: " + filePath);
@@ -103,7 +103,7 @@ public class Downloader {
 		else Log.info("下载完成: [%d/%d]".formatted(successCount.get(), size));
 		if (Data.clientAuto.get()) System.exit(0);
 	}
-	private static boolean downloadAndCheckFile(Path filePath, String requestSHA1, String fileName, int fileIndex, int totalFiles) {
+	private static boolean downloadAndCheckFile(Path filePath, String requestSHA1, String fileName, int fileIndex) {
 		if (!Client.isRunning) return false;
 		var clientFile = filePath.toFile();
 		if (requestSHA1 == null) {
@@ -118,7 +118,7 @@ public class Downloader {
 			requestSHA1);
 		try {
 			// 使用进度监控器下载文件
-			var progressInput = downloadWithProgress(downloadURL, fileName, fileIndex, totalFiles);
+			var progressInput = downloadWithProgress(downloadURL, fileName, fileIndex);
 			if (progressInput == null) return false;
 			// 写入文件
 			if (!FileUtil.writeToFile(progressInput, clientFile)) return false;
@@ -137,7 +137,7 @@ public class Downloader {
 	/**
 	 * 带进度监控的文件下载方法
 	 */
-	private static @Nullable ProgressInputStream downloadWithProgress(String url, String fileName, int fileIndex, int totalFiles) {
+	private static @Nullable ProgressInputStream downloadWithProgress(String url, String fileName, int fileIndex) {
 		try {
 			var response = HttpUtil.sendGet(url, BodyHandlers.ofInputStream());
 			if (response.statusCode() != HttpURLConnection.HTTP_OK) {
@@ -152,7 +152,7 @@ public class Downloader {
 				// 通知所有监听器文件下载进度更新，包括已下载的MB和总MB
 				synchronized (progressListeners) {
 					for (var listener : progressListeners)
-						listener.onFileDownloadProgress(fileName, fileIndex, totalFiles, progress, bytesRead, totalBytes);
+						listener.onFileDownloadProgress(fileName, fileIndex, progress, bytesRead, totalBytes);
 				}
 			});
 		} catch (Exception e) {

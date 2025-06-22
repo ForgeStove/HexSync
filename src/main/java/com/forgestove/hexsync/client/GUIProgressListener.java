@@ -30,7 +30,7 @@ public class GUIProgressListener implements ProgressListener {
 		GUI.progressPanel.updateProgress(0, "准备下载 " + totalFiles + " 个文件...");
 	}
 	@Override
-	public void onFileDownloadStart(String fileName, int fileIndex, int totalFiles) {
+	public void onFileDownloadStart(String fileName, int fileIndex) {
 		// 创建并存储文件状态
 		fileStatusMap.put(fileIndex, new FileStatus(fileName));
 		// 将文件添加到活动下载列表
@@ -43,7 +43,7 @@ public class GUIProgressListener implements ProgressListener {
 		updateOverallProgress();
 	}
 	@Override
-	public void onFileDownloadProgress(String fileName, int fileIndex, int totalFiles, int progress, long bytesRead, long totalBytes) {
+	public void onFileDownloadProgress(String fileName, int fileIndex, int progress, long bytesRead, long totalBytes) {
 		// 更新文件状态
 		var status = fileStatusMap.get(fileIndex);
 		if (status == null) return;
@@ -59,11 +59,10 @@ public class GUIProgressListener implements ProgressListener {
 		updateOverallProgress();
 	}
 	@Override
-	public void onFileDownloadComplete(String fileName, int fileIndex, int totalFiles, boolean success) {
+	public void onFileDownloadComplete(String fileName, int fileIndex, boolean success) {
 		// 更新文件状态
 		var status = fileStatusMap.get(fileIndex);
 		if (status == null) return;
-		status.completed = true;
 		// 从活动下载列表移除
 		activeDownloads.remove(fileIndex);
 		// 从待下载队列移除
@@ -156,18 +155,16 @@ public class GUIProgressListener implements ProgressListener {
 	 * 文件状态内部类
 	 */
 	public static class FileStatus {
-		String fileName;
-		int progress;
-		long bytesRead;
-		long totalBytes;
-		boolean completed;
+		public String fileName;
+		public int progress;
+		public long bytesRead;
+		public long totalBytes;
 		@Contract(pure = true)
 		public FileStatus(String fileName) {
 			this.fileName = fileName;
 			progress = 0;
 			bytesRead = 0;
 			totalBytes = -1;
-			completed = false;
 		}
 		/**
 		 * 格式化文件大小显示

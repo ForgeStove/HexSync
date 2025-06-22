@@ -25,11 +25,12 @@ public class CLI implements Runnable {
 			.setAbbreviatedOptionsAllowed(true)
 			.setAbbreviatedSubcommandsAllowed(true)
 			.setCaseInsensitiveEnumValuesAllowed(true);
-		var scanner = new Scanner(System.in);
-		while (true) {
-			var line = scanner.nextLine().trim();
-			if (line.isEmpty()) continue;
-			cmd.execute(line.split("\\s+"));
+		try (var scanner = new Scanner(System.in)) {
+			while (true) {
+				var line = scanner.nextLine().trim();
+				if (line.isEmpty()) continue;
+				cmd.execute(line.split("\\s+"));
+			}
 		}
 	}
 	@Command(name = "run", description = "运行实例", subcommands = {RunServer.class, RunClient.class})
