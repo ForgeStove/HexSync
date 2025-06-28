@@ -23,7 +23,7 @@ githubRelease {
 	token(System.getenv("GITHUB_TOKEN"))
 	owner = "ForgeStove"
 	repo = "HexSync"
-	tagName = "v${e("app.version")}"
+	tagName = "v${p("app.version")}"
 	releaseName = tagName
 	generateReleaseNotes = true
 	prerelease = true
@@ -44,10 +44,10 @@ tasks.register("packageApp") {
 	description = "打包应用程序为可执行镜像"
 	dependsOn(tasks.shadowJar)
 	doLast {
-		val jarName = e("app.jarName")
-		val inputDir = e("app.inputDir")
-		val outputDir = e("app.outputDir")
-		val runtimeDir = e("app.runtimeDir")
+		val jarName = p("app.jarName")
+		val inputDir = p("app.inputDir")
+		val outputDir = p("app.outputDir")
+		val runtimeDir = p("app.runtimeDir")
 		delete(outputDir)
 		println("已删除旧的输出目录: $outputDir")
 		delete(runtimeDir)
@@ -87,24 +87,18 @@ tasks.register("packageApp") {
 				"HexSync",
 				"--main-jar",
 				jarName,
-				"--main-class",
-				e("app.mainClass"),
-				"--icon",
-				e("app.iconFile"),
+				"--main-class", p("app.mainClass"),
+				"--icon", p("app.iconFile"),
 				"--type",
 				"app-image",
 				"--runtime-image",
 				runtimeDir,
 				"--dest",
 				outputDir,
-				"--vendor",
-				e("app.vendor"),
-				"--description",
-				e("app.description"),
-				"--copyright",
-				e("app.copyright"),
-				"--app-version",
-				e("app.version")
+				"--vendor", p("app.vendor"),
+				"--description", p("app.description"),
+				"--copyright", p("app.copyright"),
+				"--app-version", p("app.version")
 			)
 		}
 		println("应用已打包到: $outputDir")
@@ -114,4 +108,4 @@ tasks.register("packageApp") {
 		println("已删除多余的图标文件")
 	}
 }
-fun e(key: String) = extra[key].toString()
+fun p(key: String) = property(key).toString()
