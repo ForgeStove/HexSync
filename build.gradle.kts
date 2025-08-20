@@ -4,7 +4,6 @@ plugins {
 	java
 	id("com.github.johnrengelman.shadow") version "+"
 	id("com.github.breadmoirai.github-release") version "+"
-	`maven-publish`
 }
 java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 repositories {
@@ -116,39 +115,3 @@ tasks.register("packageApp") {
 	}
 }
 fun p(key: String) = property(key).toString()
-
-publishing {
-	publications {
-		create<MavenPublication>("maven") {
-			groupId = "io.github.forgestove"
-			artifactId = "HexSync"
-			version = p("app.version")
-			artifact(tasks.shadowJar.get())
-
-			pom {
-				name.set("HexSync")
-				description.set(p("app.description"))
-				url.set("https://github.com/ForgeStove/HexSync")
-
-				licenses {
-					license {
-						name.set("MIT License")
-						url.set("https://github.com/ForgeStove/HexSync/blob/main/LICENSE")
-					}
-				}
-
-				developers {
-					developer {
-						id.set("forgestove")
-						name.set("ForgeStove")
-						email.set("forgestove@outlook.com")
-					}
-				}
-			}
-		}
-	}
-
-	repositories {
-		mavenLocal() // 发布到本地Maven仓库
-	}
-}
