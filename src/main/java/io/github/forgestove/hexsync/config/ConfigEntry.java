@@ -80,7 +80,8 @@ public interface ConfigEntry {
 		 */
 		@Contract(" -> new")
 		public @NotNull String toString() {
-			return key + "=" + serializer.apply(config.get());
+			var value = config.get();
+			return key + "=" + (value == null ? "" : serializer.apply(value));
 		}
 		/**
 		 * 设置配置项的值（从字符串）。
