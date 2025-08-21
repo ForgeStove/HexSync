@@ -43,7 +43,7 @@ public class GUIProgressListener implements ProgressListener {
 		updateOverallProgress();
 	}
 	@Override
-	public void onFileDownloadProgress(String fileName, int fileIndex, int progress, long bytesRead, long totalBytes) {
+	public void onFileDownloadProgress(int fileIndex, int progress, long bytesRead, long totalBytes) {
 		// 更新文件状态
 		var status = fileStatusMap.get(fileIndex);
 		if (status == null) return;

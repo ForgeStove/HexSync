@@ -33,16 +33,22 @@ public class SettingJDialog extends JDialog {
 		super(owner, title, ModalityType.MODELESS);
 		ConfigUtil.load();
 		// 服务端选项
-		var serverPort = new VerifiedTextField(Data.serverPort.get().toString(),
-			input -> Converter.toOrThrow(input, Port::new).isSuccess());
-		var rate = new VerifiedTextField(String.valueOf(Data.serverUploadRate.get().value),
-			input -> Converter.toOrThrow(input, string -> new Rate(input, Data.serverUploadRate.get().unit)).isSuccess());
+		var serverPort = new VerifiedTextField(
+			Data.serverPort.get().toString(),
+			input -> Converter.toOrThrow(input, Port::new).isSuccess()
+		);
+		var rate = new VerifiedTextField(
+			String.valueOf(Data.serverUploadRate.get().value),
+			input -> Converter.toOrThrow(input, string -> new Rate(input, Data.serverUploadRate.get().unit)).isSuccess()
+		);
 		var rateUnit = new JComboBox<>(Unit.values()) {{setSelectedItem(Data.serverUploadRate.get().unit);}};
 		var serverSync = new UndoableTextField(Data.serverSyncPath.get().toString());
 		var serverAuto = new JCheckBox(HexSync.get("autoStart"), Data.serverAuto.get());
 		// 客户端选项
-		var clientPort = new VerifiedTextField(Data.serverPort.get().toString(),
-			input -> Converter.toOrThrow(input, Port::new).isSuccess());
+		var clientPort = new VerifiedTextField(
+			Data.serverPort.get().toString(),
+			input -> Converter.toOrThrow(input, Port::new).isSuccess()
+		);
 		var remoteAddress = new VerifiedTextField(Data.remoteAddress.get(), input -> input != null && !input.trim().isEmpty());
 		var clientSync = new UndoableTextField(Data.clientSyncPath.get().toString());
 		var clientOnly = new UndoableTextField(Data.clientOnlyPath.get().toString());
@@ -56,80 +62,92 @@ public class SettingJDialog extends JDialog {
 		// 基础面板
 		add(new JPanel(new BorderLayout()) {{
 			setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-			add(new JPanel() {{
-				setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-				var layout = new GridLayout(0, 2);
-				// 服务端设置区域
-				add(new JPanel(layout) {{
-					setBorder(SettingJDialog.getBorder("server"));
-					add(new JLabel(HexSync.get("port")));
-					add(serverPort);
-					add(new JLabel(HexSync.get("maxUploadRate")));
-					add(rate);
-					add(new JLabel(HexSync.get("rateUnit")));
-					add(rateUnit);
-					add(new JLabel(HexSync.get("serverSyncPath")));
-					add(serverSync);
-					add(serverAuto);
-					add(new JLabel());
-				}});
-				// 客户端设置区域
-				add(new JPanel(layout) {{
-					setBorder(SettingJDialog.getBorder("client"));
-					add(new JLabel(HexSync.get("port")));
-					add(clientPort);
-					add(new JLabel(HexSync.get("remoteAddress")));
-					add(remoteAddress);
-					add(new JLabel(HexSync.get("clientSyncPath")));
-					add(clientSync);
-					add(new JLabel(HexSync.get("clientOnlyPath")));
-					add(clientOnly);
-					add(clientAuto);
-					add(new JLabel());
-				}});
-				// 其他设置区域
-				add(new JPanel(layout) {{
-					setBorder(SettingJDialog.getBorder("other"));
-					add(new JLabel(HexSync.get("theme")));
-					add(theme);
-					add(new JLabel(HexSync.get("script")));
-					add(script);
-				}});
-			}}, BorderLayout.CENTER);
+			add(
+				new JPanel() {{
+					setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+					var layout = new GridLayout(0, 2);
+					// 服务端设置区域
+					add(new JPanel(layout) {{
+						setBorder(SettingJDialog.getBorder("server"));
+						add(new JLabel(HexSync.get("port")));
+						add(serverPort);
+						add(new JLabel(HexSync.get("maxUploadRate")));
+						add(rate);
+						add(new JLabel(HexSync.get("rateUnit")));
+						add(rateUnit);
+						add(new JLabel(HexSync.get("serverSyncPath")));
+						add(serverSync);
+						add(serverAuto);
+						add(new JLabel());
+					}});
+					// 客户端设置区域
+					add(new JPanel(layout) {{
+						setBorder(SettingJDialog.getBorder("client"));
+						add(new JLabel(HexSync.get("port")));
+						add(clientPort);
+						add(new JLabel(HexSync.get("remoteAddress")));
+						add(remoteAddress);
+						add(new JLabel(HexSync.get("clientSyncPath")));
+						add(clientSync);
+						add(new JLabel(HexSync.get("clientOnlyPath")));
+						add(clientOnly);
+						add(clientAuto);
+						add(new JLabel());
+					}});
+					// 其他设置区域
+					add(new JPanel(layout) {{
+						setBorder(SettingJDialog.getBorder("other"));
+						add(new JLabel(HexSync.get("theme")));
+						add(theme);
+						add(new JLabel(HexSync.get("script")));
+						add(script);
+					}});
+				}}, BorderLayout.CENTER
+			);
 			// 按钮面板
-			add(new JPanel(new GridLayout(1, 0, 5, 0)) {{
-				add(new CButton(HexSync.get("save"), event -> {
-					if (!Arrays.stream(new VerifiedTextField[]{serverPort, clientPort, rate, remoteAddress})
-						.allMatch(VerifiedTextField::isInputValid)) return;
-					Data.serverPort.set(new Port(serverPort.getText()));
-					Data.serverAuto.set(serverAuto.isSelected());
-					Data.serverUploadRate.set(new Rate(rate.getText(), (Unit) Objects.requireNonNull(rateUnit.getSelectedItem())));
-					Data.serverSyncPath.set(Path.of(serverSync.getText()));
-					Data.clientPort.set(new Port(clientPort.getText()));
-					Data.clientAuto.set(clientAuto.isSelected());
-					Data.remoteAddress.set(remoteAddress.getText());
-					Data.clientSyncPath.set(Path.of(clientSync.getText()));
-					Data.clientOnlyPath.set(Path.of(clientOnly.getText()));
-					var themeItem = (String) theme.getSelectedItem();
-					if (!Data.theme.get().equals(themeItem)) {
-						Data.theme.set(themeItem);
-						Component.setTheme(themeItem);
+			add(
+				new JPanel(new GridLayout(1, 0, 5, 0)) {{
+					add(new CButton(
+						HexSync.get("save"), event -> {
+						if (!Arrays.stream(new VerifiedTextField[]{
+							serverPort,
+							clientPort,
+							rate,
+							remoteAddress
+						}).allMatch(VerifiedTextField::isInputValid)) return;
+						Data.serverPort.set(new Port(serverPort.getText()));
+						Data.serverAuto.set(serverAuto.isSelected());
+						Data.serverUploadRate.set(new Rate(rate.getText(), (Unit) Objects.requireNonNull(rateUnit.getSelectedItem())));
+						Data.serverSyncPath.set(Path.of(serverSync.getText()));
+						Data.clientPort.set(new Port(clientPort.getText()));
+						Data.clientAuto.set(clientAuto.isSelected());
+						Data.remoteAddress.set(remoteAddress.getText());
+						Data.clientSyncPath.set(Path.of(clientSync.getText()));
+						Data.clientOnlyPath.set(Path.of(clientOnly.getText()));
+						var themeItem = (String) theme.getSelectedItem();
+						if (!Data.theme.get().equals(themeItem)) {
+							Data.theme.set(themeItem);
+							Component.setTheme(themeItem);
+						}
+						Data.script.set(Path.of(script.getText()));
+						ConfigUtil.save(); // 保存配置
+						dispose(); // 关闭对话框
 					}
-					Data.script.set(Path.of(script.getText()));
-					ConfigUtil.save(); // 保存配置
-					dispose(); // 关闭对话框
-				}));
-				add(new CButton(HexSync.get("cancel"), event -> dispose()));
-				add(new CButton(HexSync.get("about"), event -> new AboutJDialog(SettingJDialog.this, HexSync.get("about"))));
-				setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
-			}}, BorderLayout.SOUTH);
+					));
+					add(new CButton(HexSync.get("cancel"), event -> dispose()));
+					add(new CButton(HexSync.get("about"), event -> new AboutJDialog(SettingJDialog.this, HexSync.get("about"))));
+					setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+				}}, BorderLayout.SOUTH
+			);
 		}});
 		Component.setWindow(this);
 		requestFocusInWindow(); // 阻止聚焦到其他组件
 	}
 	@Contract("_ -> new")
 	public static @NotNull CompoundBorder getBorder(String key) {
-		return BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder(new FlatRoundBorder(), HexSync.get(key)),
-			BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		return BorderFactory.createCompoundBorder(
+			BorderFactory.createTitledBorder(new FlatRoundBorder(), HexSync.get(key)),
+			BorderFactory.createEmptyBorder(5, 5, 5, 5)
+		);
 	}
 }

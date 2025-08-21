@@ -53,7 +53,7 @@ public class Client implements Runnable {
 		// 重置 HttpClient
 		HttpUtil.resetClient();
 		isRunning = false;
-		Log.info(HexSync.NAME + "Client 已关闭");
+		Log.info(HexSync.NAME + "Client 已退出");
 		if (Data.clientAuto.get() && !errorDownload) System.exit(0); // 如果设置了自动启动且没有下载错误，则退出程序
 	}
 	/**

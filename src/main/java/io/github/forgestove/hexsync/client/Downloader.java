@@ -62,7 +62,7 @@ public class Downloader {
 						progressListeners.forEach(listener -> listener.onFileDownloadStart(fileName, fileIndex));
 					}
 					// 执行下载
-					var success = downloadAndCheckFile(filePath, entry.getValue(), fileName, fileIndex);
+					var success = downloadAndCheckFile(filePath, entry.getValue(), fileIndex);
 					// 通知监听器文件下载完成
 					synchronized (progressListeners) {
 						progressListeners.forEach(listener -> listener.onFileDownloadComplete(fileName, fileIndex, success));
@@ -103,7 +103,7 @@ public class Downloader {
 		else Log.info("下载完成: [%d/%d]".formatted(successCount.get(), size));
 		if (Data.clientAuto.get()) System.exit(0);
 	}
-	private static boolean downloadAndCheckFile(Path filePath, String requestSHA1, String fileName, int fileIndex) {
+	private static boolean downloadAndCheckFile(Path filePath, String requestSHA1, int fileIndex) {
 		if (!Client.isRunning) return false;
 		var clientFile = filePath.toFile();
 		if (requestSHA1 == null) {
@@ -112,13 +112,14 @@ public class Downloader {
 		}
 		// 获取下载URL
 		var downloadURL = ModAPI.getURL(requestSHA1);
-		if (downloadURL == null) downloadURL = "%s:%d/%s/%s".formatted(HttpUtil.formatHTTP(Data.remoteAddress.get()),
+		if (downloadURL == null) downloadURL = "%s:%d/%s/%s".formatted(
+			HttpUtil.formatHTTP(Data.remoteAddress.get()),
 			Data.clientPort.get().getValue(),
-			HttpUtil.DOWNLOAD,
-			requestSHA1);
+			HttpUtil.DOWNLOAD, requestSHA1
+		);
 		try {
 			// 使用进度监控器下载文件
-			var progressInput = downloadWithProgress(downloadURL, fileName, fileIndex);
+			var progressInput = downloadWithProgress(downloadURL, fileIndex);
 			if (progressInput == null) return false;
 			// 写入文件
 			if (!FileUtil.writeToFile(progressInput, clientFile)) return false;
@@ -137,7 +138,7 @@ public class Downloader {
 	/**
 	 * 带进度监控的文件下载方法
 	 */
-	private static @Nullable ProgressInputStream downloadWithProgress(String url, String fileName, int fileIndex) {
+	private static @Nullable ProgressInputStream downloadWithProgress(String url, int fileIndex) {
 		try {
 			var response = HttpUtil.sendGet(url, BodyHandlers.ofInputStream());
 			if (response.statusCode() != HttpURLConnection.HTTP_OK) {
@@ -147,14 +148,16 @@ public class Downloader {
 			// 获取文件大小
 			var contentLength = response.headers().firstValueAsLong("Content-Length").orElse(-1);
 			// 创建带进度监控的输入流
-			return new ProgressInputStream(response.body(), contentLength, (bytesRead, totalBytes) -> {
+			return new ProgressInputStream(
+				response.body(), contentLength, (bytesRead, totalBytes) -> {
 				var progress = totalBytes > 0 ? (int) (bytesRead * 100 / totalBytes) : 0;
 				// 通知所有监听器文件下载进度更新，包括已下载的MB和总MB
 				synchronized (progressListeners) {
 					for (var listener : progressListeners)
-						listener.onFileDownloadProgress(fileName, fileIndex, progress, bytesRead, totalBytes);
+						listener.onFileDownloadProgress(fileIndex, progress, bytesRead, totalBytes);
 				}
-			});
+			}
+			);
 		} catch (Exception e) {
 			Log.error("获取下载流时出错: " + e.getMessage());
 			return null;

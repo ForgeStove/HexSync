@@ -23,24 +23,30 @@ public class GUI extends JFrame implements Runnable {
 		add(new JPanel() {{
 			setLayout(new BorderLayout());
 			setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-			add(new JPanel() {{
-				setLayout(new BorderLayout());
-				// 日志滚动面板
-				add(new JScrollPane(logPane) {{
-					setBorder(BorderFactory.createTitledBorder(HexSync.get("log")));
-				}}, BorderLayout.CENTER);
-				// 进度显示面板
-				add(progressPanel, BorderLayout.SOUTH);
-			}}, BorderLayout.CENTER);
+			add(
+				new JPanel() {{
+					setLayout(new BorderLayout());
+					// 日志滚动面板
+					add(
+						new JScrollPane(logPane) {{
+							setBorder(BorderFactory.createTitledBorder(HexSync.get("log")));
+						}}, BorderLayout.CENTER
+					);
+					// 进度显示面板
+					add(progressPanel, BorderLayout.SOUTH);
+				}}, BorderLayout.CENTER
+			);
 			// 按钮面板
-			add(new JPanel(new GridLayout(0, 3)) {{
-				add(new CButton(HexSync.get("start", "server"), event -> Server.start()));
-				add(new CButton(HexSync.get("start", "client"), event -> Client.start()));
-				add(new CButton(HexSync.get("settings"), event -> new SettingJDialog(GUI.this, HexSync.get("settings")), Icons.cog));
-				add(new CButton(HexSync.get("stop", "server"), event -> Server.stop()));
-				add(new CButton(HexSync.get("stop", "client"), event -> Client.stop()));
-				add(new CButton(HexSync.get("exit"), event -> System.exit(0), Icons.exit));
-			}}, BorderLayout.SOUTH);
+			add(
+				new JPanel(new GridLayout(0, 3)) {{
+					add(new CButton(HexSync.get("start", "server"), event -> Server.start()));
+					add(new CButton(HexSync.get("start", "client"), event -> Client.start()));
+					add(new CButton(HexSync.get("settings"), event -> new SettingJDialog(GUI.this, HexSync.get("settings")), Icons.cog));
+					add(new CButton(HexSync.get("stop", "server"), event -> Server.stop()));
+					add(new CButton(HexSync.get("stop", "client"), event -> Client.stop()));
+					add(new CButton(HexSync.get("exit"), event -> System.exit(0), Icons.exit));
+				}}, BorderLayout.SOUTH
+			);
 		}});
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setMinimumSize(new Dimension(640, 480));

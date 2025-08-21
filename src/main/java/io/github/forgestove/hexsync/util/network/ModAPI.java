@@ -11,8 +11,10 @@ public class ModAPI {
 	public static @Nullable String getURL(@NotNull String SHA1) {
 		if (CACHE.containsKey(SHA1)) return CACHE.get(SHA1); // 缓存命中直接返回
 		try {
-			var response = HttpUtil.sendGet(("https://api.modrinth.com/v2/version_file/" + SHA1).replaceAll("\"", "%22"),
-				BodyHandlers.ofString());
+			var response = HttpUtil.sendGet(
+				("https://api.modrinth.com/v2/version_file/" + SHA1).replaceAll("\"", "%22"),
+				BodyHandlers.ofString()
+			);
 			if (response.statusCode() != HttpURLConnection.HTTP_OK) return null;
 			var jsonObject = new JSONObject(response.body());
 			if (jsonObject.has("files") && !jsonObject.getJSONArray("files").isEmpty()) {

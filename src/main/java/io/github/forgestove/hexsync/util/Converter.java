@@ -5,7 +5,12 @@ import java.util.function.Function;
 /**
  * 类型转换工具类，用于安全地将字符串转换为各种数据类型
  */
-@SuppressWarnings({"unused", "UnusedReturnValue"})
+@SuppressWarnings(
+	{
+		"unused",
+		"UnusedReturnValue"
+	}
+)
 public class Converter {
 	/**
 	 * 尝试将字符串转换为指定类型，如果失败则抛出异常
@@ -64,7 +69,10 @@ public class Converter {
 		 * @param <T>   转换结果的类型
 		 * @return 成功的类型转换结果对象
 		 */
-		@Contract(value = "_ -> new", pure = true)
+		@Contract(
+			value = "_ -> new",
+			pure = true
+		)
 		public static <T> @NotNull Result<T> success(T value) {
 			return new Result<>(true, value, null);
 		}
@@ -75,7 +83,10 @@ public class Converter {
 		 * @param <T>          转换结果的类型
 		 * @return 失败的类型转换结果对象
 		 */
-		@Contract(value = "_ -> new", pure = true)
+		@Contract(
+			value = "_ -> new",
+			pure = true
+		)
 		public static <T> @NotNull Result<T> failure(String errorMessage) {
 			return new Result<>(false, null, errorMessage);
 		}

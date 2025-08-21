@@ -65,7 +65,7 @@ public class Server implements Runnable {
 		} catch (Exception e) {
 			Log.warn("服务器线程中断失败: %s".formatted(e.getMessage()));
 		}
-		Log.info(HexSync.NAME + "Server 已关闭");
+		Log.info(HexSync.NAME + "Server 已退出");
 	}
 	/**
 	 * 启动服务器 (Runnable 接口实现)

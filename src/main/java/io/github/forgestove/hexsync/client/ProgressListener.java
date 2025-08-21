@@ -13,26 +13,25 @@ public interface ProgressListener {
 	/**
 	 * 当单个文件开始下载时调用
 	 *
-	 * @param fileName   当前正在下载的文件名
-	 * @param fileIndex  当前文件索引（从1开始）
+	 * @param fileName  当前正在下载的文件名
+	 * @param fileIndex 当前文件索引（从1开始）
 	 */
 	void onFileDownloadStart(String fileName, int fileIndex);
 	/**
 	 * 当单个文件下载进度更新时调用
 	 *
-	 * @param fileName   当前正在下载的文件名
 	 * @param fileIndex  当前文件索引（从1开始）
 	 * @param progress   当前文件的下载进度（0-100）
 	 * @param bytesRead  已下载的字节数
 	 * @param totalBytes 总字节数
 	 */
-	void onFileDownloadProgress(String fileName, int fileIndex, int progress, long bytesRead, long totalBytes);
+	void onFileDownloadProgress(int fileIndex, int progress, long bytesRead, long totalBytes);
 	/**
 	 * 当单个文件下载完成时调用
 	 *
-	 * @param fileName   已下载的文件名
-	 * @param fileIndex  当前文件索引（从1开始）
-	 * @param success    下载是否成功
+	 * @param fileName  已下载的文件名
+	 * @param fileIndex 当前文件索引（从1开始）
+	 * @param success   下载是否成功
 	 */
 	void onFileDownloadComplete(String fileName, int fileIndex, boolean success);
 	/**

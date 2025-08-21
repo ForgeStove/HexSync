@@ -34,6 +34,6 @@ public class Data {
 		Value.of("clientOnlyPath", clientOnlyPath, Path::of),
 		Value.of("clientAuto", clientAuto, Boolean::parseBoolean),
 		new Header("# Other"),
-		Value.of("theme", theme, String::new),
-		Value.of("script", script, Path::of));
+		Value.of("theme", theme, String::new), Value.of("script", script, Path::of)
+	);
 }

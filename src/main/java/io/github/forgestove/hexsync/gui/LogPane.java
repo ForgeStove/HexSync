@@ -19,22 +19,27 @@ public class LogPane extends JTextPane {
 		setEditable(false);
 		// 弹出菜单
 		setComponentPopupMenu(new JPopupMenu() {{
-			add(new CMenuItem(HexSync.get("copy"), Icons.copy, event -> {
+			add(new CMenuItem(
+				HexSync.get("copy"), Icons.copy, event -> {
 				if (getSelectedText() == null) GUI.logPane.selectAll();
 				GUI.logPane.copy();
-			}));
+			}
+			));
 			add(new CMenuItem(HexSync.get("clear"), Icons.clear, event -> GUI.logPane.setText("")));
 			add(new CMenuItem(HexSync.get("refresh"), Icons.refresh, event -> System.gc()));
-			add(new CMenuItem(HexSync.get("memoryMonitor"), Icons.memory, event -> {
+			add(new CMenuItem(
+				HexSync.get("memoryMonitor"), Icons.memory, event -> {
 				var memBar = new JProgressBar(0, 100) {{
 					setStringPainted(true);
 					setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 				}};
-				var timer = new Timer(500, e -> {
+				var timer = new Timer(
+					500, e -> {
 					var info = new MemoryInfo();
 					memBar.setValue(info.percentage);
 					memBar.setString(info.info);
-				}) {{start();}};
+				}
+				) {{start();}};
 				new JDialog(GUI.getInstance(), HexSync.get("memoryUsage"), ModalityType.MODELESS) {{
 					setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 					addWindowListener(new WindowAdapter() {
@@ -45,14 +50,17 @@ public class LogPane extends JTextPane {
 					setLocationRelativeTo(GUI.getInstance());
 					setVisible(true);
 				}};
-			}));
-			add(new CMenuItem(HexSync.get("openLog"), Icons.open, event -> {
+			}
+			));
+			add(new CMenuItem(
+				HexSync.get("openLog"), Icons.open, event -> {
 				try {
 					Desktop.getDesktop().open(Data.LOG_PATH.getParent().toFile());
 				} catch (Exception e) {
 					Log.error("无法打开日志: " + e);
 				}
-			}));
+			}
+			));
 		}});
 	}
 }

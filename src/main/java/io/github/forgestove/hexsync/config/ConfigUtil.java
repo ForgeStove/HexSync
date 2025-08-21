@@ -26,14 +26,16 @@ public class ConfigUtil {
 		}
 		var configMap = Data.CONFIG_ENTRIES.stream().filter(Value.class::isInstance).map(Value.class::cast)
 			.collect(Collectors.toMap(Value::key, Function.identity()));
-		FileUtil.readLine(configFile, line -> {
-			if (!line.matches("^[a-zA-Z].*")) return;
-			var parts = line.trim().split("=");
-			if (parts.length != 2) return;
-			var action = configMap.get(parts[0]);
-			if (action != null) action.accept(parts[1]);
-			else Log.warn("配置项错误: " + line);
-		});
+		FileUtil.readLine(
+			configFile, line -> {
+				if (!line.matches("^[a-zA-Z].*")) return;
+				var parts = line.trim().split("=");
+				if (parts.length != 2) return;
+				var action = configMap.get(parts[0]);
+				if (action != null) action.accept(parts[1]);
+				else Log.warn("配置项错误: " + line);
+			}
+		);
 	}
 	/**
 	 * 保存配置

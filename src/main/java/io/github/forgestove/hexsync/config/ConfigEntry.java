@@ -23,7 +23,10 @@ public interface ConfigEntry {
 		 *
 		 * @return 仅包含标题的字符串
 		 */
-		@Contract(value = " -> new", pure = true)
+		@Contract(
+			value = " -> new",
+			pure = true
+		)
 		public @NotNull String toString() {return header;}
 	}
 	/**

@@ -11,16 +11,20 @@ public class UndoableTextField extends JTextField {
 	private void initUndo() {
 		getDocument().addUndoableEditListener(undoManager);
 		getInputMap().put(KeyStroke.getKeyStroke("control Z"), "Undo");
-		getActionMap().put("Undo", new AbstractAction() {
-			public void actionPerformed(ActionEvent event) {
-				if (undoManager.canUndo()) undoManager.undo();
+		getActionMap().put(
+			"Undo", new AbstractAction() {
+				public void actionPerformed(ActionEvent event) {
+					if (undoManager.canUndo()) undoManager.undo();
+				}
 			}
-		});
+		);
 		getInputMap().put(KeyStroke.getKeyStroke("control Y"), "Redo");
-		getActionMap().put("Redo", new AbstractAction() {
-			public void actionPerformed(ActionEvent event) {
-				if (undoManager.canRedo()) undoManager.redo();
+		getActionMap().put(
+			"Redo", new AbstractAction() {
+				public void actionPerformed(ActionEvent event) {
+					if (undoManager.canRedo()) undoManager.redo();
+				}
 			}
-		});
+		);
 	}
 }
