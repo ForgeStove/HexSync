@@ -115,7 +115,8 @@ public class Downloader {
 		if (downloadURL == null) downloadURL = "%s:%d/%s/%s".formatted(
 			HttpUtil.formatHTTP(Data.remoteAddress.get()),
 			Data.clientPort.get().getValue(),
-			HttpUtil.DOWNLOAD, requestSHA1
+			HttpUtil.DOWNLOAD,
+			requestSHA1
 		);
 		try {
 			// 使用进度监控器下载文件

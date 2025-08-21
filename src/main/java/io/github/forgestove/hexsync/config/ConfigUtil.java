@@ -24,7 +24,9 @@ public class ConfigUtil {
 			save();
 			return;
 		}
-		var configMap = Data.CONFIG_ENTRIES.stream().filter(Value.class::isInstance).map(Value.class::cast)
+		var configMap = Data.CONFIG_ENTRIES.stream()
+			.filter(Value.class::isInstance)
+			.map(Value.class::cast)
 			.collect(Collectors.toMap(Value::key, Function.identity()));
 		FileUtil.readLine(
 			configFile, line -> {
