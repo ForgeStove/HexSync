@@ -1,5 +1,3 @@
-@file:Suppress("SpellCheckingInspection", "DEPRECATION")
-
 plugins {
 	java
 	id("com.github.johnrengelman.shadow") version "+"
@@ -27,20 +25,23 @@ githubRelease {
 	releaseName = tagName
 	generateReleaseNotes = true
 	prerelease = true
-	releaseAssets(tasks.shadowJar.get().outputs.files)
+	releaseAssets(tasks.build.get().outputs.files)
 	overwrite = true
+}
+tasks.build {
+	dependsOn(tasks.shadowJar)
 }
 tasks.shadowJar {
 	archiveClassifier.set("")
-	manifest { attributes(mapOf("Main-Class" to "com.forgestove.hexsync.HexSync")) }
+	manifest { attributes(mapOf("Main-Class" to p("app.mainClass"))) }
 	mergeServiceFiles()
 	minimize {
 		exclude(dependency("com.formdev:flatlaf-intellij-themes"))
 	}
 	from("LICENSE") { rename { "${it}_${project.name}" } }
 }
-tasks.register("packageApp") {
-	group = tasks.shadowJar.get().group
+tasks.register("package") {
+	group = tasks.build.get().group
 	description = "打包应用程序为可执行镜像"
 	dependsOn(tasks.shadowJar)
 	doLast {
@@ -61,7 +62,7 @@ tasks.register("packageApp") {
 		}.standardOutput.asText.get().trim()
 		println("依赖模块: $modules")
 		println("正在使用jlink构建自定义运行时...")
-		exec {
+		providers.exec {
 			commandLine(
 				"$javaPath/bin/jlink",
 				"--module-path",
@@ -78,7 +79,7 @@ tasks.register("packageApp") {
 		}
 		println("自定义运行时已生成: $runtimeDir")
 		println("正在使用jpackage打包应用...")
-		exec {
+		providers.exec {
 			commandLine(
 				"$javaPath/bin/jpackage",
 				"--input",
