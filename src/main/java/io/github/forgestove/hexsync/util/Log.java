@@ -2,7 +2,7 @@ package io.github.forgestove.hexsync.util;
 import io.github.forgestove.hexsync.HexSync;
 import io.github.forgestove.hexsync.config.Data;
 import io.github.forgestove.hexsync.gui.GUI;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.*;
 import picocli.CommandLine.Help.Ansi;
 
 import javax.swing.SwingUtilities;
@@ -27,21 +27,29 @@ public class Log {
 	}
 	// 日志核心方法
 	private static void log(@NotNull Level level, String message) {
-		var log = "[%s] [%s] %s%n".formatted(LocalTime.now().withNano(0), HexSync.get(level.resourceName), message);
-		if (!HexSync.HEADLESS) SwingUtilities.invokeLater(() -> writeToLogPane(level, log));
-		if (Ansi.ON.enabled()) System.out.printf("%s%s\u001B[0m", level.ansi, log);
-		else System.out.print(log);
-		if (printStream != null) printStream.print(log);
+		var timeStamp = "[%s]".formatted(LocalTime.now().withNano(0));
+		var levelTag = "[%s]".formatted(HexSync.get(level.resourceName));
+		var content = "%s%n".formatted(message);
+		var logParts = new LogParts(timeStamp, levelTag, content);
+		if (!HexSync.HEADLESS) SwingUtilities.invokeLater(() -> writeToLogPane(level, logParts));
+		if (Ansi.ON.enabled()) {
+			System.out.print(logParts.timeStamp + " ");
+			System.out.printf("%s%s\u001B[0m", level.ansi, logParts.levelTag);
+			System.out.print(" " + logParts.content);
+		} else System.out.print(logParts.getFullLog());
+		if (printStream != null) printStream.print(logParts.getFullLog());
 	}
 	// 在日志面板中追加日志
-	private static void writeToLogPane(Level level, String log) {
+	private static void writeToLogPane(Level level, LogParts logParts) {
 		var document = GUI.logPane.getDocument();
 		var root = document.getDefaultRootElement();
 		var maxLines = 256;
 		var lineCount = root.getElementCount();
 		try {
 			if (lineCount > maxLines) document.remove(0, root.getElement(lineCount - maxLines - 1).getEndOffset());
-			document.insertString(document.getLength(), log, level.attr);
+			document.insertString(document.getLength(), logParts.timeStamp + " ", null);
+			document.insertString(document.getLength(), logParts.levelTag, level.attr);
+			document.insertString(document.getLength(), " " + logParts.content, null);
 		} catch (Exception e) {
 			System.err.println("日志输出失败: " + e.getMessage());
 		}
@@ -71,6 +79,13 @@ public class Log {
 			this.ansi = ansi;
 			attr = new SimpleAttributeSet();
 			StyleConstants.setForeground(attr, color);
+		}
+	}
+	// 存储日志的不同部分
+	public record LogParts(String timeStamp, String levelTag, String content) {
+		@Contract(pure = true)
+		public @NotNull String getFullLog() {
+			return timeStamp + " " + levelTag + " " + content;
 		}
 	}
 }
