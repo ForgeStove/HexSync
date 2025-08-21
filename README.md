@@ -1,6 +1,3 @@
-<!--suppress HtmlDeprecatedAttribute -->
-<p align="center"><img src="icon.ico" alt="icon"></p>
-
 # <p align="center">HexSync
 
 ---
