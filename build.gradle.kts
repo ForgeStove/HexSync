@@ -21,7 +21,7 @@ githubRelease {
 	token(System.getenv("GITHUB_TOKEN"))
 	owner = "ForgeStove"
 	repo = "HexSync"
-	tagName = "v${p("app.version")}"
+	tagName = "v${p("app_version")}"
 	releaseName = tagName
 	generateReleaseNotes = true
 	prerelease = true
@@ -33,7 +33,7 @@ tasks.build {
 }
 tasks.shadowJar {
 	archiveClassifier.set("")
-	manifest { attributes(mapOf("Main-Class" to p("app.mainClass"))) }
+	manifest { attributes(mapOf("Main-Class" to p("app_mainClass"))) }
 	mergeServiceFiles()
 	minimize {
 		exclude(dependency("com.formdev:flatlaf-intellij-themes"))
