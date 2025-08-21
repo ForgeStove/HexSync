@@ -1,6 +1,5 @@
 # <p align="center">HexSync
 
----
 [![License](https://img.shields.io/github/license/ForgeStove/HexSync?style=flat&color=900c3f)](https://github.com/ForgeStove/HexSync?tab=readme-ov-file#MIT-1-ov-file)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ForgeStove/HexSync)
 

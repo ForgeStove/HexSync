@@ -25,11 +25,8 @@ githubRelease {
 	releaseName = tagName
 	generateReleaseNotes = true
 	prerelease = true
-	releaseAssets(tasks.build.get().outputs.files)
+	releaseAssets(tasks.shadowJar.get().outputs.files)
 	overwrite = true
-}
-tasks.build {
-	dependsOn(tasks.shadowJar)
 }
 tasks.shadowJar {
 	archiveClassifier.set("")
