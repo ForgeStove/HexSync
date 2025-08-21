@@ -53,6 +53,8 @@ public class Log {
 		Runtime.getRuntime().addShutdownHook(new Thread(flushScheduler::shutdown));
 		try {
 			printStream = new PrintStream(Data.LOG_PATH.toFile(), StandardCharsets.UTF_8);
+			System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
+			System.setErr(new PrintStream(System.err, true, StandardCharsets.UTF_8));
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
