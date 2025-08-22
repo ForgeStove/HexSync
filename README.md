@@ -1,3 +1,6 @@
+<!--suppress HtmlDeprecatedAttribute -->
+<p align="center"><img src="icon.ico" alt="icon"></p>
+
 # <p align="center">HexSync
 
 [![License](https://img.shields.io/github/license/ForgeStove/HexSync?style=flat&color=900c3f)](https://github.com/ForgeStove/HexSync?tab=readme-ov-file#MIT-1-ov-file)
