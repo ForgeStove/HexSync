@@ -19,24 +19,24 @@ dependencies {
 	implementation("it.unimi.dsi:fastutil:+")
 }
 launch4j {
-	mainClassName = p("app_mainClass")
-	outfile = "${p("app_name")}-${p("app_version")}.exe"
+	mainClassName = p("appMainClass")
+	outfile = "${p("appName")}-${p("appVersion")}.exe"
 	outputDir = "launch4j"
 	jarFiles = tasks.shadowJar.get().outputs.files
 	icon = "${rootDir}/icon.ico"
 	jvmOptions = listOf("-Xms256m", "-Xmx1024m")
 //	bundledJrePath = "jre"
 	jreMinVersion = "17"
-	windowTitle = p("app_name")
-	version= p("app_version")
-	textVersion = p("app_version")
-	copyright = p("app_copyright")
+	windowTitle = p("appName")
+	version= p("appVersion")
+	textVersion = p("appVersion")
+	copyright = p("appCopyright")
 }
 githubRelease {
 	token(System.getenv("GITHUB_TOKEN"))
-	owner = p("app_author")
-	repo = p("app_name")
-	tagName = "v${p("app_version")}"
+	owner = p("appAuthor")
+	repo = p("appName")
+	tagName = "v${p("appVersion")}"
 	releaseName = tagName
 	generateReleaseNotes = true
 	prerelease = true
@@ -45,7 +45,7 @@ githubRelease {
 }
 tasks.shadowJar {
 	archiveClassifier.set("")
-	manifest { attributes(mapOf("Main-Class" to p("app_mainClass"))) }
+	manifest { attributes(mapOf("Main-Class" to p("appMainClass"))) }
 	mergeServiceFiles()
 	minimize {
 		exclude(dependency("com.formdev:flatlaf-intellij-themes"))
